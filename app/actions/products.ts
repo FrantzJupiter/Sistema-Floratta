@@ -1,8 +1,7 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-
 import { createAutomaticSku } from "@/lib/products/catalog";
+import { revalidateProductSurfaces } from "@/lib/revalidate-routes";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   initialProductDeleteActionState,
@@ -192,7 +191,7 @@ export async function createProductAction(
     }
   }
 
-  revalidatePath("/");
+  revalidateProductSurfaces();
 
   return {
     status: "success",
@@ -290,7 +289,7 @@ export async function updateProductAction(
     };
   }
 
-  revalidatePath("/");
+  revalidateProductSurfaces();
 
   return {
     status: "success",
@@ -367,7 +366,7 @@ export async function deleteProductAction(
     };
   }
 
-  revalidatePath("/");
+  revalidateProductSurfaces();
 
   return {
     status: "success",

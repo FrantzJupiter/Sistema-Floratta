@@ -1,7 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-
+import { revalidateSalesSurfaces } from "@/lib/revalidate-routes";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
   initialTransactionHistoryActionState,
@@ -45,7 +44,7 @@ export async function clearSalesHistoryAction(
     };
   }
 
-  revalidatePath("/");
+  revalidateSalesSurfaces();
 
   return {
     status: "success",

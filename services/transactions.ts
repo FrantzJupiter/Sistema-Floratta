@@ -129,6 +129,10 @@ export async function listRecentSales(limit = 6) {
   });
 }
 
+export async function listSalesHistory(limit = 90) {
+  return listRecentSales(limit);
+}
+
 export async function getSaleReceipt(transactionId: string) {
   const supabase = createAdminClient();
 

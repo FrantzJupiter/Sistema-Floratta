@@ -1,7 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-
+import { revalidateSalesSurfaces } from "@/lib/revalidate-routes";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getSaleReceipt } from "@/services/transactions";
 import {
@@ -93,7 +92,7 @@ export async function checkoutAction(
 
   const receipt = await getSaleReceipt(checkoutResult.transaction_id);
 
-  revalidatePath("/");
+  revalidateSalesSurfaces();
 
   return {
     status: "success",

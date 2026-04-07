@@ -3,7 +3,7 @@ import type { Tables } from "@/lib/supabase";
 
 export type RegisteredCustomer = Tables<"customers">;
 
-export async function listCustomers(limit = 40) {
+export async function listCustomers(limit = 200) {
   const supabase = createAdminClient();
 
   const { data, error } = await supabase

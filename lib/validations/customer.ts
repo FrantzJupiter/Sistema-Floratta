@@ -8,13 +8,31 @@ export const customerSchema = z.object({
     .max(120, "O nome do cliente deve ter no maximo 120 caracteres."),
 });
 
+export const customerUpdateSchema = customerSchema.extend({
+  customerId: z.uuid("Cliente invalido para atualizacao."),
+});
+
+export const customerDeleteSchema = z.object({
+  customerId: z.uuid("Cliente invalido para exclusao."),
+});
+
 export type CustomerCreateActionState = {
   status: "idle" | "success" | "error";
   message: string;
   customerId?: string;
 };
 
+export type CustomerDeleteActionState = {
+  status: "idle" | "success" | "error";
+  message: string;
+};
+
 export const initialCustomerCreateActionState: CustomerCreateActionState = {
+  status: "idle",
+  message: "",
+};
+
+export const initialCustomerDeleteActionState: CustomerDeleteActionState = {
   status: "idle",
   message: "",
 };

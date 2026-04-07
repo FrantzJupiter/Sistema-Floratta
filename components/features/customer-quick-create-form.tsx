@@ -4,31 +4,41 @@ import { useActionState } from "react";
 
 import { createCustomerAction } from "@/app/actions/customers";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import {
   initialCustomerCreateActionState,
   type CustomerCreateActionState,
 } from "@/lib/validations/customer";
 
 function CustomerQuickCreateFormFields({
+  className,
+  description,
   formAction,
   pending,
   state,
+  submitLabel,
+  title,
 }: {
+  className?: string;
+  description: string;
   formAction: (payload: FormData) => void;
   pending: boolean;
   state: CustomerCreateActionState;
+  submitLabel: string;
+  title: string;
 }) {
   return (
     <form
       key={state.status === "success" ? state.message : "customer-quick-create-form"}
       action={formAction}
-      className="grid gap-3 rounded-[1.5rem] border border-white/55 bg-white/72 p-4 shadow-sm"
+      className={cn(
+        "grid gap-3 rounded-[1.5rem] border border-white/55 bg-white/72 p-4 shadow-sm",
+        className,
+      )}
     >
       <div className="space-y-1">
-        <h3 className="text-sm font-semibold text-zinc-950">Cadastro rapido de cliente</h3>
-        <p className="text-xs leading-5 text-zinc-600">
-          Salve um cliente pelo nome para reutilizar nas proximas vendas.
-        </p>
+        <h3 className="text-sm font-semibold text-zinc-950">{title}</h3>
+        <p className="text-xs leading-5 text-zinc-600">{description}</p>
       </div>
 
       <label className="grid gap-2 text-sm text-zinc-700">
@@ -56,14 +66,26 @@ function CustomerQuickCreateFormFields({
           disabled={pending}
           className="rounded-2xl border-rose-200 bg-rose-50/70 text-rose-900 hover:bg-rose-100"
         >
-          {pending ? "Salvando cliente..." : "Cadastrar cliente"}
+          {pending ? "Salvando cliente..." : submitLabel}
         </Button>
       </div>
     </form>
   );
 }
 
-export function CustomerQuickCreateForm() {
+type CustomerQuickCreateFormProps = {
+  className?: string;
+  description?: string;
+  submitLabel?: string;
+  title?: string;
+};
+
+export function CustomerQuickCreateForm({
+  className,
+  description = "Salve um cliente pelo nome para reutilizar nas proximas vendas.",
+  submitLabel = "Cadastrar cliente",
+  title = "Cadastro rapido de cliente",
+}: CustomerQuickCreateFormProps = {}) {
   const [state, formAction, pending] = useActionState<CustomerCreateActionState, FormData>(
     createCustomerAction,
     initialCustomerCreateActionState,
@@ -71,9 +93,13 @@ export function CustomerQuickCreateForm() {
 
   return (
     <CustomerQuickCreateFormFields
+      className={className}
+      description={description}
       formAction={formAction}
       pending={pending}
       state={state}
+      submitLabel={submitLabel}
+      title={title}
     />
   );
 }

@@ -1,4 +1,7 @@
 import type { Metadata, Viewport } from "next";
+
+import { TopNav } from "@/components/navigation/top-nav";
+
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -39,7 +42,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full bg-[radial-gradient(circle_at_top,_rgba(245,185,204,0.42),_transparent_34%),linear-gradient(160deg,_#fffaf6_0%,_#f6efe9_44%,_#f2e7f0_100%)] text-zinc-900">
+        <div className="relative min-h-screen overflow-x-clip">
+          <div className="pointer-events-none absolute inset-x-0 top-0 h-80 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.8),_transparent_72%)]" />
+          <div className="relative flex min-h-screen flex-col">
+            <TopNav />
+            <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 pb-10 pt-4 sm:px-6 lg:px-8">
+              {children}
+            </main>
+          </div>
+        </div>
+      </body>
     </html>
   );
 }
