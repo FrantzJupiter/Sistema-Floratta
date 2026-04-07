@@ -106,14 +106,6 @@ export function SalesWorkspace({
           <div className="space-y-1">
             <h2 className="text-2xl font-semibold text-zinc-950">{title}</h2>
           </div>
-
-          <div className="grid gap-2 sm:grid-cols-1">
-
-            <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-sm">
-              <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">No carrinho</p>
-              <p className="mt-2 text-2xl font-semibold text-zinc-950">{cartUnits}</p>
-            </div>
-          </div>
         </div>
 
         <div className="grid gap-4">
