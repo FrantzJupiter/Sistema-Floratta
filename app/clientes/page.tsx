@@ -18,7 +18,6 @@ export default async function CustomersPage() {
       <PageHeader
         badge="Carteira"
         title="Clientes da loja"
-        description="Centralize o cadastro dos nomes recorrentes, atualize informacoes e mantenha a selecao do checkout mais agil."
       />
       <CustomersWorkspace customers={customers} />
     </>

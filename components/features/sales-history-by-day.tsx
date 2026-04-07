@@ -31,13 +31,11 @@ function formatDayLabel(dayKey: string) {
 type SalesHistoryByDayProps = {
   sales: RecentSale[];
   title?: string;
-  description?: string;
 };
 
 export function SalesHistoryByDay({
   sales,
   title = "Historico por dia",
-  description = "Acompanhe o caixa agrupado por data para localizar vendas, totais e itens com mais contexto.",
 }: SalesHistoryByDayProps) {
   const groupedSales = sales.reduce<Record<string, RecentSale[]>>((accumulator, sale) => {
     const key = getDayKey(sale.created_at);
@@ -51,20 +49,19 @@ export function SalesHistoryByDay({
   const totalAmount = sales.reduce((accumulator, sale) => accumulator + sale.totalAmount, 0);
 
   return (
-    <section className="grid gap-6 rounded-[2rem] border border-white/45 bg-white/60 p-6 shadow-[0_24px_70px_-45px_rgba(90,24,57,0.55)] backdrop-blur-xl">
+    <section className="grid gap-6 rounded-[2rem] border border-white/45 bg-white/60 p-6 shadow-panel-down backdrop-blur-xl">
       <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
         <div className="space-y-2">
           <h2 className="text-2xl font-semibold text-zinc-950">{title}</h2>
-          <p className="max-w-2xl text-sm leading-6 text-zinc-600">{description}</p>
         </div>
 
         <div className="flex flex-col items-start gap-4 xl:items-end">
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-sm">
+            <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-card-down">
               <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Vendas</p>
               <p className="mt-2 text-2xl font-semibold text-zinc-950">{sales.length}</p>
             </div>
-            <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-sm">
+            <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-card-down">
               <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Total do periodo</p>
               <p className="mt-2 text-2xl font-semibold text-zinc-950">
                 {formatCurrency(totalAmount)}
@@ -100,7 +97,7 @@ export function SalesHistoryByDay({
             return (
               <section
                 key={dayKey}
-                className="grid gap-4 rounded-[1.85rem] border border-white/55 bg-white/74 p-5 shadow-sm"
+                className="grid gap-4 rounded-[1.85rem] border border-white/55 bg-white/74 p-5 shadow-card-down"
               >
                 <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
                   <div className="space-y-1">

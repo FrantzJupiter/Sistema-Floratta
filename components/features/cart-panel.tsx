@@ -58,7 +58,7 @@ function CartCheckoutContent({
         {items.map((item) => (
           <article
             key={item.productId}
-            className="rounded-[1.5rem] border border-white/55 bg-white/75 p-4 shadow-sm"
+            className="rounded-[1.5rem] border border-white/55 bg-white/75 p-4 shadow-card-down"
           >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0 flex-1 space-y-1">
@@ -124,7 +124,7 @@ function CartCheckoutContent({
 
       <form
         action={formAction}
-        className="grid gap-4 rounded-[1.75rem] border border-white/55 bg-white/78 p-4 sm:p-5 shadow-sm"
+        className="grid gap-4 rounded-[1.75rem] border border-white/55 bg-white/78 p-4 sm:p-5 shadow-card-down"
       >
         <input
           type="hidden"
@@ -245,13 +245,10 @@ export function CartPanel({ customers }: CartPanelProps) {
   }, [clearCart, state.status]);
 
   return (
-    <section className="grid gap-4 rounded-[2rem] border border-white/45 bg-white/68 p-4 sm:p-6 shadow-[0_24px_70px_-45px_rgba(90,24,57,0.55)] backdrop-blur-xl">
+    <section className="grid gap-4 rounded-[2rem] border border-white/45 bg-white/68 p-4 sm:p-6 shadow-panel-down backdrop-blur-xl">
       <div className="mb-1 flex items-start justify-between gap-4">
         <div>
           <h2 className="text-2xl font-semibold text-zinc-950">Carrinho e checkout</h2>
-          <p className="text-sm leading-6 text-zinc-600">
-            Monte a venda, vincule um cliente se quiser e gere o recibo ao concluir.
-          </p>
         </div>
         <span className="rounded-full bg-rose-100 px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-rose-700">
           {items.length} item(ns)

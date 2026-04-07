@@ -13,7 +13,7 @@ type SaleSummaryCardProps = {
 
 export function SaleSummaryCard({ sale }: SaleSummaryCardProps) {
   return (
-    <article className="rounded-[1.75rem] border border-white/55 bg-white/74 p-5 shadow-sm">
+    <article className="rounded-[1.75rem] border border-white/55 bg-white/74 p-5 shadow-card-down">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-2">
           <div className="flex flex-wrap gap-2">

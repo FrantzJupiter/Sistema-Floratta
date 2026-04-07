@@ -1,22 +1,15 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
-import { useActionState, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
 
 import { deleteProductAction, updateProductAction } from "@/app/actions/products";
 import { Button } from "@/components/ui/button";
 import {
   createAutomaticSku,
-  defaultProductType,
-  getMetadataLabel,
-  getProductTypeDefinition,
-  getProductTypeFromAttributes,
-  getProductTypeLabel,
-  productTypeDefinitions,
-  productTypeValues,
-  type ProductType,
+  getDetailType,
+  getProductDetailEntries,
 } from "@/lib/products/catalog";
-import type { Json } from "@/lib/supabase";
 import {
   initialProductActionState,
   initialProductDeleteActionState,
@@ -40,55 +33,10 @@ function FieldError({ errors }: { errors?: string[] }) {
   return <p className="text-sm text-rose-600">{errors[0]}</p>;
 }
 
-function renderAttributes(attributes: Json | null) {
-  if (!attributes || typeof attributes !== "object" || Array.isArray(attributes)) {
-    return null;
-  }
-
-  const productType = getProductTypeFromAttributes(attributes);
-  const entries = Object.entries(attributes).filter(([key]) => key !== "tipo_produto");
-
-  if (!entries.length) {
-    return null;
-  }
-
-  return (
-    <div className="mt-4 flex flex-wrap gap-2">
-      {entries.map(([key, value]) => (
-        <span
-          key={key}
-          className="rounded-full border border-white/60 bg-white/75 px-3 py-1 text-xs text-zinc-600"
-        >
-          {getMetadataLabel(productType, key)}: {String(value)}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-function getInitialMetadataValues(attributes: Json | null) {
-  if (!attributes || typeof attributes !== "object" || Array.isArray(attributes)) {
-    return {} as Record<string, string>;
-  }
-
-  return Object.entries(attributes).reduce<Record<string, string>>((accumulator, [key, value]) => {
-    if (key === "tipo_produto" || value === null || value === undefined) {
-      return accumulator;
-    }
-
-    accumulator[key] = String(value);
-    return accumulator;
-  }, {});
-}
-
 function ProductIdPreview({
-  actionLabel,
-  helperText,
   onRegenerate,
   value,
 }: {
-  actionLabel: string;
-  helperText?: string;
   onRegenerate: () => void;
   value: string;
 }) {
@@ -107,9 +55,11 @@ function ProductIdPreview({
         className="h-8 justify-start rounded-xl px-2 text-xs text-rose-900 hover:bg-rose-100"
         onClick={onRegenerate}
       >
-        {actionLabel}
+        Prever outro
       </Button>
-      {helperText ? <p className="text-xs leading-5 text-zinc-500">{helperText}</p> : null}
+      <p className="text-xs leading-5 text-zinc-500">
+        O ID atual nao muda na edicao. O preview serve so para referencia.
+      </p>
     </div>
   );
 }
@@ -119,69 +69,36 @@ function ProductEditForm({
   pending,
   product,
   state,
+  typeOptions,
 }: {
   formAction: (payload: FormData) => void;
   pending: boolean;
   product: CatalogProduct;
   state: ProductActionState;
+  typeOptions: string[];
 }) {
-  const initialProductType =
-    getProductTypeFromAttributes(product.variantAttributes) ?? defaultProductType;
-  const [productType, setProductType] = useState<ProductType>(initialProductType);
-  const [metadataValues, setMetadataValues] = useState<Record<string, string>>(
-    getInitialMetadataValues(product.variantAttributes),
+  const [detailType, setDetailType] = useState(getDetailType(product.variantAttributes) ?? "");
+  const [detailVolume, setDetailVolume] = useState(
+    getProductDetailEntries(product.variantAttributes).find((entry) => entry.key === "volume")
+      ?.value ?? "",
   );
   const [skuPreview, setSkuPreview] = useState(product.sku);
-
-  const productTypeDefinition = getProductTypeDefinition(productType);
-  const attributesJson = JSON.stringify(
-    productTypeDefinition.fields.reduce<Record<string, string | number>>((accumulator, field) => {
-      const rawValue = metadataValues[field.key]?.trim();
-
-      if (!rawValue) {
-        return accumulator;
-      }
-
-      accumulator[field.key] =
-        field.type === "number" && !Number.isNaN(Number(rawValue))
-          ? Number(rawValue)
-          : rawValue;
-
-      return accumulator;
-    }, {}),
-  );
-
-  function handleProductTypeChange(nextType: ProductType) {
-    setProductType(nextType);
-    setMetadataValues({});
-    setSkuPreview(createAutomaticSku(nextType));
-  }
+  const typeListId = useMemo(() => `product-detail-type-options-${product.id}`, [product.id]);
 
   return (
-    <form action={formAction} className="mt-5 grid gap-4 rounded-[1.5rem] border border-white/55 bg-white/78 p-4 shadow-sm">
-      <input type="hidden" name="productId" value={product.id} />
-      <input type="hidden" name="productType" value={productType} />
-      <input type="hidden" name="attributesJson" value={attributesJson} />
-
-      <div className="grid gap-2 text-sm text-zinc-700">
-        <label htmlFor={`product-type-${product.id}`} className="font-medium">
-          Tipo de produto
-        </label>
-        <select
-          id={`product-type-${product.id}`}
-          value={productType}
-          onChange={(event) => handleProductTypeChange(event.target.value as ProductType)}
-          className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
-        >
-          {productTypeValues.map((type) => (
-            <option key={type} value={type}>
-              {productTypeDefinitions[type].label}
-            </option>
+    <form
+      action={formAction}
+      className="mt-5 grid gap-4 rounded-[1.5rem] border border-white/55 bg-white/78 p-4 shadow-card-down"
+    >
+      {typeOptions.length ? (
+        <datalist id={typeListId}>
+          {typeOptions.map((typeOption) => (
+            <option key={typeOption} value={typeOption} />
           ))}
-        </select>
-        <FieldError errors={state.fieldErrors?.productType} />
-        <p className="text-xs leading-5 text-zinc-500">{productTypeDefinition.description}</p>
-      </div>
+        </datalist>
+      ) : null}
+
+      <input type="hidden" name="productId" value={product.id} />
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_220px]">
         <label className="grid gap-2 text-sm text-zinc-700">
@@ -195,9 +112,7 @@ function ProductEditForm({
         </label>
 
         <ProductIdPreview
-          actionLabel="Prever outro"
-          helperText="O ID atual nao muda na edicao. O preview serve so para referencia."
-          onRegenerate={() => setSkuPreview(createAutomaticSku(productType))}
+          onRegenerate={() => setSkuPreview(createAutomaticSku(detailType))}
           value={skuPreview}
         />
       </div>
@@ -244,57 +159,37 @@ function ProductEditForm({
 
       <section className="grid gap-4 rounded-[1.5rem] border border-white/50 bg-white/50 p-4">
         <div className="space-y-1">
-          <h3 className="text-sm font-semibold text-zinc-900">Metadados</h3>
-          <p className="text-xs leading-5 text-zinc-500">
-            Atualize os atributos tecnicos do item para manter o catalogo consistente.
-          </p>
-          <FieldError errors={state.fieldErrors?.attributesJson} />
+          <h3 className="text-sm font-semibold text-zinc-900">Detalhes</h3>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          {productTypeDefinition.fields.map((field) => (
-            <label key={field.key} className="grid gap-2 text-sm text-zinc-700">
-              <span className="font-medium">
-                {field.label}
-                {field.required ? " *" : ""}
-              </span>
+          <label className="grid gap-2 text-sm text-zinc-700">
+            <span className="font-medium">Tipo</span>
+            <input
+              name="detailType"
+              list={typeOptions.length ? typeListId : undefined}
+              value={detailType}
+              placeholder="Selecione ou digite um novo tipo"
+              onChange={(event) => {
+                setDetailType(event.target.value);
+                setSkuPreview(createAutomaticSku(event.target.value));
+              }}
+              className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+            />
+            <FieldError errors={state.fieldErrors?.detailType} />
+          </label>
 
-              {field.type === "select" ? (
-                <select
-                  value={metadataValues[field.key] ?? ""}
-                  onChange={(event) =>
-                    setMetadataValues((current) => ({
-                      ...current,
-                      [field.key]: event.target.value,
-                    }))
-                  }
-                  className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
-                >
-                  <option value="">Selecione...</option>
-                  {field.options?.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <input
-                  type={field.type}
-                  value={metadataValues[field.key] ?? ""}
-                  min={field.type === "number" ? "0" : undefined}
-                  step={field.type === "number" ? "1" : undefined}
-                  placeholder={field.placeholder}
-                  onChange={(event) =>
-                    setMetadataValues((current) => ({
-                      ...current,
-                      [field.key]: event.target.value,
-                    }))
-                  }
-                  className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
-                />
-              )}
-            </label>
-          ))}
+          <label className="grid gap-2 text-sm text-zinc-700">
+            <span className="font-medium">Volume</span>
+            <input
+              name="detailVolume"
+              value={detailVolume}
+              placeholder="Ex.: 100 ml"
+              onChange={(event) => setDetailVolume(event.target.value)}
+              className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+            />
+            <FieldError errors={state.fieldErrors?.detailVolume} />
+          </label>
         </div>
       </section>
 
@@ -319,10 +214,16 @@ function ProductEditForm({
   );
 }
 
-export function ProductCatalogCard({ product }: { product: CatalogProduct }) {
+export function ProductCatalogCard({
+  product,
+  typeOptions = [],
+}: {
+  product: CatalogProduct;
+  typeOptions?: string[];
+}) {
   const [isEditing, setIsEditing] = useState(false);
-  const productType = getProductTypeFromAttributes(product.variantAttributes);
-  const productTypeLabel = getProductTypeLabel(productType);
+  const detailType = getDetailType(product.variantAttributes);
+  const detailEntries = getProductDetailEntries(product.variantAttributes);
   const quantity = product.inventory?.quantity ?? 0;
   const stockTone =
     quantity === 0
@@ -341,10 +242,10 @@ export function ProductCatalogCard({ product }: { product: CatalogProduct }) {
   >(deleteProductAction, initialProductDeleteActionState);
 
   return (
-    <article className="rounded-[1.75rem] border border-white/55 bg-white/72 p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+    <article className="rounded-[1.75rem] border border-white/55 bg-white/72 p-5 shadow-card-down transition hover:-translate-y-0.5">
       <div className="flex flex-col gap-5">
         <div className="grid gap-4 sm:grid-cols-[120px_minmax(0,1fr)]">
-          <div className="overflow-hidden rounded-[1.5rem] border border-white/60 bg-white/80 shadow-sm">
+          <div className="overflow-hidden rounded-[1.5rem] border border-white/60 bg-white/80 shadow-card-down">
             {product.image_url ? (
               <img
                 src={product.image_url}
@@ -365,9 +266,11 @@ export function ProductCatalogCard({ product }: { product: CatalogProduct }) {
                   <span className="rounded-full border border-zinc-200 bg-white/80 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-zinc-600">
                     ID {product.sku}
                   </span>
-                  <span className="rounded-full bg-rose-100 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-rose-700">
-                    {productTypeLabel}
-                  </span>
+                  {detailType ? (
+                    <span className="rounded-full bg-rose-100 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-rose-700">
+                      {detailType}
+                    </span>
+                  ) : null}
                 </div>
                 <h3 className="text-xl font-semibold text-zinc-950">{product.name}</h3>
               </div>
@@ -397,7 +300,18 @@ export function ProductCatalogCard({ product }: { product: CatalogProduct }) {
           </div>
         </div>
 
-        {renderAttributes(product.variantAttributes)}
+        {detailEntries.length ? (
+          <div className="mt-1 flex flex-wrap gap-2">
+            {detailEntries.map((entry) => (
+              <span
+                key={entry.key}
+                className="rounded-full border border-white/60 bg-white/75 px-3 py-1 text-xs text-zinc-600"
+              >
+                {entry.label}: {entry.value}
+              </span>
+            ))}
+          </div>
+        ) : null}
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-h-6 text-sm" aria-live="polite">
@@ -444,6 +358,7 @@ export function ProductCatalogCard({ product }: { product: CatalogProduct }) {
             pending={updatePending}
             product={product}
             state={updateState}
+            typeOptions={typeOptions}
           />
         ) : null}
       </div>

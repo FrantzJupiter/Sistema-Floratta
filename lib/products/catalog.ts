@@ -1,193 +1,59 @@
-export const productTypeValues = [
-  "perfumaria",
-  "semijoias",
-  "decoracao",
-  "presentes",
-  "outros",
-] as const;
+type ProductDetailsRecord = Record<string, unknown>;
 
-export type ProductType = (typeof productTypeValues)[number];
-
-type ProductMetadataField = {
-  key: string;
-  label: string;
-  type: "text" | "number" | "select";
-  placeholder?: string;
-  required?: boolean;
-  options?: string[];
+const legacyProductTypeLabels: Record<string, string> = {
+  perfumaria: "Perfumaria",
+  semijoias: "Semijoias",
+  decoracao: "Decoracao",
+  presentes: "Presentes",
+  outros: "Outros",
 };
 
-type ProductTypeDefinition = {
-  label: string;
-  description: string;
-  skuPrefix: string;
-  fields: ProductMetadataField[];
+const detailLabels: Record<string, string> = {
+  tipo: "Tipo",
+  tipo_produto: "Tipo",
+  volume: "Volume",
+  volume_ml: "Volume",
 };
 
-export const productTypeDefinitions: Record<ProductType, ProductTypeDefinition> = {
-  perfumaria: {
-    label: "Perfumaria",
-    description: "Perfumes, body splashes e kits com foco em fragrancia e volume.",
-    skuPrefix: "PERF",
-    fields: [
-      {
-        key: "fragrancia",
-        label: "Fragrancia",
-        type: "text",
-        placeholder: "Floral adocicada",
-        required: true,
-      },
-      {
-        key: "volume_ml",
-        label: "Volume (ml)",
-        type: "number",
-        placeholder: "75",
-        required: true,
-      },
-      {
-        key: "familia_olfativa",
-        label: "Familia olfativa",
-        type: "select",
-        options: ["Floral", "Amadeirada", "Citrica", "Oriental", "Frutada"],
-      },
-    ],
-  },
-  semijoias: {
-    label: "Semijoias",
-    description: "Pecas com material, banho e acabamento como atributos principais.",
-    skuPrefix: "SEMI",
-    fields: [
-      {
-        key: "material",
-        label: "Material base",
-        type: "text",
-        placeholder: "Liga metalica",
-        required: true,
-      },
-      {
-        key: "banho",
-        label: "Banho",
-        type: "select",
-        options: ["Ouro", "Prata", "Rose"],
-        required: true,
-      },
-      {
-        key: "pedraria",
-        label: "Pedraria",
-        type: "text",
-        placeholder: "Zirconia cristal",
-      },
-    ],
-  },
-  decoracao: {
-    label: "Decoracao",
-    description: "Itens decorativos com ambiente sugerido, material e dimensoes.",
-    skuPrefix: "DECO",
-    fields: [
-      {
-        key: "material",
-        label: "Material",
-        type: "text",
-        placeholder: "Ceramica",
-        required: true,
-      },
-      {
-        key: "ambiente",
-        label: "Ambiente sugerido",
-        type: "select",
-        options: ["Sala", "Quarto", "Escritorio", "Cozinha", "Festa"],
-        required: true,
-      },
-      {
-        key: "dimensoes",
-        label: "Dimensoes",
-        type: "text",
-        placeholder: "20x15cm",
-      },
-    ],
-  },
-  presentes: {
-    label: "Presentes",
-    description: "Itens presenteaveis com ocasiao, publico e tema.",
-    skuPrefix: "GIFT",
-    fields: [
-      {
-        key: "ocasiao",
-        label: "Ocasiao",
-        type: "select",
-        options: ["Aniversario", "Namorados", "Natal", "Cha de bebe", "Sem data"],
-        required: true,
-      },
-      {
-        key: "publico_alvo",
-        label: "Publico alvo",
-        type: "select",
-        options: ["Infantil", "Adulto", "Unissex"],
-        required: true,
-      },
-      {
-        key: "tema",
-        label: "Tema",
-        type: "text",
-        placeholder: "Romantico",
-      },
-    ],
-  },
-  outros: {
-    label: "Outros",
-    description: "Categoria livre para itens fora dos grupos principais da loja.",
-    skuPrefix: "ITEM",
-    fields: [
-      {
-        key: "descricao_base",
-        label: "Descricao tecnica",
-        type: "text",
-        placeholder: "Item versatil para uso geral",
-        required: true,
-      },
-      {
-        key: "destaque",
-        label: "Destaque",
-        type: "text",
-        placeholder: "Lancamento, sazonal, colecao limitada...",
-      },
-    ],
-  },
-};
-
-export const defaultProductType: ProductType = "perfumaria";
-
-export function getProductTypeDefinition(productType: ProductType) {
-  return productTypeDefinitions[productType];
-}
-
-export function getProductTypeLabel(productType: string | null | undefined) {
-  if (!productType || !(productType in productTypeDefinitions)) {
-    return "Tipo nao informado";
+function asProductDetails(attributes: unknown): ProductDetailsRecord | null {
+  if (!attributes || typeof attributes !== "object" || Array.isArray(attributes)) {
+    return null;
   }
 
-  return productTypeDefinitions[productType as ProductType].label;
+  return attributes as ProductDetailsRecord;
 }
 
-export function getMetadataLabel(
-  productType: string | null | undefined,
-  key: string,
-) {
-  if (productType && productType in productTypeDefinitions) {
-    const field = productTypeDefinitions[productType as ProductType].fields.find(
-      (item) => item.key === key,
-    );
-
-    if (field) {
-      return field.label;
-    }
+function normalizeString(value: unknown) {
+  if (typeof value !== "string") {
+    return null;
   }
 
-  return key.replaceAll("_", " ");
+  const normalized = value.trim();
+  return normalized ? normalized : null;
 }
 
-export function createAutomaticSku(productType: ProductType) {
-  const prefix = productTypeDefinitions[productType].skuPrefix;
+function buildSkuPrefix(detailType?: string | null) {
+  const normalizedType =
+    detailType
+      ?.normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .toUpperCase() ?? "";
+
+  return normalizedType.slice(0, 4) || "ITEM";
+}
+
+function formatLegacyType(value: string) {
+  return (
+    legacyProductTypeLabels[value] ??
+    value
+      .replaceAll("_", " ")
+      .replace(/\b\w/g, (character) => character.toUpperCase())
+  );
+}
+
+export function createAutomaticSku(detailType?: string | null) {
+  const prefix = buildSkuPrefix(detailType);
   const now = new Date();
   const datePart = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, "0")}${String(
     now.getDate(),
@@ -197,16 +63,90 @@ export function createAutomaticSku(productType: ProductType) {
   return `${prefix}-${datePart}-${randomPart}`;
 }
 
-export function getProductTypeFromAttributes(attributes: unknown) {
-  if (!attributes || typeof attributes !== "object" || Array.isArray(attributes)) {
+export function getDetailType(attributes: unknown) {
+  const details = asProductDetails(attributes);
+
+  if (!details) {
     return null;
   }
 
-  const candidate = (attributes as Record<string, unknown>).tipo_produto;
+  const directType = normalizeString(details.tipo);
 
-  if (typeof candidate !== "string" || !(candidate in productTypeDefinitions)) {
+  if (directType) {
+    return directType;
+  }
+
+  const legacyType = normalizeString(details.tipo_produto);
+
+  if (legacyType) {
+    return formatLegacyType(legacyType);
+  }
+
+  return null;
+}
+
+export function getDetailVolume(attributes: unknown) {
+  const details = asProductDetails(attributes);
+
+  if (!details) {
     return null;
   }
 
-  return candidate as ProductType;
+  const directVolume = normalizeString(details.volume);
+
+  if (directVolume) {
+    return directVolume;
+  }
+
+  const legacyVolume = details.volume_ml;
+
+  if (typeof legacyVolume === "number" && Number.isFinite(legacyVolume)) {
+    return `${legacyVolume} ml`;
+  }
+
+  if (typeof legacyVolume === "string" && legacyVolume.trim()) {
+    return `${legacyVolume.trim()} ml`;
+  }
+
+  return null;
+}
+
+export function getDetailLabel(key: string) {
+  return detailLabels[key] ?? key.replaceAll("_", " ");
+}
+
+export function getProductDetailEntries(attributes: unknown) {
+  const entries: Array<{ key: string; label: string; value: string }> = [];
+  const detailType = getDetailType(attributes);
+  const detailVolume = getDetailVolume(attributes);
+
+  if (detailType) {
+    entries.push({
+      key: "tipo",
+      label: getDetailLabel("tipo"),
+      value: detailType,
+    });
+  }
+
+  if (detailVolume) {
+    entries.push({
+      key: "volume",
+      label: getDetailLabel("volume"),
+      value: detailVolume,
+    });
+  }
+
+  return entries;
+}
+
+export function getRegisteredDetailTypes(
+  products: Array<{ variantAttributes: unknown }>,
+) {
+  return Array.from(
+    new Set(
+      products
+        .map((product) => getDetailType(product.variantAttributes))
+        .filter((value): value is string => typeof value === "string" && value.length > 0),
+    ),
+  ).sort((left, right) => left.localeCompare(right, "pt-BR"));
 }

@@ -131,6 +131,29 @@
   }
 }
 
+@layer utilities {
+  .shadow-panel-down {
+    box-shadow:
+      0 20px 44px -18px rgba(118, 36, 76, 0.24),
+      0 8px 24px -12px rgba(255, 255, 255, 0.45),
+      0 -6px 18px -16px rgba(255, 255, 255, 0.82);
+  }
+
+  .shadow-card-down {
+    box-shadow:
+      0 16px 34px -20px rgba(118, 36, 76, 0.22),
+      0 6px 18px -12px rgba(255, 255, 255, 0.38),
+      0 -4px 14px -14px rgba(255, 255, 255, 0.78);
+  }
+
+  .shadow-receipt-down {
+    box-shadow:
+      0 18px 36px -20px rgba(15, 23, 42, 0.18),
+      0 6px 18px -14px rgba(255, 255, 255, 0.32),
+      0 -4px 14px -14px rgba(255, 255, 255, 0.72);
+  }
+}
+
 @media print {
   @page {
     size: 80mm auto;

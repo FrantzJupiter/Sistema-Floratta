@@ -10,13 +10,10 @@ type RecentSalesProps = {
 
 export function RecentSales({ sales }: RecentSalesProps) {
   return (
-    <section className="rounded-[2rem] border border-white/45 bg-white/60 p-6 shadow-[0_24px_70px_-45px_rgba(90,24,57,0.55)] backdrop-blur-xl">
+    <section className="rounded-[2rem] border border-white/45 bg-white/60 p-6 shadow-panel-down backdrop-blur-xl">
       <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-2xl font-semibold text-zinc-950">Vendas recentes</h2>
-          <p className="text-sm leading-6 text-zinc-600">
-            Historico imediato do caixa com totais, descontos e itens vendidos.
-          </p>
         </div>
         <div className="flex flex-col items-start gap-3 sm:items-end">
           <div className="flex flex-wrap items-center gap-2">

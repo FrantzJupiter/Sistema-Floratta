@@ -4,8 +4,8 @@ import { createAutomaticSku } from "@/lib/products/catalog";
 import { revalidateProductSurfaces } from "@/lib/revalidate-routes";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
+  buildProductDetails,
   initialProductDeleteActionState,
-  parseVariantAttributes,
   productCreateSchema,
   productDeleteSchema,
   productUpdateSchema,
@@ -16,17 +16,17 @@ import {
 function getProductFormInput(formData: FormData) {
   return {
     name: formData.get("name"),
-    productType: formData.get("productType"),
+    detailType: formData.get("detailType") ?? "",
+    detailVolume: formData.get("detailVolume") ?? "",
     basePrice: formData.get("basePrice"),
     quantity: formData.get("quantity"),
     imageUrl: formData.get("imageUrl") ?? "",
-    attributesJson: formData.get("attributesJson") ?? "",
   };
 }
 
 async function upsertProductMetadata(
   productId: string,
-  attributes: Record<string, string | number | boolean | null>,
+  attributes: Record<string, string | number | boolean | null> | null,
 ) {
   const supabase = createAdminClient();
   const { data: metadataRows, error: metadataRowsError } = await supabase
@@ -37,8 +37,28 @@ async function upsertProductMetadata(
 
   if (metadataRowsError) {
     return {
-      error: `Nao foi possivel carregar os metadados atuais: ${metadataRowsError.message}`,
+      error: `Nao foi possivel carregar os detalhes atuais: ${metadataRowsError.message}`,
     } as const;
+  }
+
+  if (!attributes || !Object.keys(attributes).length) {
+    if (metadataRows.length) {
+      const { error: deleteError } = await supabase
+        .from("variant_metadata")
+        .delete()
+        .in(
+          "id",
+          metadataRows.map((row) => row.id),
+        );
+
+      if (deleteError) {
+        return {
+          error: `Nao foi possivel limpar os detalhes atuais: ${deleteError.message}`,
+        } as const;
+      }
+    }
+
+    return { error: null } as const;
   }
 
   if (!metadataRows.length) {
@@ -49,7 +69,7 @@ async function upsertProductMetadata(
 
     if (insertError) {
       return {
-        error: `Nao foi possivel salvar os metadados: ${insertError.message}`,
+        error: `Nao foi possivel salvar os detalhes: ${insertError.message}`,
       } as const;
     }
 
@@ -65,7 +85,7 @@ async function upsertProductMetadata(
 
   if (updateError) {
     return {
-      error: `Nao foi possivel atualizar os metadados: ${updateError.message}`,
+      error: `Nao foi possivel atualizar os detalhes: ${updateError.message}`,
     } as const;
   }
 
@@ -96,18 +116,15 @@ export async function createProductAction(
     };
   }
 
-  const parsedAttributes = parseVariantAttributes(
-    parsedInput.data.attributesJson,
-    parsedInput.data.productType,
-  );
+  const parsedDetails = buildProductDetails({
+    detailType: parsedInput.data.detailType,
+    detailVolume: parsedInput.data.detailVolume,
+  });
 
-  if (parsedAttributes.error) {
+  if (parsedDetails.error) {
     return {
       status: "error",
-      message: parsedAttributes.error,
-      fieldErrors: {
-        attributesJson: [parsedAttributes.error],
-      },
+      message: parsedDetails.error,
     };
   }
 
@@ -124,7 +141,7 @@ export async function createProductAction(
   let productErrorMessage: string | null = null;
 
   for (let attempt = 0; attempt < 5; attempt += 1) {
-    const generatedSku = createAutomaticSku(parsedInput.data.productType);
+    const generatedSku = createAutomaticSku(parsedInput.data.detailType);
 
     const { data, error } = await supabase
       .from("products")
@@ -175,10 +192,10 @@ export async function createProductAction(
     };
   }
 
-  if (parsedAttributes.data) {
+  if (parsedDetails.data) {
     const { error: metadataError } = await supabase.from("variant_metadata").insert({
       product_id: createdProduct.id,
-      attributes: parsedAttributes.data,
+      attributes: parsedDetails.data,
     });
 
     if (metadataError) {
@@ -186,7 +203,7 @@ export async function createProductAction(
 
       return {
         status: "error",
-        message: `O produto foi revertido porque os metadados nao puderam ser salvos: ${metadataError.message}`,
+        message: `O produto foi revertido porque os detalhes nao puderam ser salvos: ${metadataError.message}`,
       };
     }
   }
@@ -216,18 +233,15 @@ export async function updateProductAction(
     };
   }
 
-  const parsedAttributes = parseVariantAttributes(
-    parsedInput.data.attributesJson,
-    parsedInput.data.productType,
-  );
+  const parsedDetails = buildProductDetails({
+    detailType: parsedInput.data.detailType,
+    detailVolume: parsedInput.data.detailVolume,
+  });
 
-  if (parsedAttributes.error) {
+  if (parsedDetails.error) {
     return {
       status: "error",
-      message: parsedAttributes.error,
-      fieldErrors: {
-        attributesJson: [parsedAttributes.error],
-      },
+      message: parsedDetails.error,
     };
   }
 
@@ -279,7 +293,7 @@ export async function updateProductAction(
 
   const metadataResult = await upsertProductMetadata(
     parsedInput.data.productId,
-    parsedAttributes.data ?? { tipo_produto: parsedInput.data.productType },
+    parsedDetails.data,
   );
 
   if (metadataResult.error) {

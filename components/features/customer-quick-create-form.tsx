@@ -20,7 +20,7 @@ function CustomerQuickCreateFormFields({
   title,
 }: {
   className?: string;
-  description: string;
+  description?: string;
   formAction: (payload: FormData) => void;
   pending: boolean;
   state: CustomerCreateActionState;
@@ -32,13 +32,13 @@ function CustomerQuickCreateFormFields({
       key={state.status === "success" ? state.message : "customer-quick-create-form"}
       action={formAction}
       className={cn(
-        "grid gap-3 rounded-[1.5rem] border border-white/55 bg-white/72 p-4 shadow-sm",
+        "grid gap-3 rounded-[1.5rem] border border-white/55 bg-white/72 p-4 shadow-card-down",
         className,
       )}
     >
       <div className="space-y-1">
         <h3 className="text-sm font-semibold text-zinc-950">{title}</h3>
-        <p className="text-xs leading-5 text-zinc-600">{description}</p>
+        {description ? <p className="text-xs leading-5 text-zinc-600">{description}</p> : null}
       </div>
 
       <label className="grid gap-2 text-sm text-zinc-700">
@@ -82,7 +82,7 @@ type CustomerQuickCreateFormProps = {
 
 export function CustomerQuickCreateForm({
   className,
-  description = "Salve um cliente pelo nome para reutilizar nas proximas vendas.",
+  description,
   submitLabel = "Cadastrar cliente",
   title = "Cadastro rapido de cliente",
 }: CustomerQuickCreateFormProps = {}) {

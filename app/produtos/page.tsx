@@ -18,7 +18,6 @@ export default async function ProductsPage() {
       <PageHeader
         badge="Catalogo"
         title="Produtos e estoque"
-        description="Cadastre novos itens, refine os metadados e mantenha o inventario visualmente organizado."
       />
       <ProductsWorkspace products={products} />
     </>

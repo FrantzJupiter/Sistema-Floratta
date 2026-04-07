@@ -1,17 +1,10 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useMemo, useState } from "react";
 
 import { createProductAction } from "@/app/actions/products";
 import { Button } from "@/components/ui/button";
-import {
-  createAutomaticSku,
-  defaultProductType,
-  getProductTypeDefinition,
-  productTypeDefinitions,
-  productTypeValues,
-  type ProductType,
-} from "@/lib/products/catalog";
+import { createAutomaticSku } from "@/lib/products/catalog";
 import {
   initialProductActionState,
   type ProductActionState,
@@ -38,6 +31,7 @@ function FormField({
   min,
   defaultValue,
   errors,
+  list,
 }: {
   label: string;
   name: string;
@@ -47,6 +41,7 @@ function FormField({
   min?: string;
   defaultValue?: string;
   errors?: string[];
+  list?: string;
 }) {
   return (
     <label className="grid gap-2 text-sm text-zinc-700">
@@ -56,6 +51,7 @@ function FormField({
         type={type}
         step={step}
         min={min}
+        list={list}
         defaultValue={defaultValue}
         placeholder={placeholder}
         className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
@@ -66,13 +62,9 @@ function FormField({
 }
 
 function ProductIdPreview({
-  actionLabel,
-  helperText,
   onRegenerate,
   value,
 }: {
-  actionLabel: string;
-  helperText?: string;
   onRegenerate: () => void;
   value: string;
 }) {
@@ -91,9 +83,8 @@ function ProductIdPreview({
         className="h-8 justify-start rounded-xl px-2 text-xs text-rose-900 hover:bg-rose-100"
         onClick={onRegenerate}
       >
-        {actionLabel}
+        Gerar outro
       </Button>
-      {helperText ? <p className="text-xs leading-5 text-zinc-500">{helperText}</p> : null}
     </div>
   );
 }
@@ -102,68 +93,33 @@ type ProductCreateFormFieldsProps = {
   state: ProductActionState;
   formAction: (payload: FormData) => void;
   pending: boolean;
+  typeOptions: string[];
 };
 
 function ProductCreateFormFields({
   state,
   formAction,
   pending,
+  typeOptions,
 }: ProductCreateFormFieldsProps) {
-  const [productType, setProductType] = useState<ProductType>(defaultProductType);
-  const [skuPreview, setSkuPreview] = useState(() => createAutomaticSku(defaultProductType));
-  const [metadataValues, setMetadataValues] = useState<Record<string, string>>({});
+  const [detailType, setDetailType] = useState("");
+  const [skuPreview, setSkuPreview] = useState(() => createAutomaticSku(""));
+  const typeListId = useMemo(() => "product-detail-type-options", []);
 
-  const productTypeDefinition = getProductTypeDefinition(productType);
-
-  function handleProductTypeChange(nextType: ProductType) {
-    setProductType(nextType);
-    setMetadataValues({});
+  function handleDetailTypeChange(nextType: string) {
+    setDetailType(nextType);
     setSkuPreview(createAutomaticSku(nextType));
   }
 
-  const attributesJson = JSON.stringify(
-    productTypeDefinition.fields.reduce<Record<string, string | number>>((accumulator, field) => {
-      const rawValue = metadataValues[field.key]?.trim();
-
-      if (!rawValue) {
-        return accumulator;
-      }
-
-      accumulator[field.key] =
-        field.type === "number" && !Number.isNaN(Number(rawValue))
-          ? Number(rawValue)
-          : rawValue;
-
-      return accumulator;
-    }, {}),
-  );
-
   return (
     <form action={formAction} className="grid gap-5">
-      <input type="hidden" name="productType" value={productType} />
-      <input type="hidden" name="attributesJson" value={attributesJson} />
-
-      <div className="grid gap-2 text-sm text-zinc-700">
-        <label htmlFor="productType" className="font-medium">
-          Tipo de produto
-        </label>
-        <select
-          id="productType"
-          value={productType}
-          onChange={(event) => handleProductTypeChange(event.target.value as ProductType)}
-          className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
-        >
-          {productTypeValues.map((type) => (
-            <option key={type} value={type}>
-              {productTypeDefinitions[type].label}
-            </option>
+      {typeOptions.length ? (
+        <datalist id={typeListId}>
+          {typeOptions.map((typeOption) => (
+            <option key={typeOption} value={typeOption} />
           ))}
-        </select>
-        <FieldError errors={state.fieldErrors?.productType} />
-        <p className="text-xs leading-5 text-zinc-500">
-          {productTypeDefinition.description}
-        </p>
-      </div>
+        </datalist>
+      ) : null}
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_220px]">
         <FormField
@@ -173,9 +129,7 @@ function ProductCreateFormFields({
           errors={state.fieldErrors?.name}
         />
         <ProductIdPreview
-          actionLabel="Gerar outro"
-          helperText="Identificador automatico do item."
-          onRegenerate={() => setSkuPreview(createAutomaticSku(productType))}
+          onRegenerate={() => setSkuPreview(createAutomaticSku(detailType))}
           value={skuPreview}
         />
       </div>
@@ -212,58 +166,29 @@ function ProductCreateFormFields({
 
       <section className="grid gap-4 rounded-[1.5rem] border border-white/50 bg-white/50 p-4">
         <div className="space-y-1">
-          <h3 className="text-sm font-semibold text-zinc-900">Metadados guiados</h3>
-          <p className="text-xs leading-5 text-zinc-500">
-            Selecione o tipo e preencha os campos sugeridos. O sistema monta os
-            metadados sozinho e salva no formato flexivel do banco.
-          </p>
-          <FieldError errors={state.fieldErrors?.attributesJson} />
+          <h3 className="text-sm font-semibold text-zinc-900">Detalhes do produto</h3>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          {productTypeDefinition.fields.map((field) => (
-            <label key={field.key} className="grid gap-2 text-sm text-zinc-700">
-              <span className="font-medium">
-                {field.label}
-                {field.required ? " *" : ""}
-              </span>
+          <label className="grid gap-2 text-sm text-zinc-700">
+            <span className="font-medium">Tipo</span>
+            <input
+              name="detailType"
+              list={typeOptions.length ? typeListId : undefined}
+              value={detailType}
+              placeholder="Selecione ou digite um novo tipo"
+              onChange={(event) => handleDetailTypeChange(event.target.value)}
+              className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+            />
+            <FieldError errors={state.fieldErrors?.detailType} />
+          </label>
 
-              {field.type === "select" ? (
-                <select
-                  value={metadataValues[field.key] ?? ""}
-                  onChange={(event) =>
-                    setMetadataValues((current) => ({
-                      ...current,
-                      [field.key]: event.target.value,
-                    }))
-                  }
-                  className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
-                >
-                  <option value="">Selecione...</option>
-                  {field.options?.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <input
-                  type={field.type}
-                  value={metadataValues[field.key] ?? ""}
-                  min={field.type === "number" ? "0" : undefined}
-                  step={field.type === "number" ? "1" : undefined}
-                  placeholder={field.placeholder}
-                  onChange={(event) =>
-                    setMetadataValues((current) => ({
-                      ...current,
-                      [field.key]: event.target.value,
-                    }))
-                  }
-                  className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
-                />
-              )}
-            </label>
-          ))}
+          <FormField
+            label="Volume"
+            name="detailVolume"
+            placeholder="Ex.: 100 ml"
+            errors={state.fieldErrors?.detailVolume}
+          />
         </div>
       </section>
 
@@ -292,7 +217,11 @@ function ProductCreateFormFields({
   );
 }
 
-export function ProductCreateForm() {
+type ProductCreateFormProps = {
+  typeOptions?: string[];
+};
+
+export function ProductCreateForm({ typeOptions = [] }: ProductCreateFormProps) {
   const [state, formAction, pending] = useActionState<ProductActionState, FormData>(
     createProductAction,
     initialProductActionState,
@@ -304,6 +233,7 @@ export function ProductCreateForm() {
       state={state}
       formAction={formAction}
       pending={pending}
+      typeOptions={typeOptions}
     />
   );
 }

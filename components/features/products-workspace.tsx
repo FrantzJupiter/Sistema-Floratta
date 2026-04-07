@@ -5,56 +5,43 @@ import { useDeferredValue, useState } from "react";
 import { ProductCatalogCard } from "@/components/features/product-catalog-card";
 import { ProductCreateForm } from "@/components/features/product-create-form";
 import {
-  getProductTypeFromAttributes,
-  getProductTypeLabel,
-  productTypeDefinitions,
-  productTypeValues,
-  type ProductType,
+  getDetailType,
+  getProductDetailEntries,
+  getRegisteredDetailTypes,
 } from "@/lib/products/catalog";
-import { cn } from "@/lib/utils";
 import type { CatalogProduct } from "@/services/products";
 
 type ProductsWorkspaceProps = {
   products: CatalogProduct[];
   title?: string;
-  description?: string;
   withCreateForm?: boolean;
 };
 
 function getMetadataSearchText(product: CatalogProduct) {
-  if (
-    !product.variantAttributes ||
-    typeof product.variantAttributes !== "object" ||
-    Array.isArray(product.variantAttributes)
-  ) {
-    return "";
-  }
-
-  return Object.entries(product.variantAttributes)
-    .filter(([key]) => key !== "tipo_produto")
-    .map(([key, value]) => `${key} ${String(value)}`)
+  return getProductDetailEntries(product.variantAttributes)
+    .map(({ key, value }) => `${key} ${String(value)}`)
     .join(" ");
 }
 
 export function ProductsWorkspace({
   products,
   title = "Produtos e estoque",
-  description = "Cadastre novos itens e mantenha o catalogo organizado com pesquisa rapida e edicao inline.",
   withCreateForm = true,
 }: ProductsWorkspaceProps) {
   const [query, setQuery] = useState("");
-  const [productType, setProductType] = useState<"todos" | ProductType>("todos");
+  const [productType, setProductType] = useState("todos");
   const [stockFilter, setStockFilter] = useState<"todos" | "baixo" | "zerado">("todos");
   const deferredQuery = useDeferredValue(query);
   const normalizedQuery = deferredQuery.trim().toLowerCase();
+  const typeOptions = getRegisteredDetailTypes(products);
 
   const filteredProducts = products.filter((product) => {
-    const detectedType = getProductTypeFromAttributes(product.variantAttributes);
+    const detectedType = getDetailType(product.variantAttributes);
     const quantity = product.inventory?.quantity ?? 0;
     const searchValue = [
       product.name,
       product.sku,
-      getProductTypeLabel(detectedType),
+      detectedType ?? "",
       getMetadataSearchText(product),
     ]
       .join(" ")
@@ -79,57 +66,48 @@ export function ProductsWorkspace({
   const productsWithoutImage = products.filter((product) => !product.image_url).length;
 
   return (
-    <div className="grid items-start gap-6">
-      <header className="flex flex-col gap-6 rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-[0_24px_70px_-45px_rgba(90,24,57,0.55)] backdrop-blur-xl xl:flex-row xl:items-end xl:justify-between">
-        <div className="space-y-2">
-          <h2 className="text-2xl font-semibold text-zinc-950">{title}</h2>
-          <p className="max-w-2xl text-sm leading-6 text-zinc-600">{description}</p>
-        </div>
-
-        <div className="grid gap-3 sm:grid-cols-3">
-          <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-sm">
-            <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Cadastrados</p>
-            <p className="mt-2 text-2xl font-semibold text-zinc-950">{products.length}</p>
-          </div>
-          <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-sm">
-            <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Estoque baixo</p>
-            <p className="mt-2 text-2xl font-semibold text-zinc-950">{lowStockCount}</p>
-          </div>
-          <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-sm">
-            <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Sem foto</p>
-            <p className="mt-2 text-2xl font-semibold text-zinc-950">{productsWithoutImage}</p>
-          </div>
-        </div>
-      </header>
-
-      <div
-        className={cn(
-          "grid gap-6",
-          withCreateForm && "xl:grid-cols-[minmax(0,360px)_minmax(0,1fr)]",
-        )}
-      >
+    <div className="flex flex-col gap-8">
         {withCreateForm ? (
-          <aside className="min-w-0 xl:sticky xl:top-24 xl:self-start">
-            <div className="rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-[0_24px_70px_-45px_rgba(90,24,57,0.55)] backdrop-blur-xl">
+          <aside className="min-w-0 w-full">
+            <div className="rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-panel-down backdrop-blur-xl">
               <div className="mb-5 space-y-2">
                 <h3 className="text-xl font-semibold text-zinc-950">Cadastrar produto</h3>
-                <p className="text-sm leading-6 text-zinc-600">
-                  Registre novos itens com ID automatico, estoque inicial e metadados guiados.
-                </p>
               </div>
-              <ProductCreateForm />
+              <ProductCreateForm typeOptions={typeOptions} />
             </div>
           </aside>
         ) : null}
 
-        <section className="flex min-w-0 flex-col gap-4 rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-[0_24px_70px_-45px_rgba(90,24,57,0.55)] backdrop-blur-xl">
-          <div className="grid gap-3 rounded-[1.75rem] border border-white/55 bg-white/75 p-4 shadow-sm md:grid-cols-3 xl:grid-cols-[minmax(0,1.2fr)_180px_180px]">
+        <section className="flex min-w-0 flex-col gap-6 rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-panel-down backdrop-blur-xl">
+          <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+            <div className="space-y-1">
+              <h2 className="text-2xl font-semibold text-zinc-950">{title}</h2>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-3">
+              <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-card-down">
+                <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Cadastrados</p>
+                <p className="mt-2 text-2xl font-semibold text-zinc-950">{products.length}</p>
+              </div>
+              <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-card-down">
+                <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Estoque baixo</p>
+                <p className="mt-2 text-2xl font-semibold text-zinc-950">{lowStockCount}</p>
+              </div>
+              <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-card-down">
+                <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Sem foto</p>
+                <p className="mt-2 text-2xl font-semibold text-zinc-950">{productsWithoutImage}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-4">
+            <div className="grid gap-3 rounded-[1.75rem] border border-white/60 bg-white/80 p-4 shadow-card-down backdrop-blur-xl md:grid-cols-3 xl:grid-cols-[minmax(0,1.2fr)_180px_180px]">
             <label className="grid gap-2 text-sm text-zinc-700">
               <span className="font-medium">Buscar no catalogo</span>
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Nome, ID do produto, tipo ou metadado"
+                placeholder="Nome, ID do produto, tipo ou detalhe"
                 className="h-11 rounded-2xl border border-white/45 bg-white/80 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
               />
             </label>
@@ -138,15 +116,13 @@ export function ProductsWorkspace({
               <span className="font-medium">Tipo</span>
               <select
                 value={productType}
-                onChange={(event) =>
-                  setProductType(event.target.value as "todos" | ProductType)
-                }
+                onChange={(event) => setProductType(event.target.value)}
                 className="h-11 rounded-2xl border border-white/45 bg-white/80 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
               >
                 <option value="todos">Todos os tipos</option>
-                {productTypeValues.map((type) => (
-                  <option key={type} value={type}>
-                    {productTypeDefinitions[type].label}
+                {typeOptions.map((typeOption) => (
+                  <option key={typeOption} value={typeOption}>
+                    {typeOption}
                   </option>
                 ))}
               </select>
@@ -180,12 +156,16 @@ export function ProductsWorkspace({
           ) : (
             <div className="grid gap-4 2xl:grid-cols-2">
               {filteredProducts.map((product) => (
-                <ProductCatalogCard key={product.id} product={product} />
+                <ProductCatalogCard
+                  key={product.id}
+                  product={product}
+                  typeOptions={typeOptions}
+                />
               ))}
             </div>
           )}
+          </div>
         </section>
-      </div>
     </div>
   );
 }

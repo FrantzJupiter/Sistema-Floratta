@@ -19,7 +19,6 @@ import type { RegisteredCustomer } from "@/services/customers";
 type CustomersWorkspaceProps = {
   customers: RegisteredCustomer[];
   title?: string;
-  description?: string;
 };
 
 function getCustomerInitials(name: string) {
@@ -43,7 +42,7 @@ function CustomerCard({ customer }: { customer: RegisteredCustomer }) {
   >(deleteCustomerAction, initialCustomerDeleteActionState);
 
   return (
-    <article className="rounded-[1.75rem] border border-white/55 bg-white/78 p-5 shadow-sm">
+    <article className="rounded-[1.75rem] border border-white/55 bg-white/78 p-5 shadow-card-down">
       <div className="flex flex-col gap-4">
         <div className="flex items-start gap-4">
           <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.2rem] bg-[linear-gradient(145deg,_rgba(122,31,75,0.92),_rgba(225,131,162,0.88))] text-sm font-semibold uppercase tracking-[0.18em] text-white shadow-lg shadow-rose-200/70">
@@ -104,7 +103,7 @@ function CustomerCard({ customer }: { customer: RegisteredCustomer }) {
           <form
             key={updateState.status === "success" ? updateState.message : customer.id}
             action={updateFormAction}
-            className="grid gap-4 rounded-[1.5rem] border border-white/55 bg-white/72 p-4 shadow-sm"
+            className="grid gap-4 rounded-[1.5rem] border border-white/55 bg-white/72 p-4 shadow-card-down"
           >
             <input type="hidden" name="customerId" value={customer.id} />
 
@@ -148,7 +147,6 @@ function CustomerCard({ customer }: { customer: RegisteredCustomer }) {
 export function CustomersWorkspace({
   customers,
   title = "Clientes",
-  description = "Procure rapidamente, cadastre novos nomes e mantenha a carteira da loja organizada para as proximas vendas.",
 }: CustomersWorkspaceProps) {
   const [query, setQuery] = useState("");
   const [currentTime] = useState(() => Date.now());
@@ -166,22 +164,21 @@ export function CustomersWorkspace({
 
   return (
     <div className="grid items-start gap-6">
-      <header className="flex flex-col gap-6 rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-[0_24px_70px_-45px_rgba(90,24,57,0.55)] backdrop-blur-xl xl:flex-row xl:items-end xl:justify-between">
+      <header className="flex flex-col gap-6 rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-panel-down backdrop-blur-xl xl:flex-row xl:items-end xl:justify-between">
         <div className="space-y-2">
           <h2 className="text-2xl font-semibold text-zinc-950">{title}</h2>
-          <p className="max-w-2xl text-sm leading-6 text-zinc-600">{description}</p>
         </div>
 
         <div className="grid gap-3 sm:grid-cols-3">
-          <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-sm">
+          <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-card-down">
             <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Cadastrados</p>
             <p className="mt-2 text-2xl font-semibold text-zinc-950">{customers.length}</p>
           </div>
-          <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-sm">
+          <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-card-down">
             <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Ultimos 7 dias</p>
             <p className="mt-2 text-2xl font-semibold text-zinc-950">{recentCustomers}</p>
           </div>
-          <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-sm">
+          <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-card-down">
             <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Busca atual</p>
             <p className="mt-2 text-2xl font-semibold text-zinc-950">{filteredCustomers.length}</p>
           </div>
@@ -189,10 +186,9 @@ export function CustomersWorkspace({
       </header>
 
       <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
-        <aside className="min-w-0 xl:sticky xl:top-24 xl:self-start">
-          <div className="grid gap-4 rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-[0_24px_70px_-45px_rgba(90,24,57,0.55)] backdrop-blur-xl">
+        <aside className="min-w-0">
+          <div className="grid gap-4 rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-panel-down backdrop-blur-xl">
             <CustomerQuickCreateForm
-              description="Cadastre um novo cliente com poucos toques e reutilize no checkout."
               submitLabel="Salvar cliente"
               title="Novo cliente"
             />
@@ -200,8 +196,8 @@ export function CustomersWorkspace({
           </div>
         </aside>
 
-        <section className="flex min-w-0 flex-col gap-4 rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-[0_24px_70px_-45px_rgba(90,24,57,0.55)] backdrop-blur-xl">
-          <div className="rounded-[1.75rem] border border-white/55 bg-white/75 p-4 shadow-sm">
+        <section className="flex min-w-0 flex-col gap-4 rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-panel-down backdrop-blur-xl">
+          <div className="rounded-[1.75rem] border border-white/55 bg-white/75 p-4 shadow-card-down">
             <label className="grid gap-2 text-sm text-zinc-700">
               <span className="font-medium">Buscar cliente</span>
               <input

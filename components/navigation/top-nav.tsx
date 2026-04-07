@@ -49,7 +49,7 @@ export function TopNav() {
 
   return (
     <header className="sticky top-0 z-40 px-4 pt-4 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl rounded-[2rem] border border-white/50 bg-white/70 px-4 py-4 shadow-[0_26px_70px_-44px_rgba(90,24,57,0.55)] backdrop-blur-xl sm:px-5">
+      <div className="mx-auto max-w-7xl rounded-[2rem] border border-white/50 bg-white/70 px-4 py-4 shadow-panel-down backdrop-blur-xl sm:px-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <Link href="/" className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[linear-gradient(145deg,_rgba(122,31,75,0.92),_rgba(225,131,162,0.88))] text-sm font-semibold uppercase tracking-[0.22em] text-white shadow-lg shadow-rose-200/70">

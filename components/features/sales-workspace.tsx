@@ -6,13 +6,10 @@ import { useDeferredValue, useState } from "react";
 import { AddToCartButton } from "@/components/features/add-to-cart-button";
 import { CartPanel } from "@/components/features/cart-panel";
 import {
-  getProductTypeFromAttributes,
-  getProductTypeLabel,
-  productTypeDefinitions,
-  productTypeValues,
-  type ProductType,
+  getDetailType,
+  getRegisteredDetailTypes,
+  getProductDetailEntries,
 } from "@/lib/products/catalog";
-import { useCartStore } from "@/lib/stores/cart-store";
 import type { RegisteredCustomer } from "@/services/customers";
 import type { CatalogProduct } from "@/services/products";
 
@@ -24,26 +21,14 @@ function formatCurrency(value: number) {
 }
 
 function getMetadataPreview(product: CatalogProduct) {
-  if (
-    !product.variantAttributes ||
-    typeof product.variantAttributes !== "object" ||
-    Array.isArray(product.variantAttributes)
-  ) {
-    return [];
-  }
-
-  return Object.entries(product.variantAttributes)
-    .filter(([key]) => key !== "tipo_produto")
-    .slice(0, 3);
+  return getProductDetailEntries(product.variantAttributes).slice(0, 3);
 }
 
 function getProductSearchText(product: CatalogProduct) {
   const metadataText = getMetadataPreview(product)
-    .map(([key, value]) => `${key} ${String(value)}`)
+    .map(({ key, value }) => `${key} ${String(value)}`)
     .join(" ");
-  const productTypeLabel = getProductTypeLabel(
-    getProductTypeFromAttributes(product.variantAttributes),
-  );
+  const productTypeLabel = getDetailType(product.variantAttributes);
 
   return [product.name, product.sku, productTypeLabel, metadataText].join(" ").toLowerCase();
 }
@@ -52,7 +37,6 @@ type SalesWorkspaceProps = {
   customers: RegisteredCustomer[];
   products: CatalogProduct[];
   title?: string;
-  description?: string;
 };
 
 export function SalesWorkspace({
@@ -61,19 +45,16 @@ export function SalesWorkspace({
   title = "Buscar no estoque",
 }: SalesWorkspaceProps) {
   const [query, setQuery] = useState("");
-  const [productType, setProductType] = useState<"todos" | ProductType>("todos");
+  const [productType, setProductType] = useState("todos");
   const [availability, setAvailability] = useState<"todos" | "disponiveis" | "zerados">(
     "disponiveis",
   );
   const deferredQuery = useDeferredValue(query);
   const normalizedQuery = deferredQuery.trim().toLowerCase();
-
-  const cartUnits = useCartStore((state) =>
-    state.items.reduce((accumulator, item) => accumulator + item.quantity, 0),
-  );
+  const typeOptions = getRegisteredDetailTypes(products);
 
   const filteredProducts = products.filter((product) => {
-    const detectedType = getProductTypeFromAttributes(product.variantAttributes);
+    const detectedType = getDetailType(product.variantAttributes);
     const quantity = product.inventory?.quantity ?? 0;
     const matchesQuery =
       !normalizedQuery || getProductSearchText(product).includes(normalizedQuery);
@@ -88,20 +69,13 @@ export function SalesWorkspace({
     return matchesQuery && matchesType && matchesAvailability;
   });
 
-  const availableProducts = products.filter((product) => (product.inventory?.quantity ?? 0) > 0)
-    .length;
-  const totalStockUnits = products.reduce(
-    (accumulator, product) => accumulator + (product.inventory?.quantity ?? 0),
-    0,
-  );
-
   return (
     <div className="flex flex-col gap-8">
       <aside className="min-w-0 w-full">
         <CartPanel customers={customers} />
       </aside>
 
-      <section className="flex min-w-0 flex-col gap-6 rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-[0_24px_70px_-45px_rgba(90,24,57,0.55)] backdrop-blur-xl">
+      <section className="flex min-w-0 flex-col gap-6 rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-panel-down backdrop-blur-xl">
         <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
           <div className="space-y-1">
             <h2 className="text-2xl font-semibold text-zinc-950">{title}</h2>
@@ -109,7 +83,7 @@ export function SalesWorkspace({
         </div>
 
         <div className="grid gap-4">
-          <div className="sticky top-24 z-10 grid gap-3 rounded-[1.75rem] border border-white/60 bg-white/80 p-4 shadow-sm backdrop-blur-xl md:grid-cols-3 xl:grid-cols-[minmax(0,1.2fr)_180px_180px]">
+          <div className="grid gap-3 rounded-[1.75rem] border border-white/60 bg-white/80 p-4 shadow-card-down backdrop-blur-xl md:grid-cols-3 xl:grid-cols-[minmax(0,1.2fr)_180px_180px]">
             <label className="grid gap-2 text-sm text-zinc-700">
               <span className="font-medium">Buscar produtos</span>
               <input
@@ -124,15 +98,13 @@ export function SalesWorkspace({
               <span className="font-medium">Tipo</span>
               <select
                 value={productType}
-                onChange={(event) =>
-                  setProductType(event.target.value as "todos" | ProductType)
-                }
+                onChange={(event) => setProductType(event.target.value)}
                 className="h-11 rounded-2xl border border-white/45 bg-white/80 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
               >
                 <option value="todos">Todos os tipos</option>
-                {productTypeValues.map((type) => (
-                  <option key={type} value={type}>
-                    {productTypeDefinitions[type].label}
+                {typeOptions.map((typeOption) => (
+                  <option key={typeOption} value={typeOption}>
+                    {typeOption}
                   </option>
                 ))}
               </select>
@@ -169,18 +141,16 @@ export function SalesWorkspace({
             <div className="grid gap-4 xl:grid-cols-2">
               {filteredProducts.map((product) => {
                 const quantity = product.inventory?.quantity ?? 0;
-                const productTypeLabel = getProductTypeLabel(
-                  getProductTypeFromAttributes(product.variantAttributes),
-                );
+                const productTypeLabel = getDetailType(product.variantAttributes) ?? "Sem tipo";
                 const metadataPreview = getMetadataPreview(product);
 
                 return (
                   <article
                     key={product.id}
-                    className="rounded-[1.75rem] border border-white/55 bg-white/78 p-5 shadow-sm"
+                    className="rounded-[1.75rem] border border-white/55 bg-white/78 p-5 shadow-card-down"
                   >
                     <div className="flex gap-4">
-                      <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-[1.5rem] border border-white/60 bg-white/85 shadow-sm">
+                      <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-[1.5rem] border border-white/60 bg-white/85 shadow-card-down">
                         {product.image_url ? (
                           <img
                             src={product.image_url}
@@ -239,12 +209,12 @@ export function SalesWorkspace({
 
                         {metadataPreview.length ? (
                           <div className="flex flex-wrap gap-2">
-                            {metadataPreview.map(([key, value]) => (
+                            {metadataPreview.map(({ key, label, value }) => (
                               <span
                                 key={key}
                                 className="rounded-full border border-white/65 bg-white/80 px-3 py-1 text-xs text-zinc-600"
                               >
-                                {key.replaceAll("_", " ")}: {String(value)}
+                                {label}: {String(value)}
                               </span>
                             ))}
                           </div>

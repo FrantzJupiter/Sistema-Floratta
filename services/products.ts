@@ -25,7 +25,7 @@ export async function listCatalogProducts() {
 
   if (metadataResult.error) {
     throw new Error(
-      `Falha ao carregar metadados dos produtos: ${metadataResult.error.message}`,
+      `Falha ao carregar detalhes dos produtos: ${metadataResult.error.message}`,
     );
   }
 
