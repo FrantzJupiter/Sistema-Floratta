@@ -130,3 +130,40 @@
     @apply font-sans;
   }
 }
+
+@media print {
+  @page {
+    size: 80mm auto;
+    margin: 0;
+  }
+
+  body {
+    background: #fff !important;
+  }
+
+  body * {
+    visibility: hidden;
+  }
+
+  .receipt-thermal-container,
+  .receipt-thermal-container * {
+    visibility: visible;
+  }
+
+  .receipt-thermal-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80mm;
+    max-width: none;
+    margin: 0;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 12px;
+  }
+
+  .receipt-print-hide {
+    display: none !important;
+  }
+}

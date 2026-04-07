@@ -9,6 +9,24 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
+      customers: {
+        Row: {
+          created_at: string;
+          id: string;
+          name: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          name: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          name?: string;
+        };
+        Relationships: [];
+      };
       inventory_levels: {
         Row: {
           last_updated: string;
@@ -104,6 +122,8 @@ export interface Database {
       transactions: {
         Row: {
           created_at: string;
+          customer_id: string | null;
+          customer_name: string | null;
           discount: number | null;
           employee_id: string | null;
           id: string;
@@ -111,6 +131,8 @@ export interface Database {
         };
         Insert: {
           created_at?: string;
+          customer_id?: string | null;
+          customer_name?: string | null;
           discount?: number | null;
           employee_id?: string | null;
           id?: string;
@@ -118,12 +140,22 @@ export interface Database {
         };
         Update: {
           created_at?: string;
+          customer_id?: string | null;
+          customer_name?: string | null;
           discount?: number | null;
           employee_id?: string | null;
           id?: string;
           total_amount?: number;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "transactions_customer_id_fkey";
+            columns: ["customer_id"];
+            isOneToOne: false;
+            referencedRelation: "customers";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       variant_metadata: {
         Row: {
@@ -160,6 +192,8 @@ export interface Database {
       process_checkout: {
         Args: {
           p_cart_items: Json;
+          p_customer_id?: string | null;
+          p_customer_name?: string | null;
           p_discount_amount?: number | null;
           p_employee_id?: string | null;
         };

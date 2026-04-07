@@ -157,7 +157,7 @@ function ProductCreateFormFields({
             </Button>
           </div>
           <p className="text-xs leading-5 text-zinc-500">
-            O codigo final e gerado automaticamente no servidor para evitar duplicidade.
+            Id do produto.
           </p>
         </div>
       </div>

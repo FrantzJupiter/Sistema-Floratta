@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import type { SaleReceipt } from "@/lib/receipts/types";
+
 export const checkoutCartItemSchema = z.object({
   productId: z.uuid("Produto invalido no carrinho."),
   quantity: z.coerce
@@ -10,6 +12,11 @@ export const checkoutCartItemSchema = z.object({
 });
 
 export const checkoutSchema = z.object({
+  customerId: z.union([z.literal(""), z.uuid("Cliente invalido na venda.")]),
+  customerName: z
+    .string()
+    .trim()
+    .max(120, "O nome do cliente deve ter no maximo 120 caracteres."),
   discount: z.coerce
     .number()
     .min(0, "O desconto nao pode ser negativo.")
@@ -20,6 +27,7 @@ export const checkoutSchema = z.object({
 export type CheckoutActionState = {
   status: "idle" | "success" | "error";
   message: string;
+  receipt?: SaleReceipt;
   transactionId?: string;
   subtotalAmount?: number;
   totalAmount?: number;

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getSaleReceipt } from "@/services/transactions";
 import {
   checkoutSchema,
   initialCheckoutActionState,
@@ -14,7 +15,7 @@ function mapCheckoutRpcError(error: { code?: string; message: string }) {
     error.code === "PGRST202" ||
     error.message.includes("Could not find the function public.process_checkout")
   ) {
-    return "A funcao atomica de checkout ainda nao foi instalada no Supabase. Rode o arquivo docs/supabase-checkout-rpc.sql no SQL Editor.";
+    return "A funcao atomica de checkout com clientes ainda nao foi instalada no Supabase. Rode o arquivo docs/supabase-customers-receipt.sql no SQL Editor.";
   }
 
   return error.message || "Nao foi possivel registrar a venda.";
@@ -47,6 +48,8 @@ export async function checkoutAction(
   }
 
   const parsedCheckout = checkoutSchema.safeParse({
+    customerId: formData.get("customerId") ?? "",
+    customerName: formData.get("customerName") ?? "",
     discount: formData.get("discount") ?? 0,
     items: parsedPayload,
   });
@@ -61,6 +64,8 @@ export async function checkoutAction(
   const supabase = createAdminClient();
   const { data, error } = await supabase.rpc("process_checkout", {
     p_cart_items: parsedCheckout.data.items,
+    p_customer_id: parsedCheckout.data.customerId || null,
+    p_customer_name: parsedCheckout.data.customerName || null,
     p_discount_amount: parsedCheckout.data.discount,
     p_employee_id: null,
   });
@@ -81,11 +86,14 @@ export async function checkoutAction(
     };
   }
 
+  const receipt = await getSaleReceipt(checkoutResult.transaction_id);
+
   revalidatePath("/");
 
   return {
     status: "success",
     message: `Venda concluida com sucesso. Pedido ${checkoutResult.transaction_id.slice(0, 8).toUpperCase()}.`,
+    receipt,
     transactionId: checkoutResult.transaction_id,
     subtotalAmount: Number(checkoutResult.subtotal_amount),
     totalAmount: Number(checkoutResult.total_amount),

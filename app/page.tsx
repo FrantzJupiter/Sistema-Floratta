@@ -3,13 +3,16 @@ import { connection } from "next/server";
 import { AddToCartButton } from "@/components/features/add-to-cart-button";
 import { CartPanel } from "@/components/features/cart-panel";
 import { ProductCreateForm } from "@/components/features/product-create-form";
+import { RecentSales } from "@/components/features/recent-sales";
 import {
   getMetadataLabel,
   getProductTypeFromAttributes,
   getProductTypeLabel,
 } from "@/lib/products/catalog";
 import type { Json } from "@/lib/supabase";
+import { listCustomers } from "@/services/customers";
 import { listCatalogProducts } from "@/services/products";
+import { listRecentSales } from "@/services/transactions";
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("pt-BR", {
@@ -47,7 +50,11 @@ function renderAttributes(attributes: Json | null) {
 export default async function Home() {
   await connection();
 
-  const products = await listCatalogProducts();
+  const [products, recentSales, customers] = await Promise.all([
+    listCatalogProducts(),
+    listRecentSales(),
+    listCustomers(),
+  ]);
   const totalUnits = products.reduce(
     (accumulator, product) => accumulator + (product.inventory?.quantity ?? 0),
     0,
@@ -55,6 +62,10 @@ export default async function Home() {
   const lowStockCount = products.filter(
     (product) => (product.inventory?.quantity ?? 0) > 0 && (product.inventory?.quantity ?? 0) <= 5,
   ).length;
+  const grossSales = recentSales.reduce(
+    (accumulator, sale) => accumulator + sale.total_amount,
+    0,
+  );
 
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(245,185,204,0.42),_transparent_34%),linear-gradient(160deg,_#fffaf6_0%,_#f6efe9_44%,_#f2e7f0_100%)] px-4 py-6 text-zinc-900 sm:px-6 lg:px-8">
@@ -74,7 +85,7 @@ export default async function Home() {
               </p>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-4">
               <div className="rounded-[1.6rem] border border-white/55 bg-white/70 px-4 py-4 shadow-sm backdrop-blur-md">
                 <p className="text-xs uppercase tracking-[0.22em] text-zinc-500">Produtos</p>
                 <p className="mt-2 text-3xl font-semibold text-zinc-950">{products.length}</p>
@@ -86,6 +97,12 @@ export default async function Home() {
               <div className="rounded-[1.6rem] border border-white/55 bg-white/70 px-4 py-4 shadow-sm backdrop-blur-md">
                 <p className="text-xs uppercase tracking-[0.22em] text-zinc-500">Estoque baixo</p>
                 <p className="mt-2 text-3xl font-semibold text-zinc-950">{lowStockCount}</p>
+              </div>
+              <div className="rounded-[1.6rem] border border-white/55 bg-white/70 px-4 py-4 shadow-sm backdrop-blur-md">
+                <p className="text-xs uppercase tracking-[0.22em] text-zinc-500">Vendas recentes</p>
+                <p className="mt-2 text-3xl font-semibold text-zinc-950">
+                  {formatCurrency(grossSales)}
+                </p>
               </div>
             </div>
           </div>
@@ -104,7 +121,7 @@ export default async function Home() {
           </aside>
 
           <div className="grid gap-6">
-            <CartPanel />
+            <CartPanel customers={customers} />
 
             <section className="rounded-[2rem] border border-white/45 bg-white/60 p-6 shadow-[0_24px_70px_-45px_rgba(90,24,57,0.55)] backdrop-blur-xl">
               <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -207,6 +224,8 @@ export default async function Home() {
             </section>
           </div>
         </section>
+
+        <RecentSales sales={recentSales} />
       </main>
     </div>
   );

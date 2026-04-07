@@ -303,6 +303,36 @@ where routine_schema = 'public'
 
 Se aparecer `process_checkout`, o app ja passa a usar o fluxo atomico automaticamente.
 
+### 9. Clientes e recibo
+
+Para habilitar cliente opcional na venda e recibo com identificacao do comprador, rode no `SQL Editor`:
+
+- `docs/supabase-customers-receipt.sql`
+
+Esse arquivo:
+
+- cria a tabela `customers`
+- adiciona `customer_id` e `customer_name` em `transactions`
+- atualiza a funcao `process_checkout` para salvar o cliente da venda
+
+Depois valide com:
+
+```sql
+select table_name
+from information_schema.tables
+where table_schema = 'public'
+  and table_name = 'customers';
+
+select column_name
+from information_schema.columns
+where table_schema = 'public'
+  and table_name = 'transactions'
+  and column_name in ('customer_id', 'customer_name')
+order by column_name;
+```
+
+Se a tabela `customers` e as duas colunas aparecerem, a etapa de recibo e clientes ja esta pronta para uso.
+
 ## Referencias
 
 - Supabase recomenda clientes separados para browser e server com `@supabase/ssr`: https://supabase.com/docs/guides/auth/server-side/nextjs
