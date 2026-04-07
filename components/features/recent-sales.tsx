@@ -1,3 +1,13 @@
+ "use client";
+
+import { useActionState } from "react";
+
+import { clearSalesHistoryAction } from "@/app/actions/transactions";
+import { Button } from "@/components/ui/button";
+import {
+  initialTransactionHistoryActionState,
+  type TransactionHistoryActionState,
+} from "@/lib/validations/transactions";
 import type { RecentSale } from "@/services/transactions";
 
 function formatCurrency(value: number) {
@@ -12,6 +22,11 @@ type RecentSalesProps = {
 };
 
 export function RecentSales({ sales }: RecentSalesProps) {
+  const [state, formAction, pending] = useActionState<TransactionHistoryActionState, FormData>(
+    clearSalesHistoryAction,
+    initialTransactionHistoryActionState,
+  );
+
   return (
     <section className="rounded-[2rem] border border-white/45 bg-white/60 p-6 shadow-[0_24px_70px_-45px_rgba(90,24,57,0.55)] backdrop-blur-xl">
       <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -21,9 +36,38 @@ export function RecentSales({ sales }: RecentSalesProps) {
             Historico imediato do caixa com totais, descontos e itens vendidos.
           </p>
         </div>
-        <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-emerald-700">
-          {sales.length} venda(s)
-        </span>
+        <div className="flex flex-col items-start gap-3 sm:items-end">
+          <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-emerald-700">
+            {sales.length} venda(s)
+          </span>
+          <form action={formAction}>
+            <Button
+              type="submit"
+              variant="outline"
+              disabled={pending || sales.length === 0}
+              className="rounded-2xl border-rose-200 bg-rose-50/70 text-rose-900 hover:bg-rose-100"
+              onClick={(event) => {
+                if (
+                  !window.confirm(
+                    "Limpar todo o historico de vendas? Essa acao remove os registros de vendas e nao pode ser desfeita.",
+                  )
+                ) {
+                  event.preventDefault();
+                }
+              }}
+            >
+              {pending ? "Limpando historico..." : "Limpar historico"}
+            </Button>
+          </form>
+        </div>
+      </div>
+
+      <div aria-live="polite" className="mb-4 min-h-6 text-sm">
+        {state.message ? (
+          <p className={state.status === "success" ? "text-emerald-700" : "text-rose-600"}>
+            {state.message}
+          </p>
+        ) : null}
       </div>
 
       {sales.length === 0 ? (
@@ -84,7 +128,7 @@ export function RecentSales({ sales }: RecentSalesProps) {
                         {item.productName ?? "Produto nao encontrado"}
                       </p>
                       <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">
-                        {item.productSku ?? item.productId ?? "Sem SKU"} | {item.quantity} x{" "}
+                        {item.productSku ?? item.productId ?? "Sem ID"} | {item.quantity} x{" "}
                         {formatCurrency(item.priceAtTime)}
                       </p>
                     </div>

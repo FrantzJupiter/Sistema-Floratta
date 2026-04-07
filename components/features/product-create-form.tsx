@@ -65,6 +65,39 @@ function FormField({
   );
 }
 
+function ProductIdPreview({
+  actionLabel,
+  helperText,
+  onRegenerate,
+  value,
+}: {
+  actionLabel: string;
+  helperText?: string;
+  onRegenerate: () => void;
+  value: string;
+}) {
+  return (
+    <div className="grid gap-2 text-sm text-zinc-700">
+      <span className="font-medium">ID do produto</span>
+      <input
+        value={value}
+        readOnly
+        className="h-10 w-full rounded-xl border border-dashed border-rose-200 bg-rose-50/80 px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-rose-900 shadow-sm outline-none"
+      />
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        className="h-8 justify-start rounded-xl px-2 text-xs text-rose-900 hover:bg-rose-100"
+        onClick={onRegenerate}
+      >
+        {actionLabel}
+      </Button>
+      {helperText ? <p className="text-xs leading-5 text-zinc-500">{helperText}</p> : null}
+    </div>
+  );
+}
+
 type ProductCreateFormFieldsProps = {
   state: ProductActionState;
   formAction: (payload: FormData) => void;
@@ -132,37 +165,22 @@ function ProductCreateFormFields({
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_220px]">
         <FormField
           label="Nome do produto"
           name="name"
           placeholder="Ex.: Perfume Floratta Blue"
           errors={state.fieldErrors?.name}
         />
-        <div className="grid gap-2 text-sm text-zinc-700">
-          <span className="font-medium">SKU automatica</span>
-          <div className="flex gap-2">
-            <input
-              value={skuPreview}
-              readOnly
-              className="h-11 flex-1 rounded-2xl border border-dashed border-rose-200 bg-rose-50/80 px-4 font-medium text-rose-900 shadow-sm outline-none"
-            />
-            <Button
-              type="button"
-              variant="outline"
-              className="rounded-2xl"
-              onClick={() => setSkuPreview(createAutomaticSku(productType))}
-            >
-              Gerar outra
-            </Button>
-          </div>
-          <p className="text-xs leading-5 text-zinc-500">
-            Id do produto.
-          </p>
-        </div>
+        <ProductIdPreview
+          actionLabel="Gerar outro"
+          helperText="Identificador automatico do item."
+          onRegenerate={() => setSkuPreview(createAutomaticSku(productType))}
+          value={skuPreview}
+        />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_180px]">
         <FormField
           label="Preco base"
           name="basePrice"

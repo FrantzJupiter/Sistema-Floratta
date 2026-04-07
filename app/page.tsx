@@ -2,14 +2,13 @@ import { connection } from "next/server";
 
 import { AddToCartButton } from "@/components/features/add-to-cart-button";
 import { CartPanel } from "@/components/features/cart-panel";
+import { ProductCatalogCard } from "@/components/features/product-catalog-card";
 import { ProductCreateForm } from "@/components/features/product-create-form";
 import { RecentSales } from "@/components/features/recent-sales";
 import {
-  getMetadataLabel,
   getProductTypeFromAttributes,
   getProductTypeLabel,
 } from "@/lib/products/catalog";
-import type { Json } from "@/lib/supabase";
 import { listCustomers } from "@/services/customers";
 import { listCatalogProducts } from "@/services/products";
 import { listRecentSales } from "@/services/transactions";
@@ -19,32 +18,6 @@ function formatCurrency(value: number) {
     style: "currency",
     currency: "BRL",
   }).format(value);
-}
-
-function renderAttributes(attributes: Json | null) {
-  if (!attributes || typeof attributes !== "object" || Array.isArray(attributes)) {
-    return null;
-  }
-
-  const productType = getProductTypeFromAttributes(attributes);
-  const entries = Object.entries(attributes).filter(([key]) => key !== "tipo_produto");
-
-  if (!entries.length) {
-    return null;
-  }
-
-  return (
-    <div className="mt-4 flex flex-wrap gap-2">
-      {entries.map(([key, value]) => (
-        <span
-          key={key}
-          className="rounded-full border border-white/60 bg-white/75 px-3 py-1 text-xs text-zinc-600"
-        >
-          {getMetadataLabel(productType, key)}: {String(value)}
-        </span>
-      ))}
-    </div>
-  );
 }
 
 export default async function Home() {
@@ -144,81 +117,23 @@ export default async function Home() {
                 </div>
               ) : (
                 <div className="grid gap-4 xl:grid-cols-2">
-                  {products.map((product) => {
-                    const quantity = product.inventory?.quantity ?? 0;
-                    const productType = getProductTypeFromAttributes(product.variantAttributes);
-                    const productTypeLabel = getProductTypeLabel(productType);
-                    const stockTone =
-                      quantity === 0
-                        ? "bg-rose-100 text-rose-700"
-                        : quantity <= 5
-                          ? "bg-amber-100 text-amber-700"
-                          : "bg-emerald-100 text-emerald-700";
-
-                    return (
-                      <article
-                        key={product.id}
-                        className="rounded-[1.75rem] border border-white/55 bg-white/72 p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-                      >
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="space-y-2">
-                            <div className="flex flex-wrap gap-2">
-                              <p className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">
-                                {product.sku}
-                              </p>
-                              <span className="rounded-full bg-rose-100 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-rose-700">
-                                {productTypeLabel}
-                              </span>
-                            </div>
-                            <h3 className="text-xl font-semibold text-zinc-950">
-                              {product.name}
-                            </h3>
-                          </div>
-                          <span
-                            className={`rounded-full px-3 py-1 text-xs font-medium ${stockTone}`}
-                          >
-                            {quantity} em estoque
-                          </span>
-                        </div>
-
-                        <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                          <div className="rounded-2xl border border-white/60 bg-white/75 p-4">
-                            <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">
-                              Preco base
-                            </p>
-                            <p className="mt-2 text-2xl font-semibold text-zinc-950">
-                              {formatCurrency(product.base_price)}
-                            </p>
-                          </div>
-                          <div className="rounded-2xl border border-white/60 bg-white/75 p-4">
-                            <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">
-                              Ultima atualizacao
-                            </p>
-                            <p className="mt-2 text-sm font-medium text-zinc-700">
-                              {product.inventory?.last_updated
-                                ? new Date(product.inventory.last_updated).toLocaleString("pt-BR")
-                                : "Sem movimentacao"}
-                            </p>
-                          </div>
-                        </div>
-
-                        {renderAttributes(product.variantAttributes)}
-
-                        <div className="mt-5">
-                          <AddToCartButton
-                            product={{
-                              productId: product.id,
-                              name: product.name,
-                              sku: product.sku,
-                              unitPrice: product.base_price,
-                              availableQuantity: quantity,
-                              productTypeLabel,
-                            }}
-                          />
-                        </div>
-                      </article>
-                    );
-                  })}
+                  {products.map((product) => (
+                    <div key={product.id} className="grid gap-4">
+                      <ProductCatalogCard product={product} />
+                      <AddToCartButton
+                        product={{
+                          productId: product.id,
+                          name: product.name,
+                          sku: product.sku,
+                          unitPrice: product.base_price,
+                          availableQuantity: product.inventory?.quantity ?? 0,
+                          productTypeLabel: getProductTypeLabel(
+                            getProductTypeFromAttributes(product.variantAttributes),
+                          ),
+                        }}
+                      />
+                    </div>
+                  ))}
                 </div>
               )}
             </section>

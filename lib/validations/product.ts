@@ -30,6 +30,12 @@ export const productCreateSchema = z.object({
 });
 
 export type ProductCreateInput = z.infer<typeof productCreateSchema>;
+export const productUpdateSchema = productCreateSchema.extend({
+  productId: z.uuid("Produto invalido para atualizacao."),
+});
+export const productDeleteSchema = z.object({
+  productId: z.uuid("Produto invalido para exclusao."),
+});
 
 export type ProductActionState = {
   status: "idle" | "success" | "error";
@@ -37,7 +43,17 @@ export type ProductActionState = {
   fieldErrors?: Record<string, string[] | undefined>;
 };
 
+export type ProductDeleteActionState = {
+  status: "idle" | "success" | "error";
+  message: string;
+};
+
 export const initialProductActionState: ProductActionState = {
+  status: "idle",
+  message: "",
+};
+
+export const initialProductDeleteActionState: ProductDeleteActionState = {
   status: "idle",
   message: "",
 };

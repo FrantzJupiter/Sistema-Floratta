@@ -62,8 +62,13 @@ export async function checkoutAction(
   }
 
   const supabase = createAdminClient();
+  const rpcCartItems = parsedCheckout.data.items.map((item) => ({
+    product_id: item.productId,
+    quantity: item.quantity,
+  }));
+
   const { data, error } = await supabase.rpc("process_checkout", {
-    p_cart_items: parsedCheckout.data.items,
+    p_cart_items: rpcCartItems,
     p_customer_id: parsedCheckout.data.customerId || null,
     p_customer_name: parsedCheckout.data.customerName || null,
     p_discount_amount: parsedCheckout.data.discount,
