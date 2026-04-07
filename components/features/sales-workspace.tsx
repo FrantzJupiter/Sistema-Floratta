@@ -58,8 +58,7 @@ type SalesWorkspaceProps = {
 export function SalesWorkspace({
   customers,
   products,
-  title = "Venda e carrinho",
-  description = "Procure produtos por nome ou ID, adicione ao carrinho e conclua a venda com recibo imediato.",
+  title = "Buscar no estoque",
 }: SalesWorkspaceProps) {
   const [query, setQuery] = useState("");
   const [productType, setProductType] = useState<"todos" | ProductType>("todos");
@@ -97,32 +96,28 @@ export function SalesWorkspace({
   );
 
   return (
-    <section className="grid gap-6 rounded-[2rem] border border-white/45 bg-white/60 p-6 shadow-[0_24px_70px_-45px_rgba(90,24,57,0.55)] backdrop-blur-xl">
-      <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
-        <div className="space-y-2">
-          <h2 className="text-2xl font-semibold text-zinc-950">{title}</h2>
-          <p className="max-w-2xl text-sm leading-6 text-zinc-600">{description}</p>
+    <div className="flex flex-col gap-8">
+      <aside className="min-w-0 w-full">
+        <CartPanel customers={customers} />
+      </aside>
+
+      <section className="flex min-w-0 flex-col gap-6 rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-[0_24px_70px_-45px_rgba(90,24,57,0.55)] backdrop-blur-xl">
+        <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-semibold text-zinc-950">{title}</h2>
+          </div>
+
+          <div className="grid gap-2 sm:grid-cols-1">
+
+            <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-sm">
+              <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">No carrinho</p>
+              <p className="mt-2 text-2xl font-semibold text-zinc-950">{cartUnits}</p>
+            </div>
+          </div>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-3">
-          <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-sm">
-            <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Disponiveis</p>
-            <p className="mt-2 text-2xl font-semibold text-zinc-950">{availableProducts}</p>
-          </div>
-          <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-sm">
-            <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Unidades</p>
-            <p className="mt-2 text-2xl font-semibold text-zinc-950">{totalStockUnits}</p>
-          </div>
-          <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-sm">
-            <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">No carrinho</p>
-            <p className="mt-2 text-2xl font-semibold text-zinc-950">{cartUnits}</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_390px]">
         <div className="grid gap-4">
-          <div className="grid gap-3 rounded-[1.75rem] border border-white/55 bg-white/75 p-4 shadow-sm lg:grid-cols-[minmax(0,1.2fr)_220px_220px]">
+          <div className="sticky top-24 z-10 grid gap-3 rounded-[1.75rem] border border-white/60 bg-white/80 p-4 shadow-sm backdrop-blur-xl md:grid-cols-3 xl:grid-cols-[minmax(0,1.2fr)_180px_180px]">
             <label className="grid gap-2 text-sm text-zinc-700">
               <span className="font-medium">Buscar produtos</span>
               <input
@@ -283,11 +278,7 @@ export function SalesWorkspace({
             </div>
           )}
         </div>
-
-        <div className="xl:sticky xl:top-28 xl:self-start">
-          <CartPanel customers={customers} />
-        </div>
-      </div>
-    </section>
+      </section>
+    </div>
   );
 }

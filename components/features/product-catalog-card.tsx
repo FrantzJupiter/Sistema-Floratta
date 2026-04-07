@@ -358,7 +358,7 @@ export function ProductCatalogCard({ product }: { product: CatalogProduct }) {
             )}
           </div>
 
-          <div className="flex flex-col gap-4">
+          <div className="flex min-w-0 flex-col gap-4">
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-2">
                 <div className="flex flex-wrap gap-2">

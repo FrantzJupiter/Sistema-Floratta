@@ -79,8 +79,8 @@ export function ProductsWorkspace({
   const productsWithoutImage = products.filter((product) => !product.image_url).length;
 
   return (
-    <section className="grid gap-6 rounded-[2rem] border border-white/45 bg-white/60 p-6 shadow-[0_24px_70px_-45px_rgba(90,24,57,0.55)] backdrop-blur-xl">
-      <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+    <div className="grid items-start gap-6">
+      <header className="flex flex-col gap-6 rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-[0_24px_70px_-45px_rgba(90,24,57,0.55)] backdrop-blur-xl xl:flex-row xl:items-end xl:justify-between">
         <div className="space-y-2">
           <h2 className="text-2xl font-semibold text-zinc-950">{title}</h2>
           <p className="max-w-2xl text-sm leading-6 text-zinc-600">{description}</p>
@@ -100,7 +100,7 @@ export function ProductsWorkspace({
             <p className="mt-2 text-2xl font-semibold text-zinc-950">{productsWithoutImage}</p>
           </div>
         </div>
-      </div>
+      </header>
 
       <div
         className={cn(
@@ -109,8 +109,8 @@ export function ProductsWorkspace({
         )}
       >
         {withCreateForm ? (
-          <aside className="xl:sticky xl:top-28 xl:self-start">
-            <div className="rounded-[1.9rem] border border-white/50 bg-white/72 p-5 shadow-sm">
+          <aside className="min-w-0 xl:sticky xl:top-24 xl:self-start">
+            <div className="rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-[0_24px_70px_-45px_rgba(90,24,57,0.55)] backdrop-blur-xl">
               <div className="mb-5 space-y-2">
                 <h3 className="text-xl font-semibold text-zinc-950">Cadastrar produto</h3>
                 <p className="text-sm leading-6 text-zinc-600">
@@ -122,8 +122,8 @@ export function ProductsWorkspace({
           </aside>
         ) : null}
 
-        <div className="grid gap-4">
-          <div className="grid gap-3 rounded-[1.75rem] border border-white/55 bg-white/75 p-4 shadow-sm lg:grid-cols-[minmax(0,1.2fr)_220px_220px]">
+        <section className="flex min-w-0 flex-col gap-4 rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-[0_24px_70px_-45px_rgba(90,24,57,0.55)] backdrop-blur-xl">
+          <div className="grid gap-3 rounded-[1.75rem] border border-white/55 bg-white/75 p-4 shadow-sm md:grid-cols-3 xl:grid-cols-[minmax(0,1.2fr)_180px_180px]">
             <label className="grid gap-2 text-sm text-zinc-700">
               <span className="font-medium">Buscar no catalogo</span>
               <input
@@ -184,8 +184,8 @@ export function ProductsWorkspace({
               ))}
             </div>
           )}
-        </div>
+        </section>
       </div>
-    </section>
+    </div>
   );
 }

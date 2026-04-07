@@ -165,8 +165,8 @@ export function CustomersWorkspace({
   }).length;
 
   return (
-    <section className="grid gap-6 rounded-[2rem] border border-white/45 bg-white/60 p-6 shadow-[0_24px_70px_-45px_rgba(90,24,57,0.55)] backdrop-blur-xl">
-      <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+    <div className="grid items-start gap-6">
+      <header className="flex flex-col gap-6 rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-[0_24px_70px_-45px_rgba(90,24,57,0.55)] backdrop-blur-xl xl:flex-row xl:items-end xl:justify-between">
         <div className="space-y-2">
           <h2 className="text-2xl font-semibold text-zinc-950">{title}</h2>
           <p className="max-w-2xl text-sm leading-6 text-zinc-600">{description}</p>
@@ -186,25 +186,21 @@ export function CustomersWorkspace({
             <p className="mt-2 text-2xl font-semibold text-zinc-950">{filteredCustomers.length}</p>
           </div>
         </div>
-      </div>
+      </header>
 
       <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
-        <aside className="grid gap-4 xl:sticky xl:top-28 xl:self-start">
-          <CustomerQuickCreateForm
-            description="Cadastre um novo cliente com poucos toques e reutilize no checkout."
-            submitLabel="Salvar cliente"
-            title="Novo cliente"
-          />
-          <div className="rounded-[1.75rem] border border-white/55 bg-white/75 p-5 shadow-sm">
-            <h3 className="text-lg font-semibold text-zinc-950">Fluxo recomendado</h3>
-            <p className="mt-2 text-sm leading-6 text-zinc-600">
-              Cadastre clientes frequentes aqui e selecione o nome no checkout para emitir
-              recibos mais completos.
-            </p>
+        <aside className="min-w-0 xl:sticky xl:top-24 xl:self-start">
+          <div className="grid gap-4 rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-[0_24px_70px_-45px_rgba(90,24,57,0.55)] backdrop-blur-xl">
+            <CustomerQuickCreateForm
+              description="Cadastre um novo cliente com poucos toques e reutilize no checkout."
+              submitLabel="Salvar cliente"
+              title="Novo cliente"
+            />
+
           </div>
         </aside>
 
-        <div className="grid gap-4">
+        <section className="flex min-w-0 flex-col gap-4 rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-[0_24px_70px_-45px_rgba(90,24,57,0.55)] backdrop-blur-xl">
           <div className="rounded-[1.75rem] border border-white/55 bg-white/75 p-4 shadow-sm">
             <label className="grid gap-2 text-sm text-zinc-700">
               <span className="font-medium">Buscar cliente</span>
@@ -233,8 +229,8 @@ export function CustomersWorkspace({
               ))}
             </div>
           )}
-        </div>
+        </section>
       </div>
-    </section>
+    </div>
   );
 }

@@ -61,9 +61,9 @@ function CartCheckoutContent({
             className="rounded-[1.5rem] border border-white/55 bg-white/75 p-4 shadow-sm"
           >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-              <div className="space-y-1">
+              <div className="min-w-0 flex-1 space-y-1">
                 <div className="flex flex-wrap gap-2">
-                  <p className="text-sm font-semibold text-zinc-950">{item.name}</p>
+                  <p className="truncate text-sm font-semibold text-zinc-950">{item.name}</p>
                   <span className="rounded-full bg-rose-100 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-rose-700">
                     {item.productTypeLabel}
                   </span>
@@ -76,7 +76,7 @@ function CartCheckoutContent({
                 </p>
               </div>
 
-              <div className="flex flex-col items-start gap-3 sm:items-end">
+              <div className="flex shrink-0 flex-col items-start gap-3 sm:items-end">
                 <p className="text-lg font-semibold text-zinc-950">
                   {formatCurrency(item.unitPrice * item.quantity)}
                 </p>
@@ -124,7 +124,7 @@ function CartCheckoutContent({
 
       <form
         action={formAction}
-        className="grid gap-4 rounded-[1.75rem] border border-white/55 bg-white/78 p-5 shadow-sm"
+        className="grid gap-4 rounded-[1.75rem] border border-white/55 bg-white/78 p-4 sm:p-5 shadow-sm"
       >
         <input
           type="hidden"
@@ -137,7 +137,7 @@ function CartCheckoutContent({
           )}
         />
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2">
           <label className="grid gap-2 text-sm text-zinc-700">
             <span className="font-medium">Cliente cadastrado</span>
             <select
@@ -171,7 +171,7 @@ function CartCheckoutContent({
           </label>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_160px]">
+        <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_150px]">
           <label className="grid gap-2 text-sm text-zinc-700">
             <span className="font-medium">Desconto da venda</span>
             <input
@@ -245,7 +245,7 @@ export function CartPanel({ customers }: CartPanelProps) {
   }, [clearCart, state.status]);
 
   return (
-    <section className="grid gap-4 rounded-[2rem] border border-white/45 bg-white/68 p-6 shadow-[0_24px_70px_-45px_rgba(90,24,57,0.55)] backdrop-blur-xl">
+    <section className="grid gap-4 rounded-[2rem] border border-white/45 bg-white/68 p-4 sm:p-6 shadow-[0_24px_70px_-45px_rgba(90,24,57,0.55)] backdrop-blur-xl">
       <div className="mb-1 flex items-start justify-between gap-4">
         <div>
           <h2 className="text-2xl font-semibold text-zinc-950">Carrinho e checkout</h2>
