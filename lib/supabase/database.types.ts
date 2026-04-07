@@ -156,7 +156,20 @@ export interface Database {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      process_checkout: {
+        Args: {
+          p_cart_items: Json;
+          p_discount_amount?: number | null;
+          p_employee_id?: string | null;
+        };
+        Returns: {
+          subtotal_amount: number;
+          total_amount: number;
+          transaction_id: string;
+        }[];
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };

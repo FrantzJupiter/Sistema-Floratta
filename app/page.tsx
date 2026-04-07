@@ -1,5 +1,7 @@
 import { connection } from "next/server";
 
+import { AddToCartButton } from "@/components/features/add-to-cart-button";
+import { CartPanel } from "@/components/features/cart-panel";
 import { ProductCreateForm } from "@/components/features/product-create-form";
 import {
   getMetadataLabel,
@@ -101,89 +103,109 @@ export default async function Home() {
             <ProductCreateForm />
           </aside>
 
-          <section className="rounded-[2rem] border border-white/45 bg-white/60 p-6 shadow-[0_24px_70px_-45px_rgba(90,24,57,0.55)] backdrop-blur-xl">
-            <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <h2 className="text-2xl font-semibold text-zinc-950">Catalogo atual</h2>
-                <p className="text-sm leading-6 text-zinc-600">
-                  Dados vindos do Supabase em tempo de requisicao para acompanhar o estoque real.
-                </p>
-              </div>
-            </div>
+          <div className="grid gap-6">
+            <CartPanel />
 
-            {products.length === 0 ? (
-              <div className="rounded-[1.75rem] border border-dashed border-rose-200 bg-rose-50/65 px-5 py-10 text-center">
-                <p className="text-base font-medium text-zinc-800">
-                  Ainda nao existem produtos cadastrados.
-                </p>
-                <p className="mt-2 text-sm text-zinc-600">
-                  Use o formulario ao lado para inserir o primeiro item do catalogo.
-                </p>
+            <section className="rounded-[2rem] border border-white/45 bg-white/60 p-6 shadow-[0_24px_70px_-45px_rgba(90,24,57,0.55)] backdrop-blur-xl">
+              <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <h2 className="text-2xl font-semibold text-zinc-950">Catalogo atual</h2>
+                  <p className="text-sm leading-6 text-zinc-600">
+                    Dados vindos do Supabase em tempo de requisicao para acompanhar o estoque real.
+                  </p>
+                </div>
               </div>
-            ) : (
-              <div className="grid gap-4 xl:grid-cols-2">
-                {products.map((product) => {
-                  const quantity = product.inventory?.quantity ?? 0;
-                  const productType = getProductTypeFromAttributes(product.variantAttributes);
-                  const stockTone =
-                    quantity === 0
-                      ? "bg-rose-100 text-rose-700"
-                      : quantity <= 5
-                        ? "bg-amber-100 text-amber-700"
-                        : "bg-emerald-100 text-emerald-700";
 
-                  return (
-                    <article
-                      key={product.id}
-                      className="rounded-[1.75rem] border border-white/55 bg-white/72 p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="space-y-2">
-                          <div className="flex flex-wrap gap-2">
-                            <p className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">
-                              {product.sku}
-                            </p>
-                            <span className="rounded-full bg-rose-100 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-rose-700">
-                              {getProductTypeLabel(productType)}
-                            </span>
+              {products.length === 0 ? (
+                <div className="rounded-[1.75rem] border border-dashed border-rose-200 bg-rose-50/65 px-5 py-10 text-center">
+                  <p className="text-base font-medium text-zinc-800">
+                    Ainda nao existem produtos cadastrados.
+                  </p>
+                  <p className="mt-2 text-sm text-zinc-600">
+                    Use o formulario ao lado para inserir o primeiro item do catalogo.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid gap-4 xl:grid-cols-2">
+                  {products.map((product) => {
+                    const quantity = product.inventory?.quantity ?? 0;
+                    const productType = getProductTypeFromAttributes(product.variantAttributes);
+                    const productTypeLabel = getProductTypeLabel(productType);
+                    const stockTone =
+                      quantity === 0
+                        ? "bg-rose-100 text-rose-700"
+                        : quantity <= 5
+                          ? "bg-amber-100 text-amber-700"
+                          : "bg-emerald-100 text-emerald-700";
+
+                    return (
+                      <article
+                        key={product.id}
+                        className="rounded-[1.75rem] border border-white/55 bg-white/72 p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="space-y-2">
+                            <div className="flex flex-wrap gap-2">
+                              <p className="text-xs font-medium uppercase tracking-[0.22em] text-zinc-500">
+                                {product.sku}
+                              </p>
+                              <span className="rounded-full bg-rose-100 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-rose-700">
+                                {productTypeLabel}
+                              </span>
+                            </div>
+                            <h3 className="text-xl font-semibold text-zinc-950">
+                              {product.name}
+                            </h3>
                           </div>
-                          <h3 className="text-xl font-semibold text-zinc-950">
-                            {product.name}
-                          </h3>
+                          <span
+                            className={`rounded-full px-3 py-1 text-xs font-medium ${stockTone}`}
+                          >
+                            {quantity} em estoque
+                          </span>
                         </div>
-                        <span className={`rounded-full px-3 py-1 text-xs font-medium ${stockTone}`}>
-                          {quantity} em estoque
-                        </span>
-                      </div>
 
-                      <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                        <div className="rounded-2xl border border-white/60 bg-white/75 p-4">
-                          <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">
-                            Preco base
-                          </p>
-                          <p className="mt-2 text-2xl font-semibold text-zinc-950">
-                            {formatCurrency(product.base_price)}
-                          </p>
+                        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                          <div className="rounded-2xl border border-white/60 bg-white/75 p-4">
+                            <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">
+                              Preco base
+                            </p>
+                            <p className="mt-2 text-2xl font-semibold text-zinc-950">
+                              {formatCurrency(product.base_price)}
+                            </p>
+                          </div>
+                          <div className="rounded-2xl border border-white/60 bg-white/75 p-4">
+                            <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">
+                              Ultima atualizacao
+                            </p>
+                            <p className="mt-2 text-sm font-medium text-zinc-700">
+                              {product.inventory?.last_updated
+                                ? new Date(product.inventory.last_updated).toLocaleString("pt-BR")
+                                : "Sem movimentacao"}
+                            </p>
+                          </div>
                         </div>
-                        <div className="rounded-2xl border border-white/60 bg-white/75 p-4">
-                          <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">
-                            Ultima atualizacao
-                          </p>
-                          <p className="mt-2 text-sm font-medium text-zinc-700">
-                            {product.inventory?.last_updated
-                              ? new Date(product.inventory.last_updated).toLocaleString("pt-BR")
-                              : "Sem movimentacao"}
-                          </p>
-                        </div>
-                      </div>
 
-                      {renderAttributes(product.variantAttributes)}
-                    </article>
-                  );
-                })}
-              </div>
-            )}
-          </section>
+                        {renderAttributes(product.variantAttributes)}
+
+                        <div className="mt-5">
+                          <AddToCartButton
+                            product={{
+                              productId: product.id,
+                              name: product.name,
+                              sku: product.sku,
+                              unitPrice: product.base_price,
+                              availableQuantity: quantity,
+                              productTypeLabel,
+                            }}
+                          />
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+          </div>
         </section>
       </main>
     </div>

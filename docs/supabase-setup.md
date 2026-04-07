@@ -277,6 +277,32 @@ Depois disso, o proximo marco no app e:
 2. criar Server Actions de cadastro e listagem
 3. substituir a home template por um catalogo real
 
+### 8. Instalar o checkout atomico no banco
+
+Agora que o app ja tem carrinho e fechamento de venda, o recomendado e mover a baixa de estoque e a gravacao da transacao para uma funcao SQL unica.
+
+No `SQL Editor`, crie uma nova query e rode o arquivo:
+
+- `docs/supabase-checkout-rpc.sql`
+
+Essa funcao:
+
+- trava as linhas de estoque no Postgres durante o fechamento
+- recalcula subtotal e total com os precos do banco
+- insere `transactions` e `transaction_items`
+- baixa o estoque dentro da mesma transacao do banco
+
+Depois de rodar, valide com:
+
+```sql
+select routine_name
+from information_schema.routines
+where routine_schema = 'public'
+  and routine_name = 'process_checkout';
+```
+
+Se aparecer `process_checkout`, o app ja passa a usar o fluxo atomico automaticamente.
+
 ## Referencias
 
 - Supabase recomenda clientes separados para browser e server com `@supabase/ssr`: https://supabase.com/docs/guides/auth/server-side/nextjs
