@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
 import { useDeferredValue, useState } from "react";
 
@@ -17,6 +18,26 @@ function formatCurrency(value: number) {
     style: "currency",
     currency: "BRL",
   }).format(value);
+}
+
+function ProductThumbnail({
+  imageUrl,
+  name,
+}: {
+  imageUrl: string | null;
+  name: string;
+}) {
+  return (
+    <div className="overflow-hidden rounded-[1.1rem] border border-white/60 bg-white/80 shadow-card-down">
+      {imageUrl ? (
+        <img src={imageUrl} alt={name} className="h-14 w-14 object-cover sm:h-16 sm:w-16" />
+      ) : (
+        <div className="flex h-14 w-14 items-center justify-center bg-[linear-gradient(160deg,_rgba(255,240,245,0.88),_rgba(247,235,255,0.92))] px-2 text-center text-[9px] font-medium uppercase tracking-[0.16em] text-zinc-500 sm:h-16 sm:w-16 sm:text-[10px]">
+          Sem foto
+        </div>
+      )}
+    </div>
+  );
 }
 
 function getMetadataPreview(product: CatalogProduct) {
@@ -149,31 +170,37 @@ export function SalesWorkspace({
                       className="rounded-[1.25rem] border border-white/55 bg-white/78 p-3 shadow-card-down"
                     >
                       <div className="flex flex-col gap-3">
-                        <div className="flex flex-wrap items-start justify-between gap-2">
-                          <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.16em] text-rose-700">
-                            {productTypeLabel}
-                          </span>
+                        <div className="flex items-start gap-3">
+                          <ProductThumbnail imageUrl={product.image_url} name={product.name} />
 
-                          <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                              quantity === 0
-                                ? "bg-rose-100 text-rose-700"
-                                : quantity <= 5
-                                  ? "bg-amber-100 text-amber-700"
-                                  : "bg-emerald-100 text-emerald-700"
-                            }`}
-                          >
-                            {quantity} em estoque
-                          </span>
-                        </div>
+                          <div className="min-w-0 flex-1 space-y-2">
+                            <div className="flex flex-wrap gap-2">
+                              <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.16em] text-rose-700">
+                                {productTypeLabel}
+                              </span>
 
-                        <div className="space-y-1.5">
-                          <h3 className="line-clamp-2 text-sm font-semibold text-zinc-950 sm:text-base">
-                            {product.name}
-                          </h3>
-                          <p className="text-lg font-semibold text-zinc-950 sm:text-xl">
-                            {formatCurrency(product.base_price)}
-                          </p>
+                              <span
+                                className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                                  quantity === 0
+                                    ? "bg-rose-100 text-rose-700"
+                                    : quantity <= 5
+                                      ? "bg-amber-100 text-amber-700"
+                                      : "bg-emerald-100 text-emerald-700"
+                                }`}
+                              >
+                                {quantity} em estoque
+                              </span>
+                            </div>
+
+                            <div className="space-y-1.5">
+                              <h3 className="line-clamp-2 text-sm font-semibold text-zinc-950 sm:text-base">
+                                {product.name}
+                              </h3>
+                              <p className="text-lg font-semibold text-zinc-950 sm:text-xl">
+                                {formatCurrency(product.base_price)}
+                              </p>
+                            </div>
+                          </div>
                         </div>
 
                         <AddToCartButton

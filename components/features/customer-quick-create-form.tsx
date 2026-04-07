@@ -51,6 +51,38 @@ function CustomerQuickCreateFormFields({
         />
       </label>
 
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="grid gap-2 text-sm text-zinc-700">
+          <span className="font-medium">CPF</span>
+          <input
+            name="cpf"
+            type="text"
+            placeholder="Opcional"
+            className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+          />
+        </label>
+
+        <label className="grid gap-2 text-sm text-zinc-700">
+          <span className="font-medium">Telefone</span>
+          <input
+            name="phone"
+            type="text"
+            placeholder="Opcional"
+            className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+          />
+        </label>
+      </div>
+
+      <label className="grid gap-2 text-sm text-zinc-700">
+        <span className="font-medium">Endereco</span>
+        <input
+          name="address"
+          type="text"
+          placeholder="Opcional"
+          className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+        />
+      </label>
+
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div aria-live="polite" className="min-h-5 text-xs">
           {state.message ? (

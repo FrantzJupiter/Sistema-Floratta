@@ -86,9 +86,6 @@ function ProductIdPreview({
       >
         Prever outro
       </Button>
-      <p className="text-xs leading-5 text-zinc-500">
-        O ID atual nao muda na edicao. O preview serve so para referencia.
-      </p>
     </div>
   );
 }

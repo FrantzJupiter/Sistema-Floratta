@@ -333,6 +333,30 @@ order by column_name;
 
 Se a tabela `customers` e as duas colunas aparecerem, a etapa de recibo e clientes ja esta pronta para uso.
 
+### 10. Campos extras de cliente
+
+Para salvar `CPF`, `telefone` e `endereco` no cadastro de clientes, rode no `SQL Editor`:
+
+- `docs/supabase-customers-contact.sql`
+
+Esse arquivo:
+
+- adiciona `cpf`, `phone` e `address` em `customers`
+- cria indices simples para `cpf` e `phone`
+
+Depois valide com:
+
+```sql
+select column_name
+from information_schema.columns
+where table_schema = 'public'
+  and table_name = 'customers'
+  and column_name in ('cpf', 'phone', 'address')
+order by column_name;
+```
+
+Se `cpf`, `phone` e `address` aparecerem, o cadastro expandido de clientes ja pode ser usado normalmente no app.
+
 ## Referencias
 
 - Supabase recomenda clientes separados para browser e server com `@supabase/ssr`: https://supabase.com/docs/guides/auth/server-side/nextjs

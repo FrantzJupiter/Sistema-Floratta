@@ -20,7 +20,29 @@ function mapCustomerError(error: { code?: string; message: string }) {
     return "A estrutura de clientes ainda nao foi instalada no Supabase. Rode o arquivo docs/supabase-customers-receipt.sql no SQL Editor.";
   }
 
+  if (
+    error.code === "42703" ||
+    error.message.includes("schema cache") ||
+    error.message.includes("column")
+  ) {
+    return "Os novos campos de cliente ainda nao foram instalados no Supabase. Rode o arquivo docs/supabase-customers-contact.sql no SQL Editor.";
+  }
+
   return error.message || "Nao foi possivel cadastrar o cliente.";
+}
+
+function getCustomerFormInput(formData: FormData) {
+  return {
+    name: formData.get("name"),
+    cpf: formData.get("cpf") ?? "",
+    address: formData.get("address") ?? "",
+    phone: formData.get("phone") ?? "",
+  };
+}
+
+function toNullableString(value: string | undefined) {
+  const trimmed = value?.trim() ?? "";
+  return trimmed.length ? trimmed : null;
 }
 
 export async function createCustomerAction(
@@ -29,9 +51,7 @@ export async function createCustomerAction(
 ): Promise<CustomerCreateActionState> {
   void prevState;
 
-  const parsedCustomer = customerSchema.safeParse({
-    name: formData.get("name"),
-  });
+  const parsedCustomer = customerSchema.safeParse(getCustomerFormInput(formData));
 
   if (!parsedCustomer.success) {
     return {
@@ -45,6 +65,9 @@ export async function createCustomerAction(
     .from("customers")
     .insert({
       name: parsedCustomer.data.name,
+      cpf: toNullableString(parsedCustomer.data.cpf),
+      address: toNullableString(parsedCustomer.data.address),
+      phone: toNullableString(parsedCustomer.data.phone),
     })
     .select("id, name")
     .single();
@@ -73,7 +96,7 @@ export async function updateCustomerAction(
 
   const parsedCustomer = customerUpdateSchema.safeParse({
     customerId: formData.get("customerId"),
-    name: formData.get("name"),
+    ...getCustomerFormInput(formData),
   });
 
   if (!parsedCustomer.success) {
@@ -88,6 +111,9 @@ export async function updateCustomerAction(
     .from("customers")
     .update({
       name: parsedCustomer.data.name,
+      cpf: toNullableString(parsedCustomer.data.cpf),
+      address: toNullableString(parsedCustomer.data.address),
+      phone: toNullableString(parsedCustomer.data.phone),
     })
     .eq("id", parsedCustomer.data.customerId)
     .select("id, name")

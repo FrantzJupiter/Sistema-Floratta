@@ -30,6 +30,12 @@ function getCustomerInitials(name: string) {
     .join("");
 }
 
+function getCustomerSearchText(customer: RegisteredCustomer) {
+  return [customer.name, customer.cpf ?? "", customer.phone ?? "", customer.address ?? ""]
+    .join(" ")
+    .toLowerCase();
+}
+
 function CustomerCard({ customer }: { customer: RegisteredCustomer }) {
   const [isEditing, setIsEditing] = useState(false);
   const [updateState, updateFormAction, updatePending] = useActionState<
@@ -54,8 +60,24 @@ function CustomerCard({ customer }: { customer: RegisteredCustomer }) {
             <p className="text-sm text-zinc-600">
               Cadastrado em {new Date(customer.created_at).toLocaleString("pt-BR")}
             </p>
+            <div className="flex flex-wrap gap-2 pt-1">
+              {customer.cpf ? (
+                <span className="rounded-full border border-white/60 bg-white/75 px-3 py-1 text-xs text-zinc-600">
+                  CPF: {customer.cpf}
+                </span>
+              ) : null}
+              {customer.phone ? (
+                <span className="rounded-full border border-white/60 bg-white/75 px-3 py-1 text-xs text-zinc-600">
+                  Tel: {customer.phone}
+                </span>
+              ) : null}
+            </div>
           </div>
         </div>
+
+        {customer.address ? (
+          <p className="text-sm leading-6 text-zinc-600">{customer.address}</p>
+        ) : null}
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-h-6 text-sm" aria-live="polite">
@@ -116,6 +138,38 @@ function CustomerCard({ customer }: { customer: RegisteredCustomer }) {
               />
             </label>
 
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="grid gap-2 text-sm text-zinc-700">
+                <span className="font-medium">CPF</span>
+                <input
+                  name="cpf"
+                  defaultValue={customer.cpf ?? ""}
+                  placeholder="Opcional"
+                  className="h-11 rounded-2xl border border-white/45 bg-white/80 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+                />
+              </label>
+
+              <label className="grid gap-2 text-sm text-zinc-700">
+                <span className="font-medium">Telefone</span>
+                <input
+                  name="phone"
+                  defaultValue={customer.phone ?? ""}
+                  placeholder="Opcional"
+                  className="h-11 rounded-2xl border border-white/45 bg-white/80 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+                />
+              </label>
+            </div>
+
+            <label className="grid gap-2 text-sm text-zinc-700">
+              <span className="font-medium">Endereco</span>
+              <input
+                name="address"
+                defaultValue={customer.address ?? ""}
+                placeholder="Opcional"
+                className="h-11 rounded-2xl border border-white/45 bg-white/80 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+              />
+            </label>
+
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div aria-live="polite" className="min-h-6 text-sm">
                 {updateState.message ? (
@@ -154,7 +208,7 @@ export function CustomersWorkspace({
   const normalizedQuery = deferredQuery.trim().toLowerCase();
 
   const filteredCustomers = customers.filter((customer) =>
-    customer.name.toLowerCase().includes(normalizedQuery),
+    getCustomerSearchText(customer).includes(normalizedQuery),
   );
   const recentCustomers = customers.filter((customer) => {
     const createdAt = new Date(customer.created_at).getTime();
@@ -203,7 +257,7 @@ export function CustomersWorkspace({
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Procure por nome"
+                placeholder="Procure por nome, CPF, telefone ou endereco"
                 className="h-11 rounded-2xl border border-white/45 bg-white/80 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
               />
             </label>

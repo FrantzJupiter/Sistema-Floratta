@@ -11,19 +11,28 @@ export interface Database {
     Tables: {
       customers: {
         Row: {
+          address: string | null;
+          cpf: string | null;
           created_at: string;
           id: string;
           name: string;
+          phone: string | null;
         };
         Insert: {
+          address?: string | null;
+          cpf?: string | null;
           created_at?: string;
           id?: string;
           name: string;
+          phone?: string | null;
         };
         Update: {
+          address?: string | null;
+          cpf?: string | null;
           created_at?: string;
           id?: string;
           name?: string;
+          phone?: string | null;
         };
         Relationships: [];
       };
