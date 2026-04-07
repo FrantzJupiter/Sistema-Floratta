@@ -1,34 +1,24 @@
-import type { MetadataRoute } from "next";
+import { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Sistema Floratta",
     short_name: "Floratta",
-    description:
-      "Sistema de varejo mobile-first para catalogo, estoque e vendas da Floratta.",
+    description: "Gerenciamento de Varejo: Perfumaria, Presentes e Semijoias",
     start_url: "/",
-    scope: "/",
-    display: "standalone",
-    orientation: "portrait",
-    background_color: "#f7efe8",
-    theme_color: "#6a1f46",
-    categories: ["shopping", "business", "productivity"],
+    display: "standalone", // Obrigatório para remover a interface do browser [cite: 98]
+    background_color: "#ffffff",
+    theme_color: "#000000",
     icons: [
       {
-        src: "/icon-192.png",
+        src: "/icon-192x192.png", // Lembre-se de colocar essas imagens na pasta /public 
         sizes: "192x192",
         type: "image/png",
       },
       {
-        src: "/icon-512.png",
+        src: "/icon-512x512.png",
         sizes: "512x512",
         type: "image/png",
-      },
-      {
-        src: "/icon-512.png",
-        sizes: "512x512",
-        type: "image/png",
-        purpose: "maskable",
       },
     ],
   };
