@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "Floratta",
     description: "Gerenciamento de Varejo: Perfumaria, Presentes e Semijoias",
     start_url: "/",
-    display: "standalone", // Obrigatório para remover a interface do browser [cite: 98]
+    display: "standalone", // Obrigatório para remover a interface do browser
     background_color: "#ffffff",
     theme_color: "#000000",
     icons: [
