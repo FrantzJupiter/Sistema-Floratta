@@ -1,7 +1,6 @@
 import { connection } from "next/server";
 
 import { ProductsWorkspace } from "@/components/features/products-workspace";
-import { PageHeader } from "@/components/layout/page-header";
 import { listCatalogProducts } from "@/services/products";
 
 export const metadata = {
@@ -13,13 +12,5 @@ export default async function ProductsPage() {
 
   const products = await listCatalogProducts();
 
-  return (
-    <>
-      <PageHeader
-        badge="Catalogo"
-        title="Produtos e estoque"
-      />
-      <ProductsWorkspace products={products} />
-    </>
-  );
+  return <ProductsWorkspace products={products} />;
 }

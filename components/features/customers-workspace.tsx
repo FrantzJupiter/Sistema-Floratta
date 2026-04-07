@@ -204,6 +204,7 @@ export function CustomersWorkspace({
 }: CustomersWorkspaceProps) {
   const [query, setQuery] = useState("");
   const [currentTime] = useState(() => Date.now());
+  const [recentWindow, setRecentWindow] = useState<"7d" | "30d">("7d");
   const deferredQuery = useDeferredValue(query);
   const normalizedQuery = deferredQuery.trim().toLowerCase();
 
@@ -212,75 +213,74 @@ export function CustomersWorkspace({
   );
   const recentCustomers = customers.filter((customer) => {
     const createdAt = new Date(customer.created_at).getTime();
-    const sevenDaysAgo = currentTime - 7 * 24 * 60 * 60 * 1000;
-    return createdAt >= sevenDaysAgo;
+    const windowInDays = recentWindow === "7d" ? 7 : 30;
+    const threshold = currentTime - windowInDays * 24 * 60 * 60 * 1000;
+    return createdAt >= threshold;
   }).length;
 
   return (
     <div className="grid items-start gap-6">
-      <header className="flex flex-col gap-6 rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-panel-down backdrop-blur-xl xl:flex-row xl:items-end xl:justify-between">
-        <div className="space-y-2">
+      <aside className="min-w-0">
+        <div className="grid gap-4 rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-panel-down backdrop-blur-xl">
+          <CustomerQuickCreateForm submitLabel="Salvar cliente" title="Novo cliente" />
+        </div>
+      </aside>
+
+      <section className="flex min-w-0 flex-col gap-4 rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-panel-down backdrop-blur-xl">
+        <div className="space-y-4">
           <h2 className="text-2xl font-semibold text-zinc-950">{title}</h2>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-card-down">
+              <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Cadastrados</p>
+              <p className="mt-2 text-2xl font-semibold text-zinc-950">{customers.length}</p>
+            </div>
+            <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-card-down">
+              <div className="flex items-start justify-between gap-2">
+                <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Cadastros</p>
+                <select
+                  value={recentWindow}
+                  onChange={(event) => setRecentWindow(event.target.value as "7d" | "30d")}
+                  className="h-7 max-w-20 rounded-lg border border-white/45 bg-white/80 px-2 text-[10px] font-medium text-zinc-700 shadow-sm outline-none transition focus:border-rose-300 focus:ring-3 focus:ring-rose-100"
+                >
+                  <option value="7d">7 dias</option>
+                  <option value="30d">mes</option>
+                </select>
+              </div>
+              <p className="mt-2 text-2xl font-semibold text-zinc-950">{recentCustomers}</p>
+            </div>
+          </div>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-3">
-          <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-card-down">
-            <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Cadastrados</p>
-            <p className="mt-2 text-2xl font-semibold text-zinc-950">{customers.length}</p>
-          </div>
-          <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-card-down">
-            <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Ultimos 7 dias</p>
-            <p className="mt-2 text-2xl font-semibold text-zinc-950">{recentCustomers}</p>
-          </div>
-          <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-card-down">
-            <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Busca atual</p>
-            <p className="mt-2 text-2xl font-semibold text-zinc-950">{filteredCustomers.length}</p>
-          </div>
-        </div>
-      </header>
-
-      <div className="grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
-        <aside className="min-w-0">
-          <div className="grid gap-4 rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-panel-down backdrop-blur-xl">
-            <CustomerQuickCreateForm
-              submitLabel="Salvar cliente"
-              title="Novo cliente"
+        <div className="rounded-[1.75rem] border border-white/55 bg-white/75 p-4 shadow-card-down">
+          <label className="grid gap-2 text-sm text-zinc-700">
+            <span className="font-medium">Buscar cliente</span>
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Procure por nome, CPF, telefone ou endereco"
+              className="h-11 rounded-2xl border border-white/45 bg-white/80 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
             />
+          </label>
+        </div>
 
+        {filteredCustomers.length === 0 ? (
+          <div className="rounded-[1.75rem] border border-dashed border-rose-200 bg-rose-50/65 px-5 py-10 text-center">
+            <p className="text-base font-medium text-zinc-800">
+              Nenhum cliente foi encontrado.
+            </p>
+            <p className="mt-2 text-sm text-zinc-600">
+              Cadastre um novo nome ou ajuste a pesquisa para continuar.
+            </p>
           </div>
-        </aside>
-
-        <section className="flex min-w-0 flex-col gap-4 rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-panel-down backdrop-blur-xl">
-          <div className="rounded-[1.75rem] border border-white/55 bg-white/75 p-4 shadow-card-down">
-            <label className="grid gap-2 text-sm text-zinc-700">
-              <span className="font-medium">Buscar cliente</span>
-              <input
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Procure por nome, CPF, telefone ou endereco"
-                className="h-11 rounded-2xl border border-white/45 bg-white/80 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
-              />
-            </label>
+        ) : (
+          <div className="grid gap-4 2xl:grid-cols-2">
+            {filteredCustomers.map((customer) => (
+              <CustomerCard key={customer.id} customer={customer} />
+            ))}
           </div>
-
-          {filteredCustomers.length === 0 ? (
-            <div className="rounded-[1.75rem] border border-dashed border-rose-200 bg-rose-50/65 px-5 py-10 text-center">
-              <p className="text-base font-medium text-zinc-800">
-                Nenhum cliente foi encontrado.
-              </p>
-              <p className="mt-2 text-sm text-zinc-600">
-                Cadastre um novo nome ou ajuste a pesquisa para continuar.
-              </p>
-            </div>
-          ) : (
-            <div className="grid gap-4 2xl:grid-cols-2">
-              {filteredCustomers.map((customer) => (
-                <CustomerCard key={customer.id} customer={customer} />
-              ))}
-            </div>
-          )}
-        </section>
-      </div>
+        )}
+      </section>
     </div>
   );
 }

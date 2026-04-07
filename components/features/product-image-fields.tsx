@@ -5,6 +5,11 @@ import { useEffect, useId, useRef, useState, type ChangeEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 
+const MAX_CLIENT_IMAGE_BYTES = 900 * 1024;
+const INITIAL_MAX_IMAGE_DIMENSION = 1280;
+const MIN_IMAGE_DIMENSION = 480;
+const IMAGE_QUALITY_STEPS = [0.82, 0.72, 0.62, 0.52, 0.42, 0.34];
+
 function FieldError({ errors }: { errors?: string[] }) {
   if (!errors?.length) {
     return null;
@@ -13,11 +18,144 @@ function FieldError({ errors }: { errors?: string[] }) {
   return <p className="text-sm text-rose-600">{errors[0]}</p>;
 }
 
+function formatFileSize(size: number) {
+  if (size >= 1024 * 1024) {
+    return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  return `${Math.round(size / 1024)} KB`;
+}
+
+function loadImageFromFile(file: File) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const objectUrl = URL.createObjectURL(file);
+    const image = new Image();
+
+    image.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(image);
+    };
+
+    image.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      reject(new Error("Nao foi possivel carregar a imagem selecionada."));
+    };
+
+    image.src = objectUrl;
+  });
+}
+
+function canvasToBlob(canvas: HTMLCanvasElement, quality: number) {
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          reject(new Error("Nao foi possivel otimizar a imagem."));
+          return;
+        }
+
+        resolve(blob);
+      },
+      "image/jpeg",
+      quality,
+    );
+  });
+}
+
+async function optimizeImageForUpload(file: File) {
+  const image = await loadImageFromFile(file);
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    return {
+      file: null,
+      error: "Nao foi possivel preparar a imagem para upload.",
+    } as const;
+  }
+
+  const cropSize = Math.min(image.width, image.height);
+  const sourceX = Math.max(0, Math.floor((image.width - cropSize) / 2));
+  const sourceY = Math.max(0, Math.floor((image.height - cropSize) / 2));
+  const startingDimension = Math.min(cropSize, INITIAL_MAX_IMAGE_DIMENSION);
+  const minDimension = Math.min(MIN_IMAGE_DIMENSION, startingDimension);
+  let maxDimension = startingDimension;
+  let bestBlob: Blob | null = null;
+
+  while (maxDimension >= minDimension) {
+    const targetDimension = Math.max(1, Math.round(maxDimension));
+
+    canvas.width = targetDimension;
+    canvas.height = targetDimension;
+
+    context.fillStyle = "#ffffff";
+    context.fillRect(0, 0, targetDimension, targetDimension);
+    context.drawImage(
+      image,
+      sourceX,
+      sourceY,
+      cropSize,
+      cropSize,
+      0,
+      0,
+      targetDimension,
+      targetDimension,
+    );
+
+    for (const quality of IMAGE_QUALITY_STEPS) {
+      const candidateBlob = await canvasToBlob(canvas, quality);
+
+      if (!bestBlob || candidateBlob.size < bestBlob.size) {
+        bestBlob = candidateBlob;
+      }
+
+      if (candidateBlob.size <= MAX_CLIENT_IMAGE_BYTES) {
+        const optimizedFile = new File(
+          [candidateBlob],
+          file.name.replace(/\.[^.]+$/, "") + ".jpg",
+          {
+            type: "image/jpeg",
+            lastModified: Date.now(),
+          },
+        );
+
+        return {
+          file: optimizedFile,
+          error: null,
+        } as const;
+      }
+    }
+
+    if (maxDimension === minDimension) {
+      break;
+    }
+
+    maxDimension = Math.round(maxDimension * 0.82);
+
+    if (maxDimension < minDimension) {
+      maxDimension = minDimension;
+    }
+  }
+
+  if (!bestBlob) {
+    return {
+      file: null,
+      error: "Nao foi possivel otimizar a imagem para upload.",
+    } as const;
+  }
+
+  return {
+    file: null,
+    error: `Nao foi possivel reduzir a imagem para menos de ${formatFileSize(MAX_CLIENT_IMAGE_BYTES)}.`,
+  } as const;
+}
+
 type ProductImageFieldsProps = {
   defaultImageUrl?: string | null;
   imageUrlErrors?: string[];
   imageFileErrors?: string[];
   imageCameraErrors?: string[];
+  onProcessingChange?: (processing: boolean) => void;
 };
 
 export function ProductImageFields({
@@ -25,11 +163,15 @@ export function ProductImageFields({
   imageUrlErrors,
   imageFileErrors,
   imageCameraErrors,
+  onProcessingChange,
 }: ProductImageFieldsProps) {
   const [imageUrl, setImageUrl] = useState(defaultImageUrl ?? "");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedSource, setSelectedSource] = useState<"arquivo" | "camera" | null>(null);
   const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
+  const [isOptimizing, setIsOptimizing] = useState(false);
+  const [clientImageMessage, setClientImageMessage] = useState("");
+  const [clientImageError, setClientImageError] = useState("");
   const fileInputId = useId();
   const cameraInputId = useId();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -44,25 +186,19 @@ export function ProductImageFields({
     };
   }, []);
 
-  function handleFileSelection(
+  useEffect(() => {
+    onProcessingChange?.(isOptimizing);
+  }, [isOptimizing, onProcessingChange]);
+
+  async function handleFileSelection(
     event: ChangeEvent<HTMLInputElement>,
     source: "arquivo" | "camera",
   ) {
-    const nextFile = event.target.files?.[0] ?? null;
+    const originalFile = event.target.files?.[0] ?? null;
 
     if (previewUrlRef.current) {
       URL.revokeObjectURL(previewUrlRef.current);
       previewUrlRef.current = null;
-    }
-
-    setSelectedFile(nextFile);
-    setSelectedSource(nextFile ? source : null);
-
-    if (nextFile) {
-      previewUrlRef.current = URL.createObjectURL(nextFile);
-      setFilePreviewUrl(previewUrlRef.current);
-    } else {
-      setFilePreviewUrl(null);
     }
 
     if (source === "arquivo" && cameraInputRef.current) {
@@ -72,12 +208,77 @@ export function ProductImageFields({
     if (source === "camera" && fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+
+    if (!originalFile) {
+      setSelectedFile(null);
+      setSelectedSource(null);
+      setFilePreviewUrl(null);
+      setClientImageError("");
+      setClientImageMessage("");
+      return;
+    }
+
+    setIsOptimizing(true);
+    setClientImageError("");
+    setClientImageMessage("Recortando no centro e reduzindo a imagem para ficar abaixo de 1 MB...");
+
+    try {
+      const optimizedResult = await optimizeImageForUpload(originalFile);
+
+      if (optimizedResult.error || !optimizedResult.file) {
+        setSelectedFile(null);
+        setSelectedSource(null);
+        setFilePreviewUrl(null);
+        setClientImageMessage("");
+        setClientImageError(
+          optimizedResult.error ?? "Nao foi possivel otimizar a imagem selecionada.",
+        );
+
+        if (event.target) {
+          event.target.value = "";
+        }
+
+        return;
+      }
+
+      const targetInput =
+        source === "arquivo" ? fileInputRef.current : cameraInputRef.current;
+
+      if (targetInput) {
+        const transfer = new DataTransfer();
+        transfer.items.add(optimizedResult.file);
+        targetInput.files = transfer.files;
+      }
+
+      setSelectedFile(optimizedResult.file);
+      setSelectedSource(source);
+      previewUrlRef.current = URL.createObjectURL(optimizedResult.file);
+      setFilePreviewUrl(previewUrlRef.current);
+      setClientImageMessage(
+        `Imagem quadrada pronta para upload em ${formatFileSize(optimizedResult.file.size)}.`,
+      );
+      setClientImageError("");
+    } catch {
+      setSelectedFile(null);
+      setSelectedSource(null);
+      setFilePreviewUrl(null);
+      setClientImageMessage("");
+      setClientImageError("Nao foi possivel otimizar a imagem selecionada.");
+
+      if (event.target) {
+        event.target.value = "";
+      }
+    } finally {
+      setIsOptimizing(false);
+    }
   }
 
   function clearSelectedFile() {
     setSelectedFile(null);
     setSelectedSource(null);
     setFilePreviewUrl(null);
+    setClientImageMessage("");
+    setClientImageError("");
 
     if (previewUrlRef.current) {
       URL.revokeObjectURL(previewUrlRef.current);
@@ -102,15 +303,15 @@ export function ProductImageFields({
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[148px_minmax(0,1fr)]">
-        <div className="overflow-hidden rounded-[1.35rem] border border-white/60 bg-white/80 shadow-card-down">
+        <div className="mx-auto aspect-square w-full max-w-36 overflow-hidden rounded-[1.35rem] border border-white/60 bg-white/80 shadow-card-down">
           {activePreviewUrl ? (
             <img
               src={activePreviewUrl}
               alt="Pre-visualizacao do produto"
-              className="h-36 w-full object-cover"
+              className="h-full w-full object-cover"
             />
           ) : (
-            <div className="flex h-36 items-center justify-center bg-[linear-gradient(160deg,_rgba(255,240,245,0.88),_rgba(247,235,255,0.92))] px-4 text-center text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500">
+            <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(160deg,_rgba(255,240,245,0.88),_rgba(247,235,255,0.92))] px-4 text-center text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500">
               Sem imagem
             </div>
           )}
@@ -163,7 +364,9 @@ export function ProductImageFields({
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs leading-5 text-zinc-500">
-              {selectedFile
+              {isOptimizing
+                ? "A imagem esta sendo recortada no centro e reduzida para manter o upload abaixo de 1 MB."
+                : selectedFile
                 ? `Imagem vinda de ${selectedSource === "camera" ? "camera" : "arquivo"} selecionada. Ela sera usada no lugar da URL.`
                 : "Voce pode usar uma URL, escolher um arquivo do dispositivo ou tirar uma foto no celular."}
             </p>
@@ -178,6 +381,14 @@ export function ProductImageFields({
               >
                 Limpar selecao
               </Button>
+            ) : null}
+          </div>
+
+          <div aria-live="polite" className="min-h-5 text-xs">
+            {clientImageError ? (
+              <p className="text-rose-600">{clientImageError}</p>
+            ) : clientImageMessage ? (
+              <p className="text-zinc-600">{clientImageMessage}</p>
             ) : null}
           </div>
         </div>

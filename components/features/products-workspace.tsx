@@ -31,9 +31,11 @@ export function ProductsWorkspace({
   const [query, setQuery] = useState("");
   const [productType, setProductType] = useState("todos");
   const [stockFilter, setStockFilter] = useState<"todos" | "baixo" | "zerado">("todos");
+  const [currentTime] = useState(() => Date.now());
   const deferredQuery = useDeferredValue(query);
   const normalizedQuery = deferredQuery.trim().toLowerCase();
   const typeOptions = getRegisteredDetailTypes(products);
+  const last24HoursThreshold = currentTime - 24 * 60 * 60 * 1000;
 
   const filteredProducts = products.filter((product) => {
     const detectedType = getDetailType(product.variantAttributes);
@@ -59,11 +61,15 @@ export function ProductsWorkspace({
     return matchesQuery && matchesType && matchesStock;
   });
 
-  const lowStockCount = products.filter((product) => {
-    const quantity = product.inventory?.quantity ?? 0;
-    return quantity > 0 && quantity <= 5;
+  const stockBalanceLast24Hours = products.filter((product) => {
+    const lastUpdated = product.inventory?.last_updated;
+
+    if (!lastUpdated) {
+      return false;
+    }
+
+    return new Date(lastUpdated).getTime() >= last24HoursThreshold;
   }).length;
-  const productsWithoutImage = products.filter((product) => !product.image_url).length;
 
   return (
     <div className="flex flex-col gap-8">
@@ -84,18 +90,18 @@ export function ProductsWorkspace({
               <h2 className="text-2xl font-semibold text-zinc-950">{title}</h2>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3">
               <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-card-down">
                 <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Cadastrados</p>
                 <p className="mt-2 text-2xl font-semibold text-zinc-950">{products.length}</p>
               </div>
               <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-card-down">
-                <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Estoque baixo</p>
-                <p className="mt-2 text-2xl font-semibold text-zinc-950">{lowStockCount}</p>
-              </div>
-              <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-card-down">
-                <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Sem foto</p>
-                <p className="mt-2 text-2xl font-semibold text-zinc-950">{productsWithoutImage}</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">
+                  Balanco ultimas 24h
+                </p>
+                <p className="mt-2 text-2xl font-semibold text-zinc-950">
+                  {stockBalanceLast24Hours}
+                </p>
               </div>
             </div>
           </div>

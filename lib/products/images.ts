@@ -4,7 +4,7 @@ import { env } from "@/lib/env";
 import type { Database } from "@/lib/supabase/database.types";
 
 const PRODUCT_IMAGE_BUCKET = "product-images";
-const MAX_PRODUCT_IMAGE_SIZE_BYTES = 8 * 1024 * 1024;
+const MAX_PRODUCT_IMAGE_SIZE_BYTES = 900 * 1024;
 
 type AdminSupabaseClient = SupabaseClient<Database>;
 
@@ -116,7 +116,7 @@ export function validateProductImageFile(file: File | null) {
 
   if (file.size > MAX_PRODUCT_IMAGE_SIZE_BYTES) {
     return {
-      error: "A imagem deve ter no maximo 8 MB.",
+      error: "A imagem precisa ficar abaixo de 900 KB.",
     } as const;
   }
 

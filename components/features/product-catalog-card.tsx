@@ -1,7 +1,14 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
-import { useActionState, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useActionState,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 
 import { deleteProductAction, updateProductAction } from "@/app/actions/products";
 import { ProductImageFields } from "@/components/features/product-image-fields";
@@ -109,12 +116,19 @@ function ProductEditForm({
       ?.value ?? "",
   );
   const [skuPreview, setSkuPreview] = useState(product.sku);
+  const [isImageProcessing, setIsImageProcessing] = useState(false);
   const typeListId = useMemo(() => `product-detail-type-options-${product.id}`, [product.id]);
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    if (isImageProcessing) {
+      event.preventDefault();
+    }
+  }
 
   return (
     <form
       action={formAction}
-      encType="multipart/form-data"
+      onSubmit={handleSubmit}
       className="mt-5 grid gap-4 rounded-[1.5rem] border border-white/55 bg-white/78 p-4 shadow-card-down"
     >
       {typeOptions.length ? (
@@ -177,6 +191,7 @@ function ProductEditForm({
         imageUrlErrors={state.fieldErrors?.imageUrl}
         imageFileErrors={state.fieldErrors?.imageFile}
         imageCameraErrors={state.fieldErrors?.imageCamera}
+        onProcessingChange={setIsImageProcessing}
       />
 
       <section className="grid gap-4 rounded-[1.5rem] border border-white/50 bg-white/50 p-4">
@@ -217,7 +232,9 @@ function ProductEditForm({
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div aria-live="polite" className="min-h-6 text-sm">
-          {state.message ? (
+          {isImageProcessing ? (
+            <p className="text-zinc-600">Otimizando imagem para upload...</p>
+          ) : state.message ? (
             <p className={state.status === "success" ? "text-emerald-700" : "text-rose-600"}>
               {state.message}
             </p>
@@ -226,10 +243,14 @@ function ProductEditForm({
         <Button
           type="submit"
           size="lg"
-          disabled={pending}
+          disabled={pending || isImageProcessing}
           className="rounded-2xl bg-rose-900 px-5 text-white hover:bg-rose-800"
         >
-          {pending ? "Salvando..." : "Salvar alteracoes"}
+          {isImageProcessing
+            ? "Otimizando imagem..."
+            : pending
+              ? "Salvando..."
+              : "Salvar alteracoes"}
         </Button>
       </div>
     </form>
