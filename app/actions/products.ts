@@ -1,6 +1,12 @@
 "use server";
 
 import { createAutomaticSku } from "@/lib/products/catalog";
+import {
+  getProductImageFile,
+  removeStoredProductImage,
+  uploadProductImage,
+  validateProductImageFile,
+} from "@/lib/products/images";
 import { revalidateProductSurfaces } from "@/lib/revalidate-routes";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
@@ -21,6 +27,17 @@ function getProductFormInput(formData: FormData) {
     basePrice: formData.get("basePrice"),
     quantity: formData.get("quantity"),
     imageUrl: formData.get("imageUrl") ?? "",
+  };
+}
+
+function getImageFieldErrorState(message: string): ProductActionState {
+  return {
+    status: "error",
+    message,
+    fieldErrors: {
+      imageFile: [message],
+      imageCamera: [message],
+    },
   };
 }
 
@@ -116,6 +133,13 @@ export async function createProductAction(
     };
   }
 
+  const productImageFile = getProductImageFile(formData);
+  const imageValidationResult = validateProductImageFile(productImageFile);
+
+  if (imageValidationResult.error) {
+    return getImageFieldErrorState(imageValidationResult.error);
+  }
+
   const parsedDetails = buildProductDetails({
     detailType: parsedInput.data.detailType,
     detailVolume: parsedInput.data.detailVolume,
@@ -130,7 +154,7 @@ export async function createProductAction(
 
   const supabase = createAdminClient();
 
-  const imageUrl = parsedInput.data.imageUrl || null;
+  const imageUrl = productImageFile ? null : parsedInput.data.imageUrl || null;
   let createdProduct:
     | {
         id: string;
@@ -208,6 +232,40 @@ export async function createProductAction(
     }
   }
 
+  if (productImageFile) {
+    const uploadResult = await uploadProductImage({
+      supabase,
+      file: productImageFile,
+      productId: createdProduct.id,
+      productName: createdProduct.name,
+      sku: createdProduct.sku,
+    });
+
+    if (uploadResult.error || !uploadResult.publicUrl) {
+      await cleanupCreatedProduct();
+
+      return getImageFieldErrorState(
+        uploadResult.error ?? "Nao foi possivel enviar a imagem do produto.",
+      );
+    }
+
+    const { error: imageUpdateError } = await supabase
+      .from("products")
+      .update({
+        image_url: uploadResult.publicUrl,
+      })
+      .eq("id", createdProduct.id);
+
+    if (imageUpdateError) {
+      await removeStoredProductImage(supabase, uploadResult.publicUrl);
+      await cleanupCreatedProduct();
+
+      return getImageFieldErrorState(
+        `A imagem foi enviada, mas nao pode ser vinculada ao produto: ${imageUpdateError.message}`,
+      );
+    }
+  }
+
   revalidateProductSurfaces();
 
   return {
@@ -233,6 +291,13 @@ export async function updateProductAction(
     };
   }
 
+  const productImageFile = getProductImageFile(formData);
+  const imageValidationResult = validateProductImageFile(productImageFile);
+
+  if (imageValidationResult.error) {
+    return getImageFieldErrorState(imageValidationResult.error);
+  }
+
   const parsedDetails = buildProductDetails({
     detailType: parsedInput.data.detailType,
     detailVolume: parsedInput.data.detailVolume,
@@ -246,11 +311,10 @@ export async function updateProductAction(
   }
 
   const supabase = createAdminClient();
-  const imageUrl = parsedInput.data.imageUrl || null;
 
   const { data: product, error: productLookupError } = await supabase
     .from("products")
-    .select("id, name, sku")
+    .select("id, image_url, name, sku")
     .eq("id", parsedInput.data.productId)
     .maybeSingle();
 
@@ -261,16 +325,42 @@ export async function updateProductAction(
     };
   }
 
+  let finalImageUrl = parsedInput.data.imageUrl || null;
+  let uploadedImageUrl: string | null = null;
+
+  if (productImageFile) {
+    const uploadResult = await uploadProductImage({
+      supabase,
+      file: productImageFile,
+      productId: product.id,
+      productName: parsedInput.data.name.trim(),
+      sku: product.sku,
+    });
+
+    if (uploadResult.error || !uploadResult.publicUrl) {
+      return getImageFieldErrorState(
+        uploadResult.error ?? "Nao foi possivel enviar a nova imagem do produto.",
+      );
+    }
+
+    uploadedImageUrl = uploadResult.publicUrl;
+    finalImageUrl = uploadResult.publicUrl;
+  }
+
   const { error: productUpdateError } = await supabase
     .from("products")
     .update({
       name: parsedInput.data.name.trim(),
       base_price: parsedInput.data.basePrice,
-      image_url: imageUrl,
+      image_url: finalImageUrl,
     })
     .eq("id", parsedInput.data.productId);
 
   if (productUpdateError) {
+    if (uploadedImageUrl) {
+      await removeStoredProductImage(supabase, uploadedImageUrl);
+    }
+
     return {
       status: "error",
       message: `Nao foi possivel atualizar o produto: ${productUpdateError.message}`,
@@ -303,6 +393,10 @@ export async function updateProductAction(
     };
   }
 
+  if (product.image_url !== finalImageUrl) {
+    await removeStoredProductImage(supabase, product.image_url);
+  }
+
   revalidateProductSurfaces();
 
   return {
@@ -332,7 +426,7 @@ export async function deleteProductAction(
   const supabase = createAdminClient();
   const { data: product, error: productLookupError } = await supabase
     .from("products")
-    .select("id, name")
+    .select("id, image_url, name")
     .eq("id", parsedInput.data.productId)
     .maybeSingle();
 
@@ -379,6 +473,8 @@ export async function deleteProductAction(
       message: `Nao foi possivel excluir o produto: ${fallbackMessage}`,
     };
   }
+
+  await removeStoredProductImage(supabase, product.image_url);
 
   revalidateProductSurfaces();
 

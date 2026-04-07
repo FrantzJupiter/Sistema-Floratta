@@ -1,9 +1,10 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
-import { useActionState, useMemo, useState } from "react";
+import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 
 import { deleteProductAction, updateProductAction } from "@/app/actions/products";
+import { ProductImageFields } from "@/components/features/product-image-fields";
 import { Button } from "@/components/ui/button";
 import {
   createAutomaticSku,
@@ -16,6 +17,7 @@ import {
   type ProductActionState,
   type ProductDeleteActionState,
 } from "@/lib/validations/product";
+import { cn } from "@/lib/utils";
 import type { CatalogProduct } from "@/services/products";
 
 function formatCurrency(value: number) {
@@ -31,6 +33,33 @@ function FieldError({ errors }: { errors?: string[] }) {
   }
 
   return <p className="text-sm text-rose-600">{errors[0]}</p>;
+}
+
+function ProductImagePreview({
+  imageUrl,
+  name,
+  isEditing,
+}: {
+  imageUrl: string | null;
+  name: string;
+  isEditing: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "overflow-hidden rounded-[1.1rem] border border-white/60 bg-white/80 shadow-card-down transition-all duration-200",
+        isEditing ? "h-28 w-28 sm:h-32 sm:w-32" : "h-14 w-14 sm:h-16 sm:w-16",
+      )}
+    >
+      {imageUrl ? (
+        <img src={imageUrl} alt={name} className="h-full w-full object-cover" />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(160deg,_rgba(255,240,245,0.88),_rgba(247,235,255,0.92))] px-2 text-center text-[9px] font-medium uppercase tracking-[0.16em] text-zinc-500 sm:text-[10px]">
+          Sem foto
+        </div>
+      )}
+    </div>
+  );
 }
 
 function ProductIdPreview({
@@ -88,6 +117,7 @@ function ProductEditForm({
   return (
     <form
       action={formAction}
+      encType="multipart/form-data"
       className="mt-5 grid gap-4 rounded-[1.5rem] border border-white/55 bg-white/78 p-4 shadow-card-down"
     >
       {typeOptions.length ? (
@@ -145,17 +175,12 @@ function ProductEditForm({
         </label>
       </div>
 
-      <label className="grid gap-2 text-sm text-zinc-700">
-        <span className="font-medium">URL da imagem</span>
-        <input
-          name="imageUrl"
-          type="url"
-          defaultValue={product.image_url ?? ""}
-          placeholder="https://..."
-          className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
-        />
-        <FieldError errors={state.fieldErrors?.imageUrl} />
-      </label>
+      <ProductImageFields
+        defaultImageUrl={product.image_url}
+        imageUrlErrors={state.fieldErrors?.imageUrl}
+        imageFileErrors={state.fieldErrors?.imageFile}
+        imageCameraErrors={state.fieldErrors?.imageCamera}
+      />
 
       <section className="grid gap-4 rounded-[1.5rem] border border-white/50 bg-white/50 p-4">
         <div className="space-y-1">
@@ -223,7 +248,6 @@ export function ProductCatalogCard({
 }) {
   const [isEditing, setIsEditing] = useState(false);
   const detailType = getDetailType(product.variantAttributes);
-  const detailEntries = getProductDetailEntries(product.variantAttributes);
   const quantity = product.inventory?.quantity ?? 0;
   const stockTone =
     quantity === 0
@@ -240,81 +264,69 @@ export function ProductCatalogCard({
     ProductDeleteActionState,
     FormData
   >(deleteProductAction, initialProductDeleteActionState);
+  const previousUpdatePendingRef = useRef(false);
+
+  useEffect(() => {
+    if (
+      previousUpdatePendingRef.current &&
+      !updatePending &&
+      updateState.status === "success"
+    ) {
+      const closeEditorFrame = requestAnimationFrame(() => {
+        setIsEditing(false);
+      });
+
+      previousUpdatePendingRef.current = updatePending;
+
+      return () => cancelAnimationFrame(closeEditorFrame);
+    }
+
+    previousUpdatePendingRef.current = updatePending;
+  }, [updatePending, updateState.status]);
 
   return (
-    <article className="rounded-[1.75rem] border border-white/55 bg-white/72 p-5 shadow-card-down transition hover:-translate-y-0.5">
-      <div className="flex flex-col gap-5">
-        <div className="grid gap-4 sm:grid-cols-[120px_minmax(0,1fr)]">
-          <div className="overflow-hidden rounded-[1.5rem] border border-white/60 bg-white/80 shadow-card-down">
-            {product.image_url ? (
-              <img
-                src={product.image_url}
-                alt={product.name}
-                className="h-full min-h-[120px] w-full object-cover"
-              />
-            ) : (
-              <div className="flex min-h-[120px] items-center justify-center bg-[linear-gradient(160deg,_rgba(255,240,245,0.88),_rgba(247,235,255,0.92))] px-4 text-center text-xs font-medium uppercase tracking-[0.2em] text-zinc-500">
-                Sem foto
-              </div>
-            )}
-          </div>
+    <article
+      className={cn(
+        "rounded-[1.25rem] border border-white/55 bg-white/72 p-3 shadow-card-down transition hover:-translate-y-0.5",
+        isEditing && "col-span-2 md:col-span-3 xl:col-span-4 2xl:col-span-5",
+      )}
+    >
+      <div className="flex flex-col gap-3">
+        <div className="flex items-start gap-3">
+          <ProductImagePreview
+            imageUrl={product.image_url}
+            name={product.name}
+            isEditing={isEditing}
+          />
 
-          <div className="flex min-w-0 flex-col gap-4">
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-2">
-                <div className="flex flex-wrap gap-2">
-                  <span className="rounded-full border border-zinc-200 bg-white/80 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-zinc-600">
-                    ID {product.sku}
-                  </span>
-                  {detailType ? (
-                    <span className="rounded-full bg-rose-100 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-rose-700">
-                      {detailType}
-                    </span>
-                  ) : null}
-                </div>
-                <h3 className="text-xl font-semibold text-zinc-950">{product.name}</h3>
-              </div>
-              <span className={`rounded-full px-3 py-1 text-xs font-medium ${stockTone}`}>
+          <div className="min-w-0 flex-1 space-y-2">
+            <div className="flex flex-wrap gap-2">
+              <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.16em] text-rose-700">
+                {detailType ?? "Sem tipo"}
+              </span>
+              <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${stockTone}`}>
                 {quantity} em estoque
               </span>
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-2xl border border-white/60 bg-white/75 p-4">
-                <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Preco base</p>
-                <p className="mt-2 text-2xl font-semibold text-zinc-950">
-                  {formatCurrency(product.base_price)}
-                </p>
-              </div>
-              <div className="rounded-2xl border border-white/60 bg-white/75 p-4">
-                <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">
-                  Ultima atualizacao
-                </p>
-                <p className="mt-2 text-sm font-medium text-zinc-700">
-                  {product.inventory?.last_updated
-                    ? new Date(product.inventory.last_updated).toLocaleString("pt-BR")
-                    : "Sem movimentacao"}
-                </p>
-              </div>
+            <div className="space-y-1.5">
+              <h3 className="line-clamp-2 text-sm font-semibold text-zinc-950 sm:text-base">
+                {product.name}
+              </h3>
+              <p className="text-lg font-semibold text-zinc-950 sm:text-xl">
+                {formatCurrency(product.base_price)}
+              </p>
             </div>
           </div>
         </div>
 
-        {detailEntries.length ? (
-          <div className="mt-1 flex flex-wrap gap-2">
-            {detailEntries.map((entry) => (
-              <span
-                key={entry.key}
-                className="rounded-full border border-white/60 bg-white/75 px-3 py-1 text-xs text-zinc-600"
-              >
-                {entry.label}: {entry.value}
-              </span>
-            ))}
-          </div>
-        ) : null}
-
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="min-h-6 text-sm" aria-live="polite">
+        <div className="flex flex-col gap-2">
+          <div className="min-h-5 text-xs" aria-live="polite">
+            {updateState.message && !isEditing ? (
+              <p className={updateState.status === "success" ? "text-emerald-700" : "text-rose-600"}>
+                {updateState.message}
+              </p>
+            ) : null}
             {deleteState.message ? (
               <p className={deleteState.status === "success" ? "text-emerald-700" : "text-rose-600"}>
                 {deleteState.message}
@@ -322,14 +334,15 @@ export function ProductCatalogCard({
             ) : null}
           </div>
 
-          <div className="flex flex-col gap-2 sm:flex-row">
+          <div className="flex flex-wrap gap-2">
             <Button
               type="button"
               variant="outline"
-              className="rounded-2xl border-zinc-200 bg-white/80"
+              size="sm"
+              className="h-8 rounded-xl border-zinc-200 bg-white/80 px-2.5 text-xs"
               onClick={() => setIsEditing((current) => !current)}
             >
-              {isEditing ? "Fechar edicao" : "Editar produto"}
+              {isEditing ? "Fechar edicao" : "Editar"}
             </Button>
 
             <form action={deleteFormAction}>
@@ -337,8 +350,9 @@ export function ProductCatalogCard({
               <Button
                 type="submit"
                 variant="outline"
+                size="sm"
                 disabled={deletePending}
-                className="rounded-2xl border-rose-200 bg-rose-50/70 text-rose-900 hover:bg-rose-100"
+                className="h-8 rounded-xl border-rose-200 bg-rose-50/70 px-2.5 text-xs text-rose-900 hover:bg-rose-100"
                 onClick={(event) => {
                   if (!window.confirm(`Excluir ${product.name}? Esta acao nao pode ser desfeita.`)) {
                     event.preventDefault();

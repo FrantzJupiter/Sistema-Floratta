@@ -28,7 +28,8 @@ export function AddToCartButton({ product }: AddToCartButtonProps) {
     <Button
       type="button"
       variant="outline"
-      className="w-full rounded-2xl border-rose-200 bg-rose-50/70 text-rose-900 hover:bg-rose-100"
+      size="sm"
+      className="h-8 w-full rounded-xl border-rose-200 bg-rose-50/70 px-2.5 text-xs text-rose-900 hover:bg-rose-100"
       disabled={isOutOfStock || reachedLimit}
       onClick={() => addItem(product)}
     >

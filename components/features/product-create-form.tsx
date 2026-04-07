@@ -3,6 +3,7 @@
 import { useActionState, useMemo, useState } from "react";
 
 import { createProductAction } from "@/app/actions/products";
+import { ProductImageFields } from "@/components/features/product-image-fields";
 import { Button } from "@/components/ui/button";
 import { createAutomaticSku } from "@/lib/products/catalog";
 import {
@@ -112,7 +113,7 @@ function ProductCreateFormFields({
   }
 
   return (
-    <form action={formAction} className="grid gap-5">
+    <form action={formAction} encType="multipart/form-data" className="grid gap-5">
       {typeOptions.length ? (
         <datalist id={typeListId}>
           {typeOptions.map((typeOption) => (
@@ -156,12 +157,10 @@ function ProductCreateFormFields({
         />
       </div>
 
-      <FormField
-        label="URL da imagem"
-        name="imageUrl"
-        type="url"
-        placeholder="https://..."
-        errors={state.fieldErrors?.imageUrl}
+      <ProductImageFields
+        imageUrlErrors={state.fieldErrors?.imageUrl}
+        imageFileErrors={state.fieldErrors?.imageFile}
+        imageCameraErrors={state.fieldErrors?.imageCamera}
       />
 
       <section className="grid gap-4 rounded-[1.5rem] border border-white/50 bg-white/50 p-4">

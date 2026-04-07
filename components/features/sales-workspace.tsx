@@ -1,5 +1,4 @@
 "use client";
-/* eslint-disable @next/next/no-img-element */
 
 import { useDeferredValue, useState } from "react";
 
@@ -138,50 +137,25 @@ export function SalesWorkspace({
               </p>
             </div>
           ) : (
-            <div className="grid gap-4 xl:grid-cols-2">
-              {filteredProducts.map((product) => {
-                const quantity = product.inventory?.quantity ?? 0;
-                const productTypeLabel = getDetailType(product.variantAttributes) ?? "Sem tipo";
-                const metadataPreview = getMetadataPreview(product);
+            <div className="max-h-[68vh] overflow-y-auto pr-1 sm:pr-2">
+              <div className="grid grid-cols-2 gap-3 xl:grid-cols-4 2xl:grid-cols-5">
+                {filteredProducts.map((product) => {
+                  const quantity = product.inventory?.quantity ?? 0;
+                  const productTypeLabel = getDetailType(product.variantAttributes) ?? "Sem tipo";
 
-                return (
-                  <article
-                    key={product.id}
-                    className="rounded-[1.75rem] border border-white/55 bg-white/78 p-5 shadow-card-down"
-                  >
-                    <div className="flex gap-4">
-                      <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-[1.5rem] border border-white/60 bg-white/85 shadow-card-down">
-                        {product.image_url ? (
-                          <img
-                            src={product.image_url}
-                            alt={product.name}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <div className="px-3 text-center text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500">
-                            Sem foto
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="min-w-0 flex-1 space-y-3">
-                        <div className="flex flex-wrap items-start justify-between gap-3">
-                          <div className="space-y-2">
-                            <div className="flex flex-wrap gap-2">
-                              <span className="rounded-full border border-zinc-200 bg-white/80 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-zinc-600">
-                                ID {product.sku}
-                              </span>
-                              <span className="rounded-full bg-rose-100 px-2.5 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-rose-700">
-                                {productTypeLabel}
-                              </span>
-                            </div>
-                            <h3 className="text-lg font-semibold text-zinc-950">
-                              {product.name}
-                            </h3>
-                          </div>
+                  return (
+                    <article
+                      key={product.id}
+                      className="rounded-[1.25rem] border border-white/55 bg-white/78 p-3 shadow-card-down"
+                    >
+                      <div className="flex flex-col gap-3">
+                        <div className="flex flex-wrap items-start justify-between gap-2">
+                          <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.16em] text-rose-700">
+                            {productTypeLabel}
+                          </span>
 
                           <span
-                            className={`rounded-full px-3 py-1 text-xs font-medium ${
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
                               quantity === 0
                                 ? "bg-rose-100 text-rose-700"
                                 : quantity <= 5
@@ -193,50 +167,30 @@ export function SalesWorkspace({
                           </span>
                         </div>
 
-                        <div className="flex flex-col gap-2 text-sm text-zinc-600 sm:flex-row sm:items-center sm:justify-between">
-                          <p className="text-lg font-semibold text-zinc-950">
+                        <div className="space-y-1.5">
+                          <h3 className="line-clamp-2 text-sm font-semibold text-zinc-950 sm:text-base">
+                            {product.name}
+                          </h3>
+                          <p className="text-lg font-semibold text-zinc-950 sm:text-xl">
                             {formatCurrency(product.base_price)}
-                          </p>
-                          <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">
-                            Ultima atualizacao{" "}
-                            {product.inventory?.last_updated
-                              ? new Date(product.inventory.last_updated).toLocaleDateString(
-                                  "pt-BR",
-                                )
-                              : "sem registro"}
                           </p>
                         </div>
 
-                        {metadataPreview.length ? (
-                          <div className="flex flex-wrap gap-2">
-                            {metadataPreview.map(({ key, label, value }) => (
-                              <span
-                                key={key}
-                                className="rounded-full border border-white/65 bg-white/80 px-3 py-1 text-xs text-zinc-600"
-                              >
-                                {label}: {String(value)}
-                              </span>
-                            ))}
-                          </div>
-                        ) : null}
+                        <AddToCartButton
+                          product={{
+                            productId: product.id,
+                            name: product.name,
+                            sku: product.sku,
+                            unitPrice: product.base_price,
+                            availableQuantity: quantity,
+                            productTypeLabel,
+                          }}
+                        />
                       </div>
-                    </div>
-
-                    <div className="mt-5">
-                      <AddToCartButton
-                        product={{
-                          productId: product.id,
-                          name: product.name,
-                          sku: product.sku,
-                          unitPrice: product.base_price,
-                          availableQuantity: quantity,
-                          productTypeLabel,
-                        }}
-                      />
-                    </div>
-                  </article>
-                );
-              })}
+                    </article>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>

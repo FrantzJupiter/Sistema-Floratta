@@ -154,14 +154,16 @@ export function ProductsWorkspace({
               </p>
             </div>
           ) : (
-            <div className="grid gap-4 2xl:grid-cols-2">
-              {filteredProducts.map((product) => (
-                <ProductCatalogCard
-                  key={product.id}
-                  product={product}
-                  typeOptions={typeOptions}
-                />
-              ))}
+            <div className="max-h-[68vh] overflow-y-auto pr-1 sm:pr-2">
+              <div className="grid grid-cols-2 gap-3 xl:grid-cols-4 2xl:grid-cols-5">
+                {filteredProducts.map((product) => (
+                  <ProductCatalogCard
+                    key={product.id}
+                    product={product}
+                    typeOptions={typeOptions}
+                  />
+                ))}
+              </div>
             </div>
           )}
           </div>
