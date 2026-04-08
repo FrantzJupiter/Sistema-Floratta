@@ -48,10 +48,10 @@ function CustomerCard({ customer }: { customer: RegisteredCustomer }) {
   >(deleteCustomerAction, initialCustomerDeleteActionState);
 
   return (
-    <article className="rounded-[1.75rem] border border-white/55 bg-white/78 p-5 shadow-card-down">
+    <article className="rounded-[1.75rem] border border-white/60 bg-gradient-to-br from-white/80 to-white/30 p-5 shadow-[0_4px_24px_rgba(0,0,0,0.04)] backdrop-blur-md">
       <div className="flex flex-col gap-4">
         <div className="flex items-start gap-4">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.2rem] bg-[linear-gradient(145deg,_rgba(122,31,75,0.92),_rgba(225,131,162,0.88))] text-sm font-semibold uppercase tracking-[0.18em] text-white shadow-lg shadow-rose-200/70">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.2rem] bg-[linear-gradient(145deg,_rgba(122,31,75,0.92),_rgba(225,131,162,0.88))] text-sm font-semibold uppercase tracking-[0.18em] text-white shadow-[0_4px_12px_rgba(225,29,72,0.3),inset_0_2px_4px_rgba(255,255,255,0.4)]">
             {getCustomerInitials(customer.name)}
           </div>
 
@@ -92,7 +92,7 @@ function CustomerCard({ customer }: { customer: RegisteredCustomer }) {
             <Button
               type="button"
               variant="outline"
-              className="rounded-2xl border-zinc-200 bg-white/80"
+              className="rounded-2xl border border-white/70 bg-gradient-to-b from-white/80 to-white/30 shadow-[0_4px_12px_rgba(0,0,0,0.04),inset_0_1px_1px_rgba(255,255,255,0.8)] backdrop-blur-md hover:from-white/90 hover:to-white/50 active:scale-[0.98] active:shadow-inner transition-all text-zinc-800"
               onClick={() => setIsEditing((current) => !current)}
             >
               {isEditing ? "Fechar edição" : "Editar cliente"}
@@ -104,7 +104,7 @@ function CustomerCard({ customer }: { customer: RegisteredCustomer }) {
                 type="submit"
                 variant="outline"
                 disabled={deletePending}
-                className="rounded-2xl border-rose-200 bg-rose-50/70 text-rose-900 hover:bg-rose-100"
+                className="rounded-2xl border border-rose-200/80 bg-gradient-to-b from-rose-50/80 to-rose-100/30 text-rose-900 shadow-[0_4px_12px_rgba(225,29,72,0.06),inset_0_1px_1px_rgba(255,255,255,0.8)] backdrop-blur-md hover:from-rose-100/90 hover:to-rose-100/50 active:scale-[0.98] active:shadow-inner transition-all"
                 onClick={(event) => {
                   if (
                     !window.confirm(
@@ -125,7 +125,7 @@ function CustomerCard({ customer }: { customer: RegisteredCustomer }) {
           <form
             key={updateState.status === "success" ? updateState.message : customer.id}
             action={updateFormAction}
-            className="grid gap-4 rounded-[1.5rem] border border-white/55 bg-white/72 p-4 shadow-card-down"
+            className="grid gap-4 rounded-[1.5rem] border border-white/40 bg-black/5 p-4 shadow-[inset_0_2px_10px_rgba(0,0,0,0.03)] backdrop-blur-sm"
           >
             <input type="hidden" name="customerId" value={customer.id} />
 
@@ -134,7 +134,7 @@ function CustomerCard({ customer }: { customer: RegisteredCustomer }) {
               <input
                 name="name"
                 defaultValue={customer.name}
-                className="h-11 rounded-2xl border border-white/45 bg-white/80 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+                className="h-11 rounded-2xl border border-white/50 bg-white/40 px-4 text-zinc-900 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)] backdrop-blur-md outline-none transition-all focus:bg-white/60 focus:border-rose-300 focus:ring-4 focus:ring-rose-200/50 hover:bg-white/50"
               />
             </label>
 
@@ -145,7 +145,7 @@ function CustomerCard({ customer }: { customer: RegisteredCustomer }) {
                   name="cpf"
                   defaultValue={customer.cpf ?? ""}
                   placeholder="Opcional"
-                  className="h-11 rounded-2xl border border-white/45 bg-white/80 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+                  className="h-11 rounded-2xl border border-white/50 bg-white/40 px-4 text-zinc-900 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)] backdrop-blur-md outline-none transition-all focus:bg-white/60 focus:border-rose-300 focus:ring-4 focus:ring-rose-200/50 hover:bg-white/50"
                 />
               </label>
 
@@ -155,7 +155,7 @@ function CustomerCard({ customer }: { customer: RegisteredCustomer }) {
                   name="phone"
                   defaultValue={customer.phone ?? ""}
                   placeholder="Opcional"
-                  className="h-11 rounded-2xl border border-white/45 bg-white/80 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+                  className="h-11 rounded-2xl border border-white/50 bg-white/40 px-4 text-zinc-900 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)] backdrop-blur-md outline-none transition-all focus:bg-white/60 focus:border-rose-300 focus:ring-4 focus:ring-rose-200/50 hover:bg-white/50"
                 />
               </label>
             </div>
@@ -166,7 +166,7 @@ function CustomerCard({ customer }: { customer: RegisteredCustomer }) {
                 name="address"
                 defaultValue={customer.address ?? ""}
                 placeholder="Opcional"
-                className="h-11 rounded-2xl border border-white/45 bg-white/80 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+                className="h-11 rounded-2xl border border-white/50 bg-white/40 px-4 text-zinc-900 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)] backdrop-blur-md outline-none transition-all focus:bg-white/60 focus:border-rose-300 focus:ring-4 focus:ring-rose-200/50 hover:bg-white/50"
               />
             </label>
 
@@ -186,7 +186,7 @@ function CustomerCard({ customer }: { customer: RegisteredCustomer }) {
               <Button
                 type="submit"
                 disabled={updatePending}
-                className="rounded-2xl bg-rose-900 px-5 text-white hover:bg-rose-800"
+                className="rounded-2xl bg-gradient-to-b from-rose-700 to-rose-950 border border-rose-800/80 px-5 text-white shadow-[0_4px_12px_rgba(159,18,57,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)] hover:from-rose-600 hover:to-rose-900 active:scale-[0.98] active:shadow-inner transition-all"
               >
                 {updatePending ? "Salvando..." : "Salvar cliente"}
               </Button>
@@ -221,27 +221,27 @@ export function CustomersWorkspace({
   return (
     <div className="grid items-start gap-6">
       <aside className="min-w-0">
-        <div className="grid gap-4 rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-panel-down backdrop-blur-xl">
+        <div className="grid gap-4 rounded-[2rem] border border-white/60 bg-gradient-to-br from-white/60 to-white/20 p-4 sm:p-6 shadow-[0_8px_32px_rgba(0,0,0,0.06)] backdrop-blur-2xl">
           <CustomerQuickCreateForm submitLabel="Salvar cliente" title="Novo cliente" />
         </div>
       </aside>
 
-      <section className="flex min-w-0 flex-col gap-4 rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-panel-down backdrop-blur-xl">
+      <section className="flex min-w-0 flex-col gap-4 rounded-[2rem] border border-white/60 bg-gradient-to-br from-white/60 to-white/20 p-4 sm:p-6 shadow-[0_8px_32px_rgba(0,0,0,0.06)] backdrop-blur-2xl">
         <div className="space-y-4">
           <h2 className="text-2xl font-semibold text-zinc-950">{title}</h2>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-card-down">
+            <div className="rounded-[1.5rem] border border-white/60 bg-gradient-to-br from-white/70 to-white/30 px-4 py-4 shadow-[0_4px_24px_rgba(0,0,0,0.04)] backdrop-blur-md">
               <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Cadastrados</p>
               <p className="mt-2 text-2xl font-semibold text-zinc-950">{customers.length}</p>
             </div>
-            <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-card-down">
+            <div className="rounded-[1.5rem] border border-white/60 bg-gradient-to-br from-white/70 to-white/30 px-4 py-4 shadow-[0_4px_24px_rgba(0,0,0,0.04)] backdrop-blur-md">
               <div className="flex items-start justify-between gap-2">
                 <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Cadastros</p>
                 <select
                   value={recentWindow}
                   onChange={(event) => setRecentWindow(event.target.value as "7d" | "30d")}
-                  className="h-7 max-w-20 rounded-lg border border-white/45 bg-white/80 px-2 text-[10px] font-medium text-zinc-700 shadow-sm outline-none transition focus:border-rose-300 focus:ring-3 focus:ring-rose-100"
+                  className="h-7 max-w-20 rounded-lg border border-white/50 bg-white/40 px-2 text-[10px] font-medium text-zinc-700 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)] backdrop-blur-md outline-none transition-all focus:bg-white/60 focus:border-rose-300 focus:ring-3 focus:ring-rose-200/50 hover:bg-white/50"
                 >
                   <option value="7d">7 dias</option>
                   <option value="30d">mês</option>
@@ -252,20 +252,20 @@ export function CustomersWorkspace({
           </div>
         </div>
 
-        <div className="rounded-[1.75rem] border border-white/55 bg-white/75 p-4 shadow-card-down">
+        <div className="rounded-[1.75rem] border border-white/60 bg-gradient-to-br from-white/80 to-white/40 p-4 shadow-[0_4px_24px_rgba(0,0,0,0.04)] backdrop-blur-md">
           <label className="grid gap-2 text-sm text-zinc-700">
             <span className="font-medium">Buscar cliente</span>
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Procure por nome, CPF, telefone ou endereço"
-              className="h-11 rounded-2xl border border-white/45 bg-white/80 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+              className="h-11 rounded-2xl border border-white/50 bg-white/40 px-4 text-zinc-900 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)] backdrop-blur-md outline-none transition-all focus:bg-white/60 focus:border-rose-300 focus:ring-4 focus:ring-rose-200/50 hover:bg-white/50"
             />
           </label>
         </div>
 
         {filteredCustomers.length === 0 ? (
-          <div className="rounded-[1.75rem] border border-dashed border-rose-200 bg-rose-50/65 px-5 py-10 text-center">
+          <div className="rounded-[1.75rem] border border-dashed border-rose-300/50 bg-gradient-to-b from-rose-50/50 to-transparent backdrop-blur-sm shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)] px-5 py-10 text-center">
             <p className="text-base font-medium text-zinc-800">
               Nenhum cliente foi encontrado.
             </p>

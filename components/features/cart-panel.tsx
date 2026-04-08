@@ -74,7 +74,7 @@ function CartCheckoutContent({
         {items.map((item) => (
           <article
             key={item.productId}
-            className="rounded-[1.5rem] border border-white/55 bg-white/75 p-4 shadow-card-down"
+            className="rounded-[1.5rem] border border-white/60 bg-gradient-to-br from-white/70 to-white/30 p-4 shadow-[0_4px_24px_rgba(0,0,0,0.04)] backdrop-blur-md"
           >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="min-w-0 flex-1 space-y-1">
@@ -138,14 +138,14 @@ function CartCheckoutContent({
         ))}
       </div>
 
-      <div className="grid gap-4 rounded-[1.75rem] border border-white/55 bg-white/78 p-4 sm:p-5 shadow-card-down">
-        <div className="rounded-[1.35rem] border border-white/60 bg-white/80 px-4 py-3">
+      <div className="grid gap-4 rounded-[1.75rem] border border-white/40 bg-black/5 p-4 sm:p-5 shadow-[inset_0_2px_10px_rgba(0,0,0,0.03)] backdrop-blur-sm">
+        <div className="rounded-[1.35rem] border border-white/60 bg-gradient-to-br from-white/80 to-white/40 px-4 py-3 shadow-[0_2px_12px_rgba(0,0,0,0.03)] backdrop-blur-md">
           <div className="space-y-1">
             <p className="text-sm font-medium text-zinc-900">Cliente da venda</p>
             <Button
               type="button"
               variant="outline"
-              className="mt-2 rounded-2xl border-rose-200 bg-rose-50/70 text-rose-900 hover:bg-rose-100"
+              className="mt-2 rounded-2xl border border-rose-200/80 bg-gradient-to-b from-rose-50/80 to-rose-100/30 text-rose-900 shadow-[0_4px_12px_rgba(225,29,72,0.06),inset_0_1px_1px_rgba(255,255,255,0.8)] backdrop-blur-md hover:from-rose-100/90 hover:to-rose-100/50 active:scale-[0.98] active:shadow-inner transition-all"
               onClick={() => setIsCreatingCustomer((current) => !current)}
             >
               {isCreatingCustomer ? "Fechar cadastro" : "Cadastrar novo cliente"}
@@ -191,7 +191,7 @@ function CartCheckoutContent({
                 name="customerId"
                 value={selectedCustomerId}
                 onChange={(event) => setSelectedCustomerId(event.target.value)}
-                className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+                className="h-11 rounded-2xl border border-white/50 bg-white/40 px-4 text-zinc-900 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)] backdrop-blur-md outline-none transition-all focus:bg-white/60 focus:border-rose-300 focus:ring-4 focus:ring-rose-200/50 hover:bg-white/50"
               >
                 <option value="">Sem cliente cadastrado</option>
                 {customerOptions.map((customer) => (
@@ -213,7 +213,7 @@ function CartCheckoutContent({
                     ? "Usando o cliente selecionado acima"
                     : "Opcional para consumidor final"
                 }
-                className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-500"
+                className="h-11 rounded-2xl border border-white/50 bg-white/40 px-4 text-zinc-900 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)] backdrop-blur-md outline-none transition-all focus:bg-white/60 focus:border-rose-300 focus:ring-4 focus:ring-rose-200/50 hover:bg-white/50 disabled:cursor-not-allowed disabled:bg-zinc-100/50 disabled:text-zinc-500"
               />
             </label>
           </div>
@@ -227,11 +227,11 @@ function CartCheckoutContent({
                 min="0"
                 step="0.01"
                 defaultValue="0"
-                className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+                className="h-11 rounded-2xl border border-white/50 bg-white/40 px-4 text-zinc-900 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)] backdrop-blur-md outline-none transition-all focus:bg-white/60 focus:border-rose-300 focus:ring-4 focus:ring-rose-200/50 hover:bg-white/50"
               />
             </label>
 
-            <div className="rounded-2xl border border-white/60 bg-rose-50/75 p-4">
+            <div className="rounded-2xl border border-rose-200/60 bg-gradient-to-br from-rose-50/80 to-rose-100/30 p-4 shadow-[inset_0_2px_8px_rgba(225,29,72,0.04)] backdrop-blur-sm">
               <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Subtotal atual</p>
               <p className="mt-2 text-2xl font-semibold text-zinc-950">
                 {formatCurrency(subtotal)}
@@ -262,7 +262,7 @@ function CartCheckoutContent({
                 type="submit"
                 size="lg"
                 disabled={pending}
-                className="rounded-2xl bg-emerald-700 px-5 text-white hover:bg-emerald-600"
+                className="rounded-2xl bg-gradient-to-b from-emerald-600 to-emerald-800 border border-emerald-700/80 px-5 text-white shadow-[0_4px_12px_rgba(4,120,87,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)] hover:from-emerald-500 hover:to-emerald-700 active:scale-[0.98] active:shadow-inner transition-all"
               >
                 {pending ? "Registrando venda..." : "Finalizar venda"}
               </Button>
@@ -307,7 +307,7 @@ export function CartPanel({ customers }: CartPanelProps) {
       : null;
 
   return (
-    <section className="grid gap-4 rounded-[2rem] border border-white/45 bg-white/68 p-4 sm:p-6 shadow-panel-down backdrop-blur-xl">
+    <section className="grid gap-4 rounded-[2rem] border border-white/60 bg-gradient-to-br from-white/60 to-white/20 p-4 sm:p-6 shadow-[0_8px_32px_rgba(0,0,0,0.06)] backdrop-blur-2xl">
       <div className="mb-1 flex items-start justify-between gap-4">
         <div>
           <h2 className="text-2xl font-semibold text-zinc-950">Carrinho e checkout</h2>
@@ -318,7 +318,7 @@ export function CartPanel({ customers }: CartPanelProps) {
       </div>
 
       {!activeReceipt && items.length === 0 ? (
-        <div className="rounded-[1.75rem] border border-dashed border-rose-200 bg-rose-50/65 px-5 py-10 text-center">
+        <div className="rounded-[1.75rem] border border-dashed border-rose-300/50 bg-gradient-to-b from-rose-50/50 to-transparent backdrop-blur-sm shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)] px-5 py-10 text-center">
           <p className="text-base font-medium text-zinc-800">Nenhum item no carrinho.</p>
           <p className="mt-2 text-sm text-zinc-600">
             Use os botões do catálogo para montar a venda.
@@ -357,7 +357,7 @@ export function CartPanel({ customers }: CartPanelProps) {
               type="button"
               size="lg"
               disabled={cancelPending}
-              className="rounded-2xl bg-emerald-700 text-white hover:bg-emerald-600"
+              className="rounded-2xl bg-gradient-to-b from-emerald-600 to-emerald-800 border border-emerald-700/80 text-white shadow-[0_4px_12px_rgba(4,120,87,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)] hover:from-emerald-500 hover:to-emerald-700 active:scale-[0.98] active:shadow-inner transition-all"
               onClick={() => {
                 if (activeReceipt) {
                   setDismissedReceiptId(activeReceipt.id);
@@ -374,7 +374,7 @@ export function CartPanel({ customers }: CartPanelProps) {
                 size="lg"
                 variant="outline"
                 disabled={cancelPending}
-                className="w-full rounded-2xl border-rose-200 bg-rose-50/70 text-rose-900 hover:bg-rose-100"
+                className="w-full rounded-2xl border border-rose-200/80 bg-gradient-to-b from-rose-50/80 to-rose-100/30 text-rose-900 shadow-[0_4px_12px_rgba(225,29,72,0.06),inset_0_1px_1px_rgba(255,255,255,0.8)] backdrop-blur-md hover:from-rose-100/90 hover:to-rose-100/50 active:scale-[0.98] active:shadow-inner transition-all"
                 onClick={(event) => {
                   if (
                     !window.confirm(

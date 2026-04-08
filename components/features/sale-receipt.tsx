@@ -310,7 +310,7 @@ export function SaleReceipt({
   }
 
   return (
-    <section className="grid gap-4 rounded-[2rem] border border-zinc-200 bg-white p-5 shadow-receipt-down">
+    <section className="grid gap-4 rounded-[2rem] border border-white/60 bg-gradient-to-br from-white/90 to-white/50 p-5 shadow-[0_8px_32px_rgba(0,0,0,0.06)] backdrop-blur-xl">
       <div className="receipt-print-hide flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h3 className="text-xl font-semibold text-zinc-950">{title}</h3>
@@ -319,14 +319,14 @@ export function SaleReceipt({
         <Button
           type="button"
           variant="outline"
-          className="rounded-2xl border-zinc-200"
+          className="rounded-2xl border border-white/70 bg-gradient-to-b from-white/80 to-white/30 shadow-[0_4px_12px_rgba(0,0,0,0.04),inset_0_1px_1px_rgba(255,255,255,0.8)] backdrop-blur-md hover:from-white/90 hover:to-white/50 active:scale-[0.98] active:shadow-inner transition-all text-zinc-800"
           onClick={handlePrintReceipt}
         >
           Imprimir recibo
         </Button>
       </div>
 
-      <article className="receipt-thermal-container mx-auto w-full max-w-[360px] rounded-[1.5rem] border border-zinc-200 bg-white p-5 text-zinc-950">
+      <article className="receipt-thermal-container mx-auto w-full max-w-[360px] rounded-[1.5rem] border border-zinc-200/60 bg-white p-5 text-zinc-950 shadow-[0_2px_14px_rgba(0,0,0,0.04),inset_0_0_20px_rgba(0,0,0,0.02)]">
         <div className="border-b border-dashed border-zinc-300 pb-4 text-center">
           <div className="mx-auto flex h-[50px] w-24 items-center justify-center">
             <Image

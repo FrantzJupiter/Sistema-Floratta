@@ -43,8 +43,8 @@ export function SaleSummaryCard({
     <article
       className={
         compact
-          ? "rounded-[1.5rem] border border-white/55 bg-white/76 px-4 py-3 shadow-card-down"
-          : "rounded-[1.75rem] border border-white/55 bg-white/74 p-5 shadow-card-down"
+          ? "rounded-[1.5rem] border border-white/60 bg-gradient-to-br from-white/80 to-white/30 px-4 py-3 shadow-[0_4px_24px_rgba(0,0,0,0.04)] backdrop-blur-md"
+          : "rounded-[1.75rem] border border-white/60 bg-gradient-to-br from-white/80 to-white/30 p-5 shadow-[0_4px_24px_rgba(0,0,0,0.04)] backdrop-blur-md"
       }
     >
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
@@ -69,7 +69,7 @@ export function SaleSummaryCard({
         </div>
 
         <div className="flex flex-col gap-3 xl:items-end">
-          <div className="rounded-2xl border border-white/60 bg-emerald-50/75 px-4 py-3">
+          <div className="rounded-2xl border border-emerald-200/60 bg-gradient-to-br from-emerald-50/80 to-emerald-100/30 px-4 py-3 shadow-[inset_0_2px_8px_rgba(4,120,87,0.04)] backdrop-blur-sm">
             <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Total pago</p>
             <p className="mt-2 text-2xl font-semibold text-zinc-950">
               {formatCurrency(sale.totalAmount)}
@@ -81,7 +81,7 @@ export function SaleSummaryCard({
               <Button
                 type="button"
                 variant="outline"
-                className="rounded-2xl border-zinc-200 bg-white/80"
+                className="rounded-2xl border border-white/70 bg-gradient-to-b from-white/80 to-white/30 shadow-[0_4px_12px_rgba(0,0,0,0.04),inset_0_1px_1px_rgba(255,255,255,0.8)] backdrop-blur-md hover:from-white/90 hover:to-white/50 active:scale-[0.98] active:shadow-inner transition-all text-zinc-800"
                 onClick={() => setIsExpanded((current) => !current)}
               >
                 {isExpanded ? "Mostrar menos" : "Mostrar tudo"}
@@ -89,7 +89,7 @@ export function SaleSummaryCard({
               <Button
                 type="button"
                 variant="outline"
-                className="rounded-2xl border-zinc-200 bg-white/80"
+                className="rounded-2xl border border-white/70 bg-gradient-to-b from-white/80 to-white/30 shadow-[0_4px_12px_rgba(0,0,0,0.04),inset_0_1px_1px_rgba(255,255,255,0.8)] backdrop-blur-md hover:from-white/90 hover:to-white/50 active:scale-[0.98] active:shadow-inner transition-all text-zinc-800"
                 onClick={() => setIsReceiptOpen((current) => !current)}
               >
                 {isReceiptOpen ? "Ocultar recibo" : "Mostrar recibo"}
@@ -105,7 +105,7 @@ export function SaleSummaryCard({
             {sale.items.map((item) => (
               <div
                 key={item.id}
-                className="flex flex-col gap-1 rounded-2xl border border-white/60 bg-white/80 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-1 rounded-2xl border border-white/50 bg-white/40 px-4 py-3 shadow-[inset_0_2px_8px_rgba(0,0,0,0.02)] backdrop-blur-md sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
                   <p className="text-sm font-medium text-zinc-900">
@@ -124,7 +124,7 @@ export function SaleSummaryCard({
           </div>
 
           <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-2xl border border-white/60 bg-white/75 p-4">
+            <div className="rounded-2xl border border-white/50 bg-white/40 p-4 shadow-[inset_0_2px_8px_rgba(0,0,0,0.02)] backdrop-blur-md">
               <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">
                 Subtotal original
               </p>
@@ -132,7 +132,7 @@ export function SaleSummaryCard({
                 {formatCurrency(sale.subtotalAmount)}
               </p>
             </div>
-            <div className="rounded-2xl border border-white/60 bg-white/75 p-4">
+            <div className="rounded-2xl border border-white/50 bg-white/40 p-4 shadow-[inset_0_2px_8px_rgba(0,0,0,0.02)] backdrop-blur-md">
               <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">
                 Desconto aplicado
               </p>
@@ -147,7 +147,7 @@ export function SaleSummaryCard({
               <Button
                 type="button"
                 variant="outline"
-                className="rounded-2xl border-zinc-200 bg-white/80"
+                className="rounded-2xl border border-white/70 bg-gradient-to-b from-white/80 to-white/30 shadow-[0_4px_12px_rgba(0,0,0,0.04),inset_0_1px_1px_rgba(255,255,255,0.8)] backdrop-blur-md hover:from-white/90 hover:to-white/50 active:scale-[0.98] active:shadow-inner transition-all text-zinc-800"
                 onClick={() => setIsReceiptOpen((current) => !current)}
               >
                 {isReceiptOpen ? "Ocultar recibo" : "Mostrar recibo"}

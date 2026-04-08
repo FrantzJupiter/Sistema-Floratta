@@ -30,7 +30,7 @@ function ProductThumbnail({
   name: string;
 }) {
   return (
-    <div className="overflow-hidden rounded-[1rem] border border-white/60 bg-white/80 shadow-card-down">
+    <div className="overflow-hidden rounded-[1rem] border border-white/60 bg-gradient-to-br from-white/60 to-white/20 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)] backdrop-blur-sm">
       {imageUrl ? (
         <img src={imageUrl} alt={name} className="h-12 w-12 object-cover sm:h-14 sm:w-14" />
       ) : (
@@ -220,7 +220,7 @@ export function SalesWorkspace({
         <CartPanel customers={customers} />
       </aside>
 
-      <section className="flex min-w-0 flex-col gap-6 rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-panel-down backdrop-blur-xl">
+      <section className="flex min-w-0 flex-col gap-6 rounded-[2rem] border border-white/60 bg-gradient-to-br from-white/60 to-white/20 p-4 sm:p-6 shadow-[0_8px_32px_rgba(0,0,0,0.06)] backdrop-blur-2xl">
         <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
           <div className="space-y-1">
             <h2 className="text-2xl font-semibold text-zinc-950">{title}</h2>
@@ -228,14 +228,14 @@ export function SalesWorkspace({
         </div>
 
         <div className="grid gap-4">
-          <div className="grid gap-3 rounded-[1.75rem] border border-white/60 bg-white/80 p-4 shadow-card-down backdrop-blur-xl md:grid-cols-2 xl:grid-cols-[minmax(0,1.2fr)_180px_180px_180px]">
+          <div className="grid gap-3 rounded-[1.75rem] border border-white/60 bg-gradient-to-br from-white/80 to-white/40 p-4 shadow-[0_4px_24px_rgba(0,0,0,0.04)] backdrop-blur-xl md:grid-cols-2 xl:grid-cols-[minmax(0,1.2fr)_180px_180px_180px]">
             <label className="grid gap-2 text-sm text-zinc-700">
               <span className="font-medium">Buscar produtos</span>
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Ex.: perfume, brinco, GIFT-2026..."
-                className="h-11 rounded-2xl border border-white/45 bg-white/80 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+                className="h-11 rounded-2xl border border-white/50 bg-white/40 px-4 text-zinc-900 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)] backdrop-blur-md outline-none transition-all focus:bg-white/60 focus:border-rose-300 focus:ring-4 focus:ring-rose-200/50 hover:bg-white/50"
               />
             </label>
 
@@ -244,7 +244,7 @@ export function SalesWorkspace({
               <select
                 value={productType}
                 onChange={(event) => setProductType(event.target.value)}
-                className="h-11 rounded-2xl border border-white/45 bg-white/80 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+                className="h-11 rounded-2xl border border-white/50 bg-white/40 px-4 text-zinc-900 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)] backdrop-blur-md outline-none transition-all focus:bg-white/60 focus:border-rose-300 focus:ring-4 focus:ring-rose-200/50 hover:bg-white/50"
               >
                 <option value="todos">Todos os tipos</option>
                 {typeOptions.map((typeOption) => (
@@ -264,7 +264,7 @@ export function SalesWorkspace({
                     event.target.value as "todos" | "disponiveis" | "zerados",
                   )
                 }
-                className="h-11 rounded-2xl border border-white/45 bg-white/80 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+                className="h-11 rounded-2xl border border-white/50 bg-white/40 px-4 text-zinc-900 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)] backdrop-blur-md outline-none transition-all focus:bg-white/60 focus:border-rose-300 focus:ring-4 focus:ring-rose-200/50 hover:bg-white/50"
               >
                 <option value="disponiveis">Somente com estoque</option>
                 <option value="todos">Todos os produtos</option>
@@ -297,7 +297,7 @@ export function SalesWorkspace({
           ) : null}
 
           {filteredProducts.length === 0 ? (
-            <div className="rounded-[1.75rem] border border-dashed border-rose-200 bg-rose-50/65 px-5 py-10 text-center">
+            <div className="rounded-[1.75rem] border border-dashed border-rose-300/50 bg-gradient-to-b from-rose-50/50 to-transparent backdrop-blur-sm shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)] px-5 py-10 text-center">
               <p className="text-base font-medium text-zinc-800">
                 Nenhum produto foi encontrado para esta busca.
               </p>
@@ -315,7 +315,7 @@ export function SalesWorkspace({
                   return (
                     <article
                       key={product.id}
-                      className="rounded-[1.5rem] border border-white/55 bg-white/78 p-3 sm:p-3.5 shadow-card-down"
+                      className="rounded-[1.5rem] border border-white/60 bg-gradient-to-br from-white/80 to-white/30 p-3 sm:p-3.5 shadow-[0_4px_24px_rgba(0,0,0,0.04)] backdrop-blur-md"
                     >
                       <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_156px] md:items-center">
                         <div className="flex min-w-0 items-center gap-3">

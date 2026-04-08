@@ -55,7 +55,7 @@ function ProductImagePreview({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-[1rem] border border-white/60 bg-white/80 shadow-card-down transition-all duration-200",
+        "overflow-hidden rounded-[1rem] border border-white/60 bg-gradient-to-br from-white/60 to-white/20 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)] backdrop-blur-sm transition-all duration-200",
         isEditing ? "h-28 w-28 sm:h-32 sm:w-32" : "h-12 w-12 sm:h-14 sm:w-14",
       )}
     >
@@ -129,7 +129,7 @@ function ProductEditForm({
     <form
       action={formAction}
       onSubmit={handleSubmit}
-      className="mt-4 grid gap-4 rounded-[1.5rem] border border-white/55 bg-white/78 p-4 shadow-card-down"
+      className="mt-4 grid gap-4 rounded-[1.5rem] border border-white/40 bg-black/5 p-4 shadow-[inset_0_2px_10px_rgba(0,0,0,0.03)] backdrop-blur-sm"
     >
       <input type="hidden" name="productId" value={product.id} />
 
@@ -139,7 +139,7 @@ function ProductEditForm({
           <input
             name="name"
             defaultValue={product.name}
-            className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+            className="h-11 rounded-2xl border border-white/50 bg-white/40 px-4 text-zinc-900 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)] backdrop-blur-md outline-none transition-all focus:bg-white/60 focus:border-rose-300 focus:ring-4 focus:ring-rose-200/50 hover:bg-white/50"
           />
           <FieldError errors={state.fieldErrors?.name} />
         </label>
@@ -159,7 +159,7 @@ function ProductEditForm({
             min="0"
             step="0.01"
             defaultValue={String(product.base_price)}
-            className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+            className="h-11 rounded-2xl border border-white/50 bg-white/40 px-4 text-zinc-900 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)] backdrop-blur-md outline-none transition-all focus:bg-white/60 focus:border-rose-300 focus:ring-4 focus:ring-rose-200/50 hover:bg-white/50"
           />
           <FieldError errors={state.fieldErrors?.basePrice} />
         </label>
@@ -172,7 +172,7 @@ function ProductEditForm({
             min="0"
             step="1"
             defaultValue={String(product.inventory?.quantity ?? 0)}
-            className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+            className="h-11 rounded-2xl border border-white/50 bg-white/40 px-4 text-zinc-900 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)] backdrop-blur-md outline-none transition-all focus:bg-white/60 focus:border-rose-300 focus:ring-4 focus:ring-rose-200/50 hover:bg-white/50"
           />
           <FieldError errors={state.fieldErrors?.quantity} />
         </label>
@@ -186,7 +186,7 @@ function ProductEditForm({
         onProcessingChange={setIsImageProcessing}
       />
 
-      <section className="grid gap-4 rounded-[1.5rem] border border-white/50 bg-white/50 p-4">
+      <section className="grid gap-4 rounded-[1.5rem] border border-white/50 bg-white/30 p-4 shadow-[inset_0_2px_8px_rgba(0,0,0,0.02)] backdrop-blur-md">
         <div className="space-y-1">
           <h3 className="text-sm font-semibold text-zinc-900">Detalhes</h3>
         </div>
@@ -209,7 +209,7 @@ function ProductEditForm({
               value={detailVolume}
               placeholder="Ex.: 100 ml"
               onChange={(event) => setDetailVolume(event.target.value)}
-              className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+              className="h-11 rounded-2xl border border-white/50 bg-white/40 px-4 text-zinc-900 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)] backdrop-blur-md outline-none transition-all focus:bg-white/60 focus:border-rose-300 focus:ring-4 focus:ring-rose-200/50 hover:bg-white/50"
             />
             <FieldError errors={state.fieldErrors?.detailVolume} />
           </label>
@@ -230,7 +230,7 @@ function ProductEditForm({
           type="submit"
           size="lg"
           disabled={pending || isImageProcessing}
-          className="rounded-2xl bg-rose-900 px-5 text-white hover:bg-rose-800"
+          className="rounded-2xl bg-gradient-to-b from-rose-700 to-rose-950 border border-rose-800/80 px-5 text-white shadow-[0_4px_12px_rgba(159,18,57,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)] hover:from-rose-600 hover:to-rose-900 active:scale-[0.98] active:shadow-inner transition-all"
         >
           {isImageProcessing
             ? "Otimizando imagem..."
@@ -291,7 +291,7 @@ export function ProductCatalogCard({
   return (
     <article
       className={cn(
-        "rounded-[1.5rem] border border-white/55 bg-white/74 p-3 sm:p-3.5 shadow-card-down transition hover:-translate-y-0.5",
+        "rounded-[1.5rem] border border-white/60 bg-gradient-to-br from-white/80 to-white/30 p-3 sm:p-3.5 shadow-[0_4px_24px_rgba(0,0,0,0.04)] backdrop-blur-md transition hover:-translate-y-0.5",
         isEditing && "md:col-span-2",
       )}
     >
@@ -338,7 +338,7 @@ export function ProductCatalogCard({
               type="button"
               variant="outline"
               size="sm"
-              className="h-8 rounded-xl border-zinc-200 bg-white/80 px-2.5 text-xs"
+              className="h-8 rounded-xl border border-white/70 bg-gradient-to-b from-white/80 to-white/30 shadow-[0_4px_12px_rgba(0,0,0,0.04),inset_0_1px_1px_rgba(255,255,255,0.8)] backdrop-blur-md hover:from-white/90 hover:to-white/50 active:scale-[0.98] active:shadow-inner transition-all text-zinc-800 px-2.5 text-xs"
               onClick={() => setIsEditing((current) => !current)}
             >
               {isEditing ? "Fechar edição" : "Editar"}
@@ -351,7 +351,7 @@ export function ProductCatalogCard({
                 variant="outline"
                 size="sm"
                 disabled={deletePending}
-                className="h-8 rounded-xl border-rose-200 bg-rose-50/70 px-2.5 text-xs text-rose-900 hover:bg-rose-100"
+                className="h-8 rounded-xl border border-rose-200/80 bg-gradient-to-b from-rose-50/80 to-rose-100/30 px-2.5 text-xs text-rose-900 shadow-[0_4px_12px_rgba(225,29,72,0.06),inset_0_1px_1px_rgba(255,255,255,0.8)] backdrop-blur-md hover:from-rose-100/90 hover:to-rose-100/50 active:scale-[0.98] active:shadow-inner transition-all"
                 onClick={(event) => {
                   if (!window.confirm(`Excluir ${product.name}? Esta ação não pode ser desfeita.`)) {
                     event.preventDefault();

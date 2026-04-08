@@ -78,7 +78,7 @@ export function ProductsWorkspace({
     <div className="flex flex-col gap-8">
       {withCreateForm ? (
         <aside className="min-w-0 w-full">
-          <div className="rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-panel-down backdrop-blur-xl">
+          <div className="rounded-[2rem] border border-white/60 bg-gradient-to-br from-white/60 to-white/20 p-4 sm:p-6 shadow-[0_8px_32px_rgba(0,0,0,0.06)] backdrop-blur-2xl">
             <div className="mb-5 space-y-2">
               <h3 className="text-xl font-semibold text-zinc-950">Cadastrar produto</h3>
             </div>
@@ -87,18 +87,18 @@ export function ProductsWorkspace({
         </aside>
       ) : null}
 
-      <section className="flex min-w-0 flex-col gap-6 rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-panel-down backdrop-blur-xl">
+      <section className="flex min-w-0 flex-col gap-6 rounded-[2rem] border border-white/60 bg-gradient-to-br from-white/60 to-white/20 p-4 sm:p-6 shadow-[0_8px_32px_rgba(0,0,0,0.06)] backdrop-blur-2xl">
         <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
           <div className="space-y-1">
             <h2 className="text-2xl font-semibold text-zinc-950">{title}</h2>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-card-down">
+            <div className="rounded-[1.5rem] border border-white/60 bg-gradient-to-br from-white/70 to-white/30 px-4 py-4 shadow-[0_4px_24px_rgba(0,0,0,0.04)] backdrop-blur-md">
               <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Cadastrados</p>
               <p className="mt-2 text-2xl font-semibold text-zinc-950">{products.length}</p>
             </div>
-            <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-card-down">
+            <div className="rounded-[1.5rem] border border-white/60 bg-gradient-to-br from-white/70 to-white/30 px-4 py-4 shadow-[0_4px_24px_rgba(0,0,0,0.04)] backdrop-blur-md">
               <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">
                 Balanço últimas 24h
               </p>
@@ -115,14 +115,14 @@ export function ProductsWorkspace({
         </div>
 
         <div className="grid gap-4">
-          <div className="grid gap-3 rounded-[1.75rem] border border-white/60 bg-white/80 p-4 shadow-card-down backdrop-blur-xl md:grid-cols-3 xl:grid-cols-[minmax(0,1.2fr)_180px_180px]">
+          <div className="grid gap-3 rounded-[1.75rem] border border-white/60 bg-gradient-to-br from-white/80 to-white/40 p-4 shadow-[0_4px_24px_rgba(0,0,0,0.04)] backdrop-blur-xl md:grid-cols-3 xl:grid-cols-[minmax(0,1.2fr)_180px_180px]">
             <label className="grid gap-2 text-sm text-zinc-700">
               <span className="font-medium">Buscar no catálogo</span>
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Nome, ID do produto, tipo ou detalhe"
-                className="h-11 rounded-2xl border border-white/45 bg-white/80 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+                className="h-11 rounded-2xl border border-white/50 bg-white/40 px-4 text-zinc-900 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)] backdrop-blur-md outline-none transition-all focus:bg-white/60 focus:border-rose-300 focus:ring-4 focus:ring-rose-200/50 hover:bg-white/50"
               />
             </label>
 
@@ -131,7 +131,7 @@ export function ProductsWorkspace({
               <select
                 value={productType}
                 onChange={(event) => setProductType(event.target.value)}
-                className="h-11 rounded-2xl border border-white/45 bg-white/80 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+                className="h-11 rounded-2xl border border-white/50 bg-white/40 px-4 text-zinc-900 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)] backdrop-blur-md outline-none transition-all focus:bg-white/60 focus:border-rose-300 focus:ring-4 focus:ring-rose-200/50 hover:bg-white/50"
               >
                 <option value="todos">Todos os tipos</option>
                 {typeOptions.map((typeOption) => (
@@ -149,7 +149,7 @@ export function ProductsWorkspace({
                 onChange={(event) =>
                   setStockFilter(event.target.value as "todos" | "baixo" | "zerado")
                 }
-                className="h-11 rounded-2xl border border-white/45 bg-white/80 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+                className="h-11 rounded-2xl border border-white/50 bg-white/40 px-4 text-zinc-900 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)] backdrop-blur-md outline-none transition-all focus:bg-white/60 focus:border-rose-300 focus:ring-4 focus:ring-rose-200/50 hover:bg-white/50"
               >
                 <option value="todos">Todos</option>
                 <option value="baixo">Apenas baixo estoque</option>
@@ -159,7 +159,7 @@ export function ProductsWorkspace({
           </div>
 
           {filteredProducts.length === 0 ? (
-            <div className="rounded-[1.75rem] border border-dashed border-rose-200 bg-rose-50/65 px-5 py-10 text-center">
+            <div className="rounded-[1.75rem] border border-dashed border-rose-300/50 bg-gradient-to-b from-rose-50/50 to-transparent backdrop-blur-sm shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)] px-5 py-10 text-center">
               <p className="text-base font-medium text-zinc-800">
                 Nenhum produto corresponde aos filtros atuais.
               </p>
