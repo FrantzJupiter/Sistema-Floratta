@@ -196,9 +196,9 @@ export function SaleReceipt({
               flex: 1;
               min-width: 120px;
               margin-left: 8px;
+              margin-top: 10px;
               border-bottom: 1px solid #52525b;
-              align-self: center;
-              transform: translateY(-1px);
+              align-self: flex-end;
             }
 
             .item {
@@ -354,12 +354,15 @@ export function SaleReceipt({
               {new Date(receipt.createdAt).toLocaleString("pt-BR")}
             </span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-end gap-4">
             <span className="shrink-0 text-zinc-500">Cliente</span>
             {hasCustomerName ? (
               <span className="ml-auto text-right font-medium">{customerName}</span>
             ) : (
-              <span aria-hidden="true" className="min-w-0 flex-1 border-b border-zinc-400" />
+              <span
+                aria-hidden="true"
+                className="mt-2 min-w-0 flex-1 border-b border-zinc-400"
+              />
             )}
           </div>
         </div>

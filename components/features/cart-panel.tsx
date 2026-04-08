@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useMemo, useState } from "react";
 
 import { checkoutAction } from "@/app/actions/checkout";
+import { cancelSaleAction } from "@/app/actions/transactions";
 import { CustomerQuickCreateForm } from "@/components/features/customer-quick-create-form";
 import { SaleReceipt } from "@/components/features/sale-receipt";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import {
   initialCheckoutActionState,
   type CheckoutActionState,
 } from "@/lib/validations/checkout";
+import { initialTransactionHistoryActionState } from "@/lib/validations/transactions";
 import type { RegisteredCustomer } from "@/services/customers";
 
 function formatCurrency(value: number) {
@@ -170,10 +172,7 @@ function CartCheckoutContent({
           />
         ) : null}
 
-        <form
-          action={formAction}
-          className="grid gap-4"
-        >
+        <form action={formAction} className="grid gap-4">
           <input
             type="hidden"
             name="cartPayload"
@@ -281,10 +280,16 @@ export function CartPanel({ customers }: CartPanelProps) {
   const decrementItem = useCartStore((state) => state.decrementItem);
   const removeItem = useCartStore((state) => state.removeItem);
   const clearCart = useCartStore((state) => state.clearCart);
+  const [dismissedReceiptId, setDismissedReceiptId] = useState<string | null>(null);
+  const [cancelTargetReceiptId, setCancelTargetReceiptId] = useState<string | null>(null);
 
   const [state, formAction, pending] = useActionState<CheckoutActionState, FormData>(
     checkoutAction,
     initialCheckoutActionState,
+  );
+  const [cancelState, cancelFormAction, cancelPending] = useActionState(
+    cancelSaleAction,
+    initialTransactionHistoryActionState,
   );
 
   useEffect(() => {
@@ -292,6 +297,14 @@ export function CartPanel({ customers }: CartPanelProps) {
       clearCart();
     }
   }, [clearCart, state.status]);
+
+  const latestReceipt = state.receipt ?? null;
+  const activeReceipt =
+    latestReceipt &&
+    dismissedReceiptId !== latestReceipt.id &&
+    !(cancelState.status === "success" && cancelTargetReceiptId === latestReceipt.id)
+      ? latestReceipt
+      : null;
 
   return (
     <section className="grid gap-4 rounded-[2rem] border border-white/45 bg-white/68 p-4 sm:p-6 shadow-panel-down backdrop-blur-xl">
@@ -304,14 +317,16 @@ export function CartPanel({ customers }: CartPanelProps) {
         </span>
       </div>
 
-      {items.length === 0 ? (
+      {!activeReceipt && items.length === 0 ? (
         <div className="rounded-[1.75rem] border border-dashed border-rose-200 bg-rose-50/65 px-5 py-10 text-center">
           <p className="text-base font-medium text-zinc-800">Nenhum item no carrinho.</p>
           <p className="mt-2 text-sm text-zinc-600">
             Use os botões do catálogo para montar a venda.
           </p>
         </div>
-      ) : (
+      ) : null}
+
+      {!activeReceipt && items.length > 0 ? (
         <CartCheckoutContent
           key={state.status === "success" ? state.transactionId ?? state.message : "active-cart"}
           customers={customers}
@@ -323,9 +338,68 @@ export function CartPanel({ customers }: CartPanelProps) {
           removeItem={removeItem}
           state={state}
         />
-      )}
+      ) : null}
 
-      {state.receipt ? <SaleReceipt receipt={state.receipt} /> : null}
+      {!activeReceipt && cancelState.message ? (
+        <div aria-live="polite" className="min-h-6 text-sm">
+          <p className={cancelState.status === "success" ? "text-emerald-700" : "text-rose-600"}>
+            {cancelState.message}
+          </p>
+        </div>
+      ) : null}
+
+      {activeReceipt ? (
+        <div className="grid gap-4">
+          <SaleReceipt receipt={activeReceipt} />
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Button
+              type="button"
+              size="lg"
+              disabled={cancelPending}
+              className="rounded-2xl bg-emerald-700 text-white hover:bg-emerald-600"
+              onClick={() => {
+                if (activeReceipt) {
+                  setDismissedReceiptId(activeReceipt.id);
+                }
+              }}
+            >
+              Nova venda
+            </Button>
+
+            <form action={cancelFormAction}>
+              <input type="hidden" name="transactionId" value={activeReceipt.id} />
+              <Button
+                type="submit"
+                size="lg"
+                variant="outline"
+                disabled={cancelPending}
+                className="w-full rounded-2xl border-rose-200 bg-rose-50/70 text-rose-900 hover:bg-rose-100"
+                onClick={(event) => {
+                  if (
+                    !window.confirm(
+                      "Cancelar a última venda exibida? O estoque será devolvido e o lançamento será removido.",
+                    )
+                  ) {
+                    event.preventDefault();
+                    return;
+                  }
+
+                  setCancelTargetReceiptId(activeReceipt.id);
+                }}
+              >
+                {cancelPending ? "Cancelando venda..." : "Cancelar última venda"}
+              </Button>
+            </form>
+          </div>
+
+          {cancelState.status === "error" ? (
+            <div aria-live="polite" className="min-h-6 text-sm">
+              <p className="text-rose-600">{cancelState.message}</p>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
     </section>
   );
 }

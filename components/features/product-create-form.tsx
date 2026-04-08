@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState, useMemo, useState, type FormEvent } from "react";
+import { useActionState, useState, type FormEvent } from "react";
 
 import { createProductAction } from "@/app/actions/products";
 import { ProductImageFields } from "@/components/features/product-image-fields";
+import { ProductTypeField } from "@/components/features/product-type-field";
 import { Button } from "@/components/ui/button";
 import { createAutomaticSku } from "@/lib/products/catalog";
 import {
@@ -78,7 +79,6 @@ function ProductCreateFormFields({
   const [detailType, setDetailType] = useState("");
   const [skuPreview, setSkuPreview] = useState(() => createAutomaticSku(""));
   const [isImageProcessing, setIsImageProcessing] = useState(false);
-  const typeListId = useMemo(() => "product-detail-type-options", []);
 
   function handleDetailTypeChange(nextType: string) {
     setDetailType(nextType);
@@ -93,14 +93,6 @@ function ProductCreateFormFields({
 
   return (
     <form action={formAction} className="grid gap-5" onSubmit={handleSubmit}>
-      {typeOptions.length ? (
-        <datalist id={typeListId}>
-          {typeOptions.map((typeOption) => (
-            <option key={typeOption} value={typeOption} />
-          ))}
-        </datalist>
-      ) : null}
-
       <FormField
         label="Nome do produto"
         name="name"
@@ -108,52 +100,56 @@ function ProductCreateFormFields({
         errors={state.fieldErrors?.name}
       />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-[140px_132px_minmax(0,170px)_auto] md:items-end">
-        <label className="grid gap-1.5 text-xs text-zinc-700">
-          <span className="font-medium">Preço base</span>
-          <input
-            name="basePrice"
-            type="number"
-            min="0"
-            step="0.01"
-            placeholder="129.90"
-            className="h-10 rounded-xl border border-white/45 bg-white/75 px-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
-          />
-          <FieldError errors={state.fieldErrors?.basePrice} />
-        </label>
+      <div className="grid gap-3 md:grid-cols-[auto_minmax(0,1fr)] md:items-end md:gap-x-10">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-[168px_88px] md:gap-x-5">
+          <label className="grid gap-1.5 text-xs text-zinc-700">
+            <span className="font-medium">Preço base</span>
+            <input
+              name="basePrice"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="129.90"
+              className="h-10 rounded-xl border border-white/45 bg-white/75 px-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+            />
+            <FieldError errors={state.fieldErrors?.basePrice} />
+          </label>
 
-        <label className="grid gap-1.5 text-xs text-zinc-700">
-          <span className="font-medium">Qtd. inicial</span>
-          <input
-            name="quantity"
-            type="number"
-            min="0"
-            step="1"
-            placeholder="12"
-            defaultValue="0"
-            className="h-10 rounded-xl border border-white/45 bg-white/75 px-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
-          />
-          <FieldError errors={state.fieldErrors?.quantity} />
-        </label>
+          <label className="grid gap-1.5 text-xs text-zinc-700">
+            <span className="font-medium">Qtd. inicial</span>
+            <input
+              name="quantity"
+              type="number"
+              min="0"
+              step="1"
+              placeholder="12"
+              defaultValue="0"
+              className="h-10 rounded-xl border border-white/45 bg-white/75 px-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+            />
+            <FieldError errors={state.fieldErrors?.quantity} />
+          </label>
+        </div>
 
-        <label className="col-span-2 grid gap-1.5 text-xs text-zinc-700 md:col-span-1">
-          <span className="font-medium">ID do produto</span>
-          <input
-            value={skuPreview}
-            readOnly
-            className="h-10 w-full rounded-xl border border-dashed border-rose-200 bg-rose-50/80 px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-rose-900 shadow-sm outline-none"
-          />
-        </label>
+        <div className="grid gap-2 md:justify-self-end md:grid-cols-[190px_auto] md:items-end">
+          <label className="grid gap-1.5 text-xs text-zinc-700">
+            <span className="font-medium">ID do produto</span>
+            <input
+              value={skuPreview}
+              readOnly
+              className="h-10 w-full rounded-xl border border-dashed border-rose-200 bg-rose-50/80 px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-rose-900 shadow-sm outline-none"
+            />
+          </label>
 
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="col-span-2 h-10 rounded-xl px-3 text-xs text-rose-900 hover:bg-rose-100 md:col-span-1 md:self-end"
-          onClick={() => setSkuPreview(createAutomaticSku(detailType))}
-        >
-          Gerar outro
-        </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-10 rounded-xl px-3 text-xs text-rose-900 hover:bg-rose-100 md:self-end"
+            onClick={() => setSkuPreview(createAutomaticSku(detailType))}
+          >
+            Gerar outro
+          </Button>
+        </div>
       </div>
 
       <ProductImageFields
@@ -169,18 +165,12 @@ function ProductCreateFormFields({
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="grid gap-2 text-sm text-zinc-700">
-            <span className="font-medium">Tipo</span>
-            <input
-              name="detailType"
-              list={typeOptions.length ? typeListId : undefined}
-              value={detailType}
-              placeholder="Selecione ou digite um novo tipo"
-              onChange={(event) => handleDetailTypeChange(event.target.value)}
-              className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
-            />
-            <FieldError errors={state.fieldErrors?.detailType} />
-          </label>
+          <ProductTypeField
+            errors={state.fieldErrors?.detailType}
+            onChange={handleDetailTypeChange}
+            typeOptions={typeOptions}
+            value={detailType}
+          />
 
           <FormField
             label="Volume"

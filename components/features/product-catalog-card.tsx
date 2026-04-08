@@ -4,7 +4,6 @@
 import {
   useActionState,
   useEffect,
-  useMemo,
   useRef,
   useState,
   type FormEvent,
@@ -12,6 +11,8 @@ import {
 
 import { deleteProductAction, updateProductAction } from "@/app/actions/products";
 import { ProductImageFields } from "@/components/features/product-image-fields";
+import { ProductQrLabelDialog } from "@/components/features/product-qr-label-dialog";
+import { ProductTypeField } from "@/components/features/product-type-field";
 import { Button } from "@/components/ui/button";
 import {
   createAutomaticSku,
@@ -54,8 +55,8 @@ function ProductImagePreview({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-[1.1rem] border border-white/60 bg-white/80 shadow-card-down transition-all duration-200",
-        isEditing ? "h-28 w-28 sm:h-32 sm:w-32" : "h-14 w-14 sm:h-16 sm:w-16",
+        "overflow-hidden rounded-[1rem] border border-white/60 bg-white/80 shadow-card-down transition-all duration-200",
+        isEditing ? "h-28 w-28 sm:h-32 sm:w-32" : "h-12 w-12 sm:h-14 sm:w-14",
       )}
     >
       {imageUrl ? (
@@ -117,7 +118,6 @@ function ProductEditForm({
   );
   const [skuPreview, setSkuPreview] = useState(product.sku);
   const [isImageProcessing, setIsImageProcessing] = useState(false);
-  const typeListId = useMemo(() => `product-detail-type-options-${product.id}`, [product.id]);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     if (isImageProcessing) {
@@ -129,16 +129,8 @@ function ProductEditForm({
     <form
       action={formAction}
       onSubmit={handleSubmit}
-      className="mt-5 grid gap-4 rounded-[1.5rem] border border-white/55 bg-white/78 p-4 shadow-card-down"
+      className="mt-4 grid gap-4 rounded-[1.5rem] border border-white/55 bg-white/78 p-4 shadow-card-down"
     >
-      {typeOptions.length ? (
-        <datalist id={typeListId}>
-          {typeOptions.map((typeOption) => (
-            <option key={typeOption} value={typeOption} />
-          ))}
-        </datalist>
-      ) : null}
-
       <input type="hidden" name="productId" value={product.id} />
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_220px]">
@@ -160,7 +152,7 @@ function ProductEditForm({
 
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_180px]">
         <label className="grid gap-2 text-sm text-zinc-700">
-          <span className="font-medium">Preco base</span>
+          <span className="font-medium">Preço base</span>
           <input
             name="basePrice"
             type="number"
@@ -200,21 +192,15 @@ function ProductEditForm({
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <label className="grid gap-2 text-sm text-zinc-700">
-            <span className="font-medium">Tipo</span>
-            <input
-              name="detailType"
-              list={typeOptions.length ? typeListId : undefined}
-              value={detailType}
-              placeholder="Selecione ou digite um novo tipo"
-              onChange={(event) => {
-                setDetailType(event.target.value);
-                setSkuPreview(createAutomaticSku(event.target.value));
-              }}
-              className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
-            />
-            <FieldError errors={state.fieldErrors?.detailType} />
-          </label>
+          <ProductTypeField
+            errors={state.fieldErrors?.detailType}
+            onChange={(nextType) => {
+              setDetailType(nextType);
+              setSkuPreview(createAutomaticSku(nextType));
+            }}
+            typeOptions={typeOptions}
+            value={detailType}
+          />
 
           <label className="grid gap-2 text-sm text-zinc-700">
             <span className="font-medium">Volume</span>
@@ -305,54 +291,49 @@ export function ProductCatalogCard({
   return (
     <article
       className={cn(
-        "rounded-[1.25rem] border border-white/55 bg-white/72 p-3 shadow-card-down transition hover:-translate-y-0.5",
-        isEditing && "col-span-2 md:col-span-3 xl:col-span-4 2xl:col-span-5",
+        "rounded-[1.5rem] border border-white/55 bg-white/74 p-3 sm:p-3.5 shadow-card-down transition hover:-translate-y-0.5",
+        isEditing && "md:col-span-2",
       )}
     >
-      <div className="flex flex-col gap-3">
-        <div className="flex items-start gap-3">
-          <ProductImagePreview
-            imageUrl={product.image_url}
-            name={product.name}
-            isEditing={isEditing}
-          />
+      <div className="grid gap-3">
+        <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
+          <div className="flex min-w-0 items-center gap-3">
+            <ProductImagePreview
+              imageUrl={product.image_url}
+              name={product.name}
+              isEditing={isEditing}
+            />
 
-          <div className="min-w-0 flex-1 space-y-2">
-            <div className="flex flex-wrap gap-2">
-              <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.16em] text-rose-700">
-                {detailType ?? "Sem tipo"}
-              </span>
-              <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${stockTone}`}>
-                {quantity} em estoque
-              </span>
-            </div>
+            <div className="min-w-0 flex-1 space-y-2">
+              <div className="flex flex-wrap gap-2">
+                <span className="rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.16em] text-rose-700">
+                  {detailType ?? "Sem tipo"}
+                </span>
+                <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${stockTone}`}>
+                  {quantity} em estoque
+                </span>
+              </div>
 
-            <div className="space-y-1.5">
-              <h3 className="line-clamp-2 text-sm font-semibold text-zinc-950 sm:text-base">
-                {product.name}
-              </h3>
-              <p className="text-lg font-semibold text-zinc-950 sm:text-xl">
-                {formatCurrency(product.base_price)}
-              </p>
+              <div className="flex items-center justify-between gap-3">
+                <h3 className="truncate text-sm font-semibold text-zinc-950 sm:text-base">
+                  {product.name}
+                </h3>
+                <p className="shrink-0 text-base font-semibold text-zinc-950 sm:text-lg">
+                  {formatCurrency(product.base_price)}
+                </p>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="flex flex-col gap-2">
-          <div className="min-h-5 text-xs" aria-live="polite">
-            {updateState.message && !isEditing ? (
-              <p className={updateState.status === "success" ? "text-emerald-700" : "text-rose-600"}>
-                {updateState.message}
-              </p>
-            ) : null}
-            {deleteState.message ? (
-              <p className={deleteState.status === "success" ? "text-emerald-700" : "text-rose-600"}>
-                {deleteState.message}
-              </p>
-            ) : null}
-          </div>
+          <div className="flex flex-wrap gap-2 md:flex-col md:items-end">
+            <ProductQrLabelDialog
+              product={{
+                id: product.id,
+                name: product.name,
+                sku: product.sku,
+              }}
+            />
 
-          <div className="flex flex-wrap gap-2">
             <Button
               type="button"
               variant="outline"
@@ -382,6 +363,21 @@ export function ProductCatalogCard({
             </form>
           </div>
         </div>
+
+        {(updateState.message && !isEditing) || deleteState.message ? (
+          <div className="min-h-5 text-xs" aria-live="polite">
+            {updateState.message && !isEditing ? (
+              <p className={updateState.status === "success" ? "text-emerald-700" : "text-rose-600"}>
+                {updateState.message}
+              </p>
+            ) : null}
+            {deleteState.message ? (
+              <p className={deleteState.status === "success" ? "text-emerald-700" : "text-rose-600"}>
+                {deleteState.message}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
 
         {isEditing ? (
           <ProductEditForm

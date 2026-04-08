@@ -41,9 +41,9 @@ export function RecentSales({ sales }: RecentSalesProps) {
           </p>
         </div>
       ) : (
-        <div className="grid gap-4 xl:grid-cols-2">
+        <div className="grid gap-3">
           {sales.map((sale) => (
-            <SaleSummaryCard key={sale.id} sale={sale} />
+            <SaleSummaryCard key={sale.id} sale={sale} compact />
           ))}
         </div>
       )}

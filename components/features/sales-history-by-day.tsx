@@ -135,9 +135,9 @@ export function SalesHistoryByDay({
                   </div>
                 </div>
 
-                <div className="grid gap-4 2xl:grid-cols-2">
+                <div className="grid gap-3">
                   {daySales.map((sale) => (
-                    <SaleSummaryCard key={sale.id} sale={sale} />
+                    <SaleSummaryCard key={sale.id} sale={sale} compact />
                   ))}
                 </div>
               </section>
