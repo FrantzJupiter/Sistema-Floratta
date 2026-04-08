@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { Printer, QrCode, X } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
@@ -10,6 +11,7 @@ import {
   buildProductQrValue,
   getProductQrPrintTitle,
 } from "@/lib/products/qr";
+import { useBodyScrollLock } from "@/lib/use-body-scroll-lock";
 
 type ProductQrLabelDialogProps = {
   product: {
@@ -19,12 +21,104 @@ type ProductQrLabelDialogProps = {
   };
 };
 
+const modalViewportPaddingStyle = {
+  paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))",
+  paddingTop: "max(0.75rem, env(safe-area-inset-top))",
+};
+
 export function ProductQrLabelDialog({
   product,
 }: ProductQrLabelDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const qrRef = useRef<SVGSVGElement | null>(null);
   const qrValue = useMemo(() => buildProductQrValue(product), [product]);
+
+  useBodyScrollLock(isOpen);
+
+  const modalContent = isOpen ? (
+    <div className="fixed inset-0 z-[100] overflow-y-auto bg-zinc-950/72 backdrop-blur-sm">
+      <div
+        className="flex min-h-dvh items-stretch justify-center px-3 py-3 sm:items-center sm:p-4"
+        style={modalViewportPaddingStyle}
+      >
+        <div className="flex w-full max-w-xl min-h-full max-h-full flex-col overflow-hidden rounded-[1.75rem] border border-white/10 bg-[rgba(28,18,22,0.94)] text-white shadow-2xl sm:min-h-0 sm:max-h-[90dvh] sm:rounded-[2rem]">
+          <div className="flex items-start justify-between gap-4 border-b border-white/10 bg-[rgba(28,18,22,0.98)] px-4 py-4 backdrop-blur-sm sm:px-5 sm:py-5">
+            <div className="space-y-1">
+              <h3 className="text-xl font-semibold">QR do produto</h3>
+              <p className="text-sm text-white/70">
+                Imprima ou escaneie para adicionar este item ao carrinho.
+              </p>
+            </div>
+
+            <Button
+              type="button"
+              aria-label="Fechar QR"
+              variant="ghost"
+              size="icon-sm"
+              className="shrink-0 rounded-xl text-white hover:bg-white/10 hover:text-white"
+              onClick={() => setIsOpen(false)}
+            >
+              <X className="size-4" />
+            </Button>
+          </div>
+
+          <div className="overflow-y-auto px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-4">
+            <div className="rounded-[1.75rem] border border-white/12 bg-white p-5 text-zinc-950 shadow-card-down sm:p-7">
+              <div className="text-center">
+                <p className="text-[10px] uppercase tracking-[0.28em] text-zinc-500">
+                  Floratta
+                </p>
+                <h4 className="mt-3 text-lg font-semibold leading-tight">
+                  {product.name}
+                </h4>
+                <p className="mt-2 text-xs uppercase tracking-[0.18em] text-zinc-500">
+                  {product.sku}
+                </p>
+              </div>
+
+              <div className="mt-5 flex justify-center">
+                <QRCodeSVG
+                  ref={qrRef}
+                  bgColor="#ffffff"
+                  className="h-auto w-full max-w-[280px] sm:max-w-[320px]"
+                  fgColor="#111827"
+                  level="M"
+                  marginSize={2}
+                  size={320}
+                  title={`QR do produto ${product.name}`}
+                  value={qrValue}
+                />
+              </div>
+
+              <p className="mt-4 text-center text-xs text-zinc-500">
+                Ao escanear com o celular, o produto entra automaticamente no carrinho.
+              </p>
+            </div>
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <Button
+                type="button"
+                className="rounded-2xl bg-emerald-700 text-white hover:bg-emerald-600"
+                onClick={handlePrint}
+              >
+                <Printer className="size-4" />
+                Imprimir etiqueta
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="rounded-2xl border-white/15 bg-white/10 text-white hover:bg-white/15"
+                onClick={() => setIsOpen(false)}
+              >
+                Fechar
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  ) : null;
 
   function handlePrint() {
     const qrMarkup = qrRef.current?.outerHTML;
@@ -167,81 +261,9 @@ export function ProductQrLabelDialog({
         QR
       </Button>
 
-      {isOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/72 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-sm rounded-[2rem] border border-white/10 bg-[rgba(28,18,22,0.94)] p-4 text-white shadow-2xl sm:p-5">
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-1">
-                <h3 className="text-xl font-semibold">QR do produto</h3>
-                <p className="text-sm text-white/70">
-                  Imprima ou escaneie para adicionar este item ao carrinho.
-                </p>
-              </div>
-
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                className="rounded-xl text-white hover:bg-white/10 hover:text-white"
-                onClick={() => setIsOpen(false)}
-              >
-                <X className="size-4" />
-              </Button>
-            </div>
-
-            <div className="mt-4 rounded-[1.75rem] border border-white/12 bg-white p-5 text-zinc-950 shadow-card-down">
-              <div className="text-center">
-                <p className="text-[10px] uppercase tracking-[0.28em] text-zinc-500">
-                  Floratta
-                </p>
-                <h4 className="mt-3 text-lg font-semibold leading-tight">
-                  {product.name}
-                </h4>
-                <p className="mt-2 text-xs uppercase tracking-[0.18em] text-zinc-500">
-                  {product.sku}
-                </p>
-              </div>
-
-              <div className="mt-5 flex justify-center">
-                <QRCodeSVG
-                  ref={qrRef}
-                  bgColor="#ffffff"
-                  fgColor="#111827"
-                  level="M"
-                  marginSize={2}
-                  size={196}
-                  title={`QR do produto ${product.name}`}
-                  value={qrValue}
-                />
-              </div>
-
-              <p className="mt-4 text-center text-xs text-zinc-500">
-                Ao escanear com o celular, o produto entra automaticamente no carrinho.
-              </p>
-            </div>
-
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              <Button
-                type="button"
-                className="rounded-2xl bg-emerald-700 text-white hover:bg-emerald-600"
-                onClick={handlePrint}
-              >
-                <Printer className="size-4" />
-                Imprimir etiqueta
-              </Button>
-
-              <Button
-                type="button"
-                variant="outline"
-                className="rounded-2xl border-white/15 bg-white/10 text-white hover:bg-white/15"
-                onClick={() => setIsOpen(false)}
-              >
-                Fechar
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      {modalContent && typeof document !== "undefined"
+        ? createPortal(modalContent, document.body)
+        : null}
     </>
   );
 }

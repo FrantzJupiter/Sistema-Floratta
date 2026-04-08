@@ -5,6 +5,7 @@ import { useEffect, useEffectEvent, useId, useRef, useState } from "react";
 import { QrCode, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useBodyScrollLock } from "@/lib/use-body-scroll-lock";
 
 type QrCartScannerProps = {
   onDetected: (decodedText: string) => void;
@@ -12,6 +13,11 @@ type QrCartScannerProps = {
 };
 
 type ScannerStatus = "idle" | "starting" | "ready" | "error";
+
+const modalViewportPaddingStyle = {
+  paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))",
+  paddingTop: "max(0.75rem, env(safe-area-inset-top))",
+};
 
 async function stopScannerInstance(
   scanner: { clear: () => void; isScanning: boolean; stop: () => Promise<void> } | null,
@@ -51,6 +57,8 @@ export function QrCartScanner({
   } | null>(null);
   const hasHandledScanRef = useRef(false);
   const scannerId = useId().replace(/:/g, "");
+
+  useBodyScrollLock(isOpen);
 
   const handleDetected = useEffectEvent((decodedText: string) => {
     if (hasHandledScanRef.current) {
@@ -152,51 +160,59 @@ export function QrCartScanner({
       </div>
 
       {isOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/72 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-[2rem] border border-white/10 bg-[rgba(28,18,22,0.94)] p-4 text-white shadow-2xl sm:p-5">
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-1">
-                <h3 className="text-xl font-semibold">Leitor de código QR</h3>
-                <p className="text-sm text-white/70">{message}</p>
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-zinc-950/72 backdrop-blur-sm">
+          <div
+            className="flex min-h-dvh items-stretch justify-center px-3 py-3 sm:items-center sm:p-4"
+            style={modalViewportPaddingStyle}
+          >
+            <div className="flex w-full max-w-md min-h-full max-h-full flex-col overflow-hidden rounded-[1.75rem] border border-white/10 bg-[rgba(28,18,22,0.94)] text-white shadow-2xl sm:min-h-0 sm:max-h-[90dvh] sm:rounded-[2rem]">
+              <div className="flex items-start justify-between gap-4 border-b border-white/10 bg-[rgba(28,18,22,0.98)] px-4 py-4 backdrop-blur-sm sm:px-5 sm:py-5">
+                <div className="space-y-1">
+                  <h3 className="text-xl font-semibold">Leitor de código QR</h3>
+                  <p className="text-sm text-white/70">{message}</p>
+                </div>
+
+                <Button
+                  type="button"
+                  aria-label="Fechar leitor"
+                  variant="ghost"
+                  size="icon-sm"
+                  className="shrink-0 rounded-xl text-white hover:bg-white/10 hover:text-white"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <X className="size-4" />
+                </Button>
               </div>
 
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                className="rounded-xl text-white hover:bg-white/10 hover:text-white"
-                onClick={() => setIsOpen(false)}
-              >
-                <X className="size-4" />
-              </Button>
-            </div>
+              <div className="flex flex-1 flex-col overflow-y-auto px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-4">
+                <div className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-black/60">
+                  <div
+                    id={scannerId}
+                    className="min-h-[320px] w-full [&>div]:overflow-hidden [&_video]:h-[320px] [&_video]:w-full [&_video]:object-cover sm:[&_video]:h-[360px]"
+                  />
+                </div>
 
-            <div className="mt-4 overflow-hidden rounded-[1.5rem] border border-white/10 bg-black/60">
-              <div
-                id={scannerId}
-                className="min-h-[320px] w-full [&>div]:overflow-hidden [&_video]:h-[320px] [&_video]:w-full [&_video]:object-cover"
-              />
-            </div>
+                <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-xs uppercase tracking-[0.18em] text-white/55">
+                    {status === "starting"
+                      ? "Abrindo câmera"
+                      : status === "ready"
+                        ? "Leitura ativa"
+                        : status === "error"
+                          ? "Falha na leitura"
+                          : "Aguardando"}
+                  </p>
 
-            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-xs uppercase tracking-[0.18em] text-white/55">
-                {status === "starting"
-                  ? "Abrindo câmera"
-                  : status === "ready"
-                    ? "Leitura ativa"
-                    : status === "error"
-                      ? "Falha na leitura"
-                      : "Aguardando"}
-              </p>
-
-              <Button
-                type="button"
-                variant="outline"
-                className="rounded-2xl border-white/15 bg-white/10 text-white hover:bg-white/15"
-                onClick={() => setIsOpen(false)}
-              >
-                Fechar leitor
-              </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="rounded-2xl border-white/15 bg-white/10 text-white hover:bg-white/15"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    Fechar leitor
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

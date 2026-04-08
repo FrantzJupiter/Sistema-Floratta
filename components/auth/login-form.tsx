@@ -22,9 +22,6 @@ export function LoginForm() {
     >
       <div className="space-y-2">
         <h1 className="text-2xl font-semibold text-zinc-950">Entrar no Floratta</h1>
-        <p className="text-sm leading-6 text-zinc-600">
-          Use o e-mail e a senha cadastrados no Supabase Auth para acessar o sistema.
-        </p>
       </div>
 
       <label className="grid gap-2 text-sm text-zinc-700">
