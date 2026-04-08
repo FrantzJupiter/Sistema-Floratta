@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useMemo, useState } from "react";
+import { useActionState, useEffect, useEffectEvent, useMemo, useState } from "react";
 
 import { checkoutAction } from "@/app/actions/checkout";
 import { cancelSaleAction } from "@/app/actions/transactions";
@@ -296,6 +296,10 @@ export function CartPanel({ customers }: CartPanelProps) {
     cancelSaleAction,
     initialTransactionHistoryActionState,
   );
+  const latestReceipt = state.receipt ?? null;
+  const dismissLatestReceipt = useEffectEvent((receiptId: string) => {
+    setDismissedReceiptId(receiptId);
+  });
 
   useEffect(() => {
     if (state.status === "success") {
@@ -303,7 +307,12 @@ export function CartPanel({ customers }: CartPanelProps) {
     }
   }, [clearCart, state.status]);
 
-  const latestReceipt = state.receipt ?? null;
+  useEffect(() => {
+    if (items.length > 0 && latestReceipt && dismissedReceiptId !== latestReceipt.id) {
+      dismissLatestReceipt(latestReceipt.id);
+    }
+  }, [dismissedReceiptId, items.length, latestReceipt]);
+
   const activeReceipt =
     latestReceipt &&
     dismissedReceiptId !== latestReceipt.id &&

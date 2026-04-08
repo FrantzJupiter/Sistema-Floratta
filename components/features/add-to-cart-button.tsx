@@ -29,7 +29,7 @@ export function AddToCartButton({ product }: AddToCartButtonProps) {
       type="button"
       variant="outline"
       size="sm"
-      className="h-8 w-full rounded-xl border border-rose-200/80 bg-gradient-to-b from-rose-50/80 to-rose-100/30 px-2.5 text-xs text-rose-900 shadow-[0_4px_12px_rgba(225,29,72,0.06),inset_0_1px_1px_rgba(255,255,255,0.8)] backdrop-blur-md hover:from-rose-100/90 hover:to-rose-100/50 active:scale-[0.98] active:shadow-inner transition-all disabled:opacity-50 disabled:pointer-events-none"
+      className="h-8 w-full rounded-xl border border-emerald-200/80 bg-gradient-to-b from-emerald-50/80 to-emerald-100/30 px-2.5 text-xs text-emerald-900 shadow-[0_4px_12px_rgba(16,185,129,0.08),inset_0_1px_1px_rgba(255,255,255,0.8)] backdrop-blur-md transition-all hover:from-emerald-100/90 hover:to-emerald-100/55 active:scale-[0.98] active:shadow-inner disabled:pointer-events-none disabled:opacity-50"
       disabled={isOutOfStock || reachedLimit}
       onClick={() => addItem(product)}
     >

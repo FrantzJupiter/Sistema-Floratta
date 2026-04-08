@@ -143,7 +143,7 @@ export function QrCartScanner({
         <Button
           type="button"
           variant="outline"
-          className="h-11 rounded-2xl border-rose-200 bg-rose-50/70 text-rose-900 hover:bg-rose-100"
+          className="h-11 rounded-2xl border-emerald-200/80 bg-gradient-to-b from-emerald-50/80 to-emerald-100/30 text-emerald-900 shadow-[0_4px_12px_rgba(16,185,129,0.08),inset_0_1px_1px_rgba(255,255,255,0.8)] hover:from-emerald-100/90 hover:to-emerald-100/55"
           onClick={() => setIsOpen(true)}
         >
           <QrCode className="size-4" />

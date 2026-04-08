@@ -61,12 +61,14 @@ export default async function Home() {
       />
 
       <ProductsWorkspace
+        collapseCatalogByDefault
+        collapseCreateFormByDefault
         inventoryBalance={inventoryBalance}
         products={products}
         title="Produtos e estoque"
       />
 
-      <RecentSales sales={recentSales} />
+      <RecentSales collapseByDefault sales={recentSales} />
     </>
   );
 }

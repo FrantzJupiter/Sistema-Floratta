@@ -2,6 +2,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { TablesInsert } from "@/lib/supabase";
 
 export type InventoryBalanceSummary = {
+  movedItemsCount: number;
   netChange: number;
   positiveChange: number;
   negativeChange: number;
@@ -34,6 +35,7 @@ function isInventoryMovementsMissingError(error: {
 
 function getInitialInventoryBalanceSummary(): InventoryBalanceSummary {
   return {
+    movedItemsCount: 0,
     netChange: 0,
     positiveChange: 0,
     negativeChange: 0,
@@ -60,7 +62,7 @@ export async function listInventoryBalanceSummary(hours = 24) {
 
   const { data, error } = await supabase
     .from("inventory_movements")
-    .select("quantity_delta")
+    .select("product_id, quantity_delta")
     .gte("created_at", threshold);
 
   if (error) {
@@ -74,18 +76,28 @@ export async function listInventoryBalanceSummary(hours = 24) {
     throw new Error(`Falha ao carregar o balanço de estoque: ${error.message}`);
   }
 
-  return (data ?? []).reduce<InventoryBalanceSummary>((summary, movement) => {
+  const movedProductIds = new Set<string>();
+
+  const summary = (data ?? []).reduce<InventoryBalanceSummary>((nextSummary, movement) => {
     const delta = movement.quantity_delta;
 
-    if (delta > 0) {
-      summary.positiveChange += delta;
-    } else if (delta < 0) {
-      summary.negativeChange += Math.abs(delta);
+    if (movement.product_id) {
+      movedProductIds.add(movement.product_id);
     }
 
-    summary.netChange += delta;
-    return summary;
+    if (delta > 0) {
+      nextSummary.positiveChange += delta;
+    } else if (delta < 0) {
+      nextSummary.negativeChange += Math.abs(delta);
+    }
+
+    nextSummary.netChange += delta;
+    return nextSummary;
   }, emptySummary);
+
+  summary.movedItemsCount = movedProductIds.size;
+
+  return summary;
 }
 
 export async function recordInventoryMovements(entries: InventoryMovementEntry[]) {
