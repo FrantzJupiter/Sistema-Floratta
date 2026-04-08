@@ -10,35 +10,35 @@ export const productCreateSchema = z.object({
   detailType: z
     .string()
     .trim()
-    .max(60, "O tipo deve ter no maximo 60 caracteres.")
+    .max(60, "O tipo deve ter no máximo 60 caracteres.")
     .optional()
     .default(""),
   detailVolume: z
     .string()
     .trim()
-    .max(40, "O volume deve ter no maximo 40 caracteres.")
+    .max(40, "O volume deve ter no máximo 40 caracteres.")
     .optional()
     .default(""),
   basePrice: z.coerce
     .number()
-    .positive("O preco precisa ser maior que zero.")
-    .max(999999.99, "Preco muito alto para o cadastro inicial."),
+    .positive("O preço precisa ser maior que zero.")
+    .max(999999.99, "Preço muito alto para o cadastro inicial."),
   quantity: z.coerce
     .number()
-    .int("A quantidade deve ser um numero inteiro.")
-    .min(0, "A quantidade nao pode ser negativa.")
+    .int("A quantidade deve ser um número inteiro.")
+    .min(0, "A quantidade não pode ser negativa.")
     .max(999999, "Quantidade muito alta para o cadastro inicial."),
-  imageUrl: z.union([z.literal(""), z.string().trim().url("Informe uma URL valida.")]),
+  imageUrl: z.union([z.literal(""), z.string().trim().url("Informe uma URL válida.")]),
 });
 
 export type ProductCreateInput = z.infer<typeof productCreateSchema>;
 
 export const productUpdateSchema = productCreateSchema.extend({
-  productId: z.uuid("Produto invalido para atualizacao."),
+  productId: z.uuid("Produto inválido para atualização."),
 });
 
 export const productDeleteSchema = z.object({
-  productId: z.uuid("Produto invalido para exclusao."),
+  productId: z.uuid("Produto inválido para exclusão."),
 });
 
 export type ProductActionState = {
@@ -83,7 +83,7 @@ export function buildProductDetails(input: {
   if (!validated.success) {
     return {
       data: null,
-      error: "Nao foi possivel salvar os detalhes do produto.",
+      error: "Não foi possível salvar os detalhes do produto.",
     } as const;
   }
 

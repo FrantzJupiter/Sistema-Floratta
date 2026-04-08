@@ -2,22 +2,47 @@
 
 import { revalidateSalesSurfaces } from "@/lib/revalidate-routes";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getSaleReceipt } from "@/services/transactions";
 import {
   checkoutSchema,
   initialCheckoutActionState,
   type CheckoutActionState,
 } from "@/lib/validations/checkout";
+import {
+  getInventoryMovementWarning,
+  recordInventoryMovements,
+} from "@/services/inventory";
+import { getSaleReceipt } from "@/services/transactions";
 
 function mapCheckoutRpcError(error: { code?: string; message: string }) {
   if (
     error.code === "PGRST202" ||
     error.message.includes("Could not find the function public.process_checkout")
   ) {
-    return "A funcao atomica de checkout com clientes ainda nao foi instalada no Supabase. Rode o arquivo docs/supabase-customers-receipt.sql no SQL Editor.";
+    return "A função atômica de checkout com clientes ainda não foi instalada no Supabase. Rode o arquivo docs/supabase-customers-receipt.sql no SQL Editor.";
   }
 
-  return error.message || "Nao foi possivel registrar a venda.";
+  return error.message || "Não foi possível registrar a venda.";
+}
+
+function normalizeCheckoutItems(
+  items: {
+    productId: string;
+    quantity: number;
+  }[],
+) {
+  const itemsByProductId = new Map<string, number>();
+
+  items.forEach((item) => {
+    itemsByProductId.set(
+      item.productId,
+      (itemsByProductId.get(item.productId) ?? 0) + item.quantity,
+    );
+  });
+
+  return Array.from(itemsByProductId.entries()).map(([productId, quantity]) => ({
+    productId,
+    quantity,
+  }));
 }
 
 export async function checkoutAction(
@@ -31,7 +56,7 @@ export async function checkoutAction(
   if (typeof cartPayload !== "string") {
     return {
       status: "error",
-      message: "Nao foi possivel ler os itens do carrinho.",
+      message: "Não foi possível ler os itens do carrinho.",
     };
   }
 
@@ -42,7 +67,7 @@ export async function checkoutAction(
   } catch {
     return {
       status: "error",
-      message: "O carrinho foi enviado em um formato invalido.",
+      message: "O carrinho foi enviado em um formato inválido.",
     };
   }
 
@@ -61,7 +86,8 @@ export async function checkoutAction(
   }
 
   const supabase = createAdminClient();
-  const rpcCartItems = parsedCheckout.data.items.map((item) => ({
+  const normalizedItems = normalizeCheckoutItems(parsedCheckout.data.items);
+  const rpcCartItems = normalizedItems.map((item) => ({
     product_id: item.productId,
     quantity: item.quantity,
   }));
@@ -91,12 +117,24 @@ export async function checkoutAction(
   }
 
   const receipt = await getSaleReceipt(checkoutResult.transaction_id);
+  const movementWarning = getInventoryMovementWarning(
+    await recordInventoryMovements(
+      normalizedItems.map((item) => ({
+        movement_type: "sale",
+        product_id: item.productId,
+        quantity_delta: -item.quantity,
+        transaction_id: checkoutResult.transaction_id,
+      })),
+    ),
+  );
 
   revalidateSalesSurfaces();
 
   return {
     status: "success",
-    message: `Venda concluida com sucesso. Pedido ${checkoutResult.transaction_id.slice(0, 8).toUpperCase()}.`,
+    message: `Venda concluída com sucesso. Pedido ${checkoutResult.transaction_id
+      .slice(0, 8)
+      .toUpperCase()}.${movementWarning ? ` ${movementWarning}` : ""}`,
     receipt,
     transactionId: checkoutResult.transaction_id,
     subtotalAmount: Number(checkoutResult.subtotal_amount),

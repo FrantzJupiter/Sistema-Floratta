@@ -1,7 +1,9 @@
 "use client";
 
+import Image from "next/image";
+
 import { Button } from "@/components/ui/button";
-import type { SaleReceipt } from "@/lib/receipts/types";
+import type { SaleReceipt as SaleReceiptData } from "@/lib/receipts/types";
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("pt-BR", {
@@ -20,12 +22,22 @@ function escapeHtml(value: string) {
 }
 
 type SaleReceiptProps = {
-  receipt: SaleReceipt;
+  description?: string;
+  receipt: SaleReceiptData;
+  title?: string;
 };
 
-export function SaleReceipt({ receipt }: SaleReceiptProps) {
+export function SaleReceipt({
+  description = "Visualize, revise e imprima o comprovante da transação.",
+  receipt,
+  title = "Recibo da última venda",
+}: SaleReceiptProps) {
+  const customerName = receipt.customerName?.trim() ?? "";
+  const hasCustomerName = customerName.length > 0;
+
   function handlePrintReceipt() {
     const printWindow = window.open("", "_blank", "width=420,height=840");
+    const logoSrc = `${window.location.origin}/logo.svg`;
 
     if (!printWindow) {
       window.print();
@@ -51,6 +63,10 @@ export function SaleReceipt({ receipt }: SaleReceiptProps) {
         `,
       )
       .join("");
+
+    const customerMarkup = hasCustomerName
+      ? `<span class="detail-value">${escapeHtml(customerName)}</span>`
+      : `<span class="detail-line-fill" aria-hidden="true"></span>`;
 
     const printDocument = `
       <!DOCTYPE html>
@@ -98,32 +114,23 @@ export function SaleReceipt({ receipt }: SaleReceiptProps) {
             }
 
             .logo {
-              width: 64px;
-              height: 64px;
+              width: 96px;
+              height: 50px;
               margin: 0 auto;
               display: flex;
               align-items: center;
               justify-content: center;
-              border: 1px dashed #d4d4d8;
-              border-radius: 16px;
-              background: #fafafa;
-              color: #71717a;
-              font-size: 11px;
-              font-weight: 600;
-              letter-spacing: 0.2em;
-              text-transform: uppercase;
             }
 
-            .store-name {
-              margin: 12px 0 4px;
-              font-size: 18px;
-              font-weight: 700;
-              letter-spacing: 0.12em;
-              text-transform: uppercase;
+            .logo img {
+              display: block;
+              width: 100%;
+              height: 100%;
+              object-fit: contain;
             }
 
             .subtitle {
-              margin: 0;
+              margin: 10px 0 0;
               font-size: 11px;
               letter-spacing: 0.2em;
               text-transform: uppercase;
@@ -134,6 +141,22 @@ export function SaleReceipt({ receipt }: SaleReceiptProps) {
             .items,
             .summary {
               padding: 12px 0;
+            }
+
+            .signature {
+              padding-top: 18px;
+              font-size: 12px;
+              color: #3f3f46;
+            }
+
+            .signature-label {
+              display: block;
+            }
+
+            .signature-line {
+              width: 100%;
+              margin-top: 24px;
+              border-top: 1px solid #52525b;
             }
 
             .detail-row,
@@ -167,6 +190,15 @@ export function SaleReceipt({ receipt }: SaleReceiptProps) {
             .summary-value {
               text-align: right;
               font-weight: 600;
+            }
+
+            .detail-line-fill {
+              flex: 1;
+              min-width: 120px;
+              margin-left: 8px;
+              border-bottom: 1px solid #52525b;
+              align-self: center;
+              transform: translateY(-1px);
             }
 
             .item {
@@ -211,8 +243,9 @@ export function SaleReceipt({ receipt }: SaleReceiptProps) {
         <body>
           <main class="receipt">
             <header class="header">
-              <div class="logo">Logo</div>
-              <h1 class="store-name">Floratta</h1>
+              <div class="logo">
+                <img src="${escapeHtml(logoSrc)}" alt="Floratta" />
+              </div>
               <p class="subtitle">Recibo de venda</p>
             </header>
 
@@ -229,9 +262,7 @@ export function SaleReceipt({ receipt }: SaleReceiptProps) {
               </div>
               <div class="detail-row">
                 <span class="detail-label">Cliente</span>
-                <span class="detail-value">${escapeHtml(
-                  receipt.customerName ?? "Consumidor final",
-                )}</span>
+                ${customerMarkup}
               </div>
             </section>
 
@@ -257,6 +288,11 @@ export function SaleReceipt({ receipt }: SaleReceiptProps) {
                 <span>${escapeHtml(formatCurrency(receipt.totalAmount))}</span>
               </div>
             </section>
+
+            <section class="signature">
+              <span class="signature-label">Assinatura do cliente:</span>
+              <div class="signature-line"></div>
+            </section>
           </main>
           <script>
             window.addEventListener("load", () => {
@@ -277,10 +313,8 @@ export function SaleReceipt({ receipt }: SaleReceiptProps) {
     <section className="grid gap-4 rounded-[2rem] border border-zinc-200 bg-white p-5 shadow-receipt-down">
       <div className="receipt-print-hide flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h3 className="text-xl font-semibold text-zinc-950">Recibo da ultima venda</h3>
-          <p className="text-sm text-zinc-600">
-            Visualize, revise e imprima o comprovante da transacao.
-          </p>
+          <h3 className="text-xl font-semibold text-zinc-950">{title}</h3>
+          {description ? <p className="text-sm text-zinc-600">{description}</p> : null}
         </div>
         <Button
           type="button"
@@ -294,13 +328,17 @@ export function SaleReceipt({ receipt }: SaleReceiptProps) {
 
       <article className="receipt-thermal-container mx-auto w-full max-w-[360px] rounded-[1.5rem] border border-zinc-200 bg-white p-5 text-zinc-950">
         <div className="border-b border-dashed border-zinc-300 pb-4 text-center">
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-dashed border-zinc-300 bg-zinc-50 text-xs font-medium uppercase tracking-[0.24em] text-zinc-500">
-            Logo
+          <div className="mx-auto flex h-[50px] w-24 items-center justify-center">
+            <Image
+              src="/logo.svg"
+              alt="Floratta"
+              width={214}
+              height={113}
+              unoptimized
+              className="h-full w-full object-contain"
+            />
           </div>
-          <h4 className="mt-3 text-lg font-semibold uppercase tracking-[0.16em]">
-            Floratta
-          </h4>
-          <p className="mt-1 text-xs uppercase tracking-[0.2em] text-zinc-500">
+          <p className="mt-3 text-xs uppercase tracking-[0.2em] text-zinc-500">
             Recibo de venda
           </p>
         </div>
@@ -316,11 +354,13 @@ export function SaleReceipt({ receipt }: SaleReceiptProps) {
               {new Date(receipt.createdAt).toLocaleString("pt-BR")}
             </span>
           </div>
-          <div className="flex items-center justify-between gap-4">
-            <span className="text-zinc-500">Cliente</span>
-            <span className="text-right font-medium">
-              {receipt.customerName ?? "Consumidor final"}
-            </span>
+          <div className="flex items-center gap-4">
+            <span className="shrink-0 text-zinc-500">Cliente</span>
+            {hasCustomerName ? (
+              <span className="ml-auto text-right font-medium">{customerName}</span>
+            ) : (
+              <span aria-hidden="true" className="min-w-0 flex-1 border-b border-zinc-400" />
+            )}
           </div>
         </div>
 
@@ -359,6 +399,11 @@ export function SaleReceipt({ receipt }: SaleReceiptProps) {
             <span className="font-semibold uppercase tracking-[0.14em]">Total</span>
             <span className="font-semibold">{formatCurrency(receipt.totalAmount)}</span>
           </div>
+        </div>
+
+        <div className="pt-5 text-sm text-zinc-700">
+          <span>Assinatura do cliente:</span>
+          <div className="mt-6 w-full border-t border-zinc-400" />
         </div>
       </article>
     </section>

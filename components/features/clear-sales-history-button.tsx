@@ -32,14 +32,14 @@ export function ClearSalesHistoryButton({
           onClick={(event) => {
             if (
               !window.confirm(
-                "Limpar todo o historico de vendas? Essa acao remove os registros de vendas e nao pode ser desfeita.",
+                "Limpar todo o histórico de vendas? Essa ação remove os registros de vendas e não pode ser desfeita.",
               )
             ) {
               event.preventDefault();
             }
           }}
         >
-          {pending ? "Limpando historico..." : "Limpar historico"}
+          {pending ? "Limpando histórico..." : "Limpar histórico"}
         </Button>
       </form>
 

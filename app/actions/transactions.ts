@@ -21,14 +21,14 @@ export async function clearSalesHistoryAction(
   if (countError) {
     return {
       status: "error",
-      message: `Nao foi possivel verificar o historico: ${countError.message}`,
+      message: `Não foi possível verificar o histórico: ${countError.message}`,
     };
   }
 
   if (!count) {
     return {
       status: "error",
-      message: "Nao existem vendas registradas para limpar.",
+      message: "Não existem vendas registradas para limpar.",
     };
   }
 
@@ -40,7 +40,7 @@ export async function clearSalesHistoryAction(
   if (deleteError) {
     return {
       status: "error",
-      message: `Nao foi possivel limpar o historico de vendas: ${deleteError.message}`,
+      message: `Não foi possível limpar o histórico de vendas: ${deleteError.message}`,
     };
   }
 
@@ -48,6 +48,6 @@ export async function clearSalesHistoryAction(
 
   return {
     status: "success",
-    message: `Historico de ${count} venda(s) limpo com sucesso.`,
+    message: `Histórico de ${count} venda(s) limpo com sucesso.`,
   };
 }

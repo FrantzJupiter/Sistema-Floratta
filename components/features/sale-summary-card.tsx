@@ -1,3 +1,10 @@
+"use client";
+
+import { useState } from "react";
+
+import { SaleReceipt } from "@/components/features/sale-receipt";
+import { Button } from "@/components/ui/button";
+import type { SaleReceipt as SaleReceiptData } from "@/lib/receipts/types";
 import type { RecentSale } from "@/services/transactions";
 
 function formatCurrency(value: number) {
@@ -12,6 +19,19 @@ type SaleSummaryCardProps = {
 };
 
 export function SaleSummaryCard({ sale }: SaleSummaryCardProps) {
+  const [isReceiptOpen, setIsReceiptOpen] = useState(false);
+
+  const receipt: SaleReceiptData = {
+    createdAt: sale.created_at,
+    customerName: sale.customerName,
+    discountAmount: Number(sale.discount ?? 0),
+    id: sale.id,
+    items: sale.items,
+    subtotalAmount: sale.subtotalAmount,
+    totalAmount: sale.totalAmount,
+    totalItems: sale.totalItems,
+  };
+
   return (
     <article className="rounded-[1.75rem] border border-white/55 bg-white/74 p-5 shadow-card-down">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -40,7 +60,7 @@ export function SaleSummaryCard({ sale }: SaleSummaryCardProps) {
         <div className="rounded-2xl border border-white/60 bg-emerald-50/75 px-4 py-3">
           <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Total pago</p>
           <p className="mt-2 text-2xl font-semibold text-zinc-950">
-            {formatCurrency(sale.total_amount)}
+            {formatCurrency(sale.totalAmount)}
           </p>
         </div>
       </div>
@@ -53,7 +73,7 @@ export function SaleSummaryCard({ sale }: SaleSummaryCardProps) {
           >
             <div>
               <p className="text-sm font-medium text-zinc-900">
-                {item.productName ?? "Produto nao encontrado"}
+                {item.productName ?? "Produto não encontrado"}
               </p>
               <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">
                 {item.productSku ?? item.productId ?? "Sem ID"} | {item.quantity} x{" "}
@@ -85,6 +105,27 @@ export function SaleSummaryCard({ sale }: SaleSummaryCardProps) {
           </p>
         </div>
       </div>
+
+      <div className="mt-5 flex justify-end">
+        <Button
+          type="button"
+          variant="outline"
+          className="rounded-2xl border-zinc-200 bg-white/80"
+          onClick={() => setIsReceiptOpen((current) => !current)}
+        >
+          {isReceiptOpen ? "Ocultar recibo" : "Mostrar recibo"}
+        </Button>
+      </div>
+
+      {isReceiptOpen ? (
+        <div className="mt-5">
+          <SaleReceipt
+            receipt={receipt}
+            title="Recibo desta venda"
+            description="Visualize novamente e imprima o comprovante desta venda."
+          />
+        </div>
+      ) : null}
     </article>
   );
 }

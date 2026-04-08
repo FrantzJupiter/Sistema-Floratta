@@ -131,7 +131,7 @@ export function SalesWorkspace({
             </label>
 
             <label className="grid gap-2 text-sm text-zinc-700">
-              <span className="font-medium">Exibicao</span>
+              <span className="font-medium">Exibição</span>
               <select
                 value={availability}
                 onChange={(event) =>
@@ -154,7 +154,7 @@ export function SalesWorkspace({
                 Nenhum produto foi encontrado para esta busca.
               </p>
               <p className="mt-2 text-sm text-zinc-600">
-                Ajuste os filtros ou cadastre novos itens na area de produtos.
+                Ajuste os filtros ou cadastre novos itens na área de produtos.
               </p>
             </div>
           ) : (

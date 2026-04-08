@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useMemo, useState } from "react";
 
 import { checkoutAction } from "@/app/actions/checkout";
 import { CustomerQuickCreateForm } from "@/components/features/customer-quick-create-form";
@@ -44,16 +44,30 @@ function CartCheckoutContent({
   state: CheckoutActionState;
 }) {
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
+  const [isCreatingCustomer, setIsCreatingCustomer] = useState(false);
+  const [newCustomerOption, setNewCustomerOption] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
   const clearCart = useCartStore((storeState) => storeState.clearCart);
   const subtotal = items.reduce(
     (accumulator, item) => accumulator + item.unitPrice * item.quantity,
     0,
   );
 
+  const customerOptions = useMemo(() => {
+    if (
+      newCustomerOption &&
+      !customers.some((customer) => customer.id === newCustomerOption.id)
+    ) {
+      return [newCustomerOption, ...customers];
+    }
+
+    return customers;
+  }, [customers, newCustomerOption]);
+
   return (
     <div className="grid gap-4">
-      <CustomerQuickCreateForm />
-
       <div className="grid gap-3">
         {items.map((item) => (
           <article
@@ -114,7 +128,7 @@ function CartCheckoutContent({
                   </Button>
                 </div>
                 <p className="text-xs text-zinc-500">
-                  Maximo disponivel agora: {item.availableQuantity}
+                  Máximo disponível agora: {item.availableQuantity}
                 </p>
               </div>
             </div>
@@ -122,106 +136,141 @@ function CartCheckoutContent({
         ))}
       </div>
 
-      <form
-        action={formAction}
-        className="grid gap-4 rounded-[1.75rem] border border-white/55 bg-white/78 p-4 sm:p-5 shadow-card-down"
-      >
-        <input
-          type="hidden"
-          name="cartPayload"
-          value={JSON.stringify(
-            items.map((item) => ({
-              productId: item.productId,
-              quantity: item.quantity,
-            })),
-          )}
-        />
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <label className="grid gap-2 text-sm text-zinc-700">
-            <span className="font-medium">Cliente cadastrado</span>
-            <select
-              name="customerId"
-              value={selectedCustomerId}
-              onChange={(event) => setSelectedCustomerId(event.target.value)}
-              className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
-            >
-              <option value="">Sem cliente cadastrado</option>
-              {customers.map((customer) => (
-                <option key={customer.id} value={customer.id}>
-                  {customer.name}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="grid gap-2 text-sm text-zinc-700">
-            <span className="font-medium">Nome do cliente no recibo</span>
-            <input
-              name="customerName"
-              type="text"
-              disabled={selectedCustomerId.length > 0}
-              placeholder={
-                selectedCustomerId.length > 0
-                  ? "Usando o cliente selecionado acima"
-                  : "Opcional para consumidor final"
-              }
-              className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-500"
-            />
-          </label>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_150px]">
-          <label className="grid gap-2 text-sm text-zinc-700">
-            <span className="font-medium">Desconto da venda</span>
-            <input
-              name="discount"
-              type="number"
-              min="0"
-              step="0.01"
-              defaultValue="0"
-              className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
-            />
-          </label>
-
-          <div className="rounded-2xl border border-white/60 bg-rose-50/75 p-4">
-            <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Subtotal atual</p>
-            <p className="mt-2 text-2xl font-semibold text-zinc-950">
-              {formatCurrency(subtotal)}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div aria-live="polite" className="min-h-6 text-sm">
-            {state.message ? (
-              <p
-                className={state.status === "success" ? "text-emerald-700" : "text-rose-600"}
-              >
-                {state.message}
-              </p>
-            ) : null}
-          </div>
-          <div className="flex flex-col gap-2 sm:flex-row">
+      <div className="grid gap-4 rounded-[1.75rem] border border-white/55 bg-white/78 p-4 sm:p-5 shadow-card-down">
+        <div className="rounded-[1.35rem] border border-white/60 bg-white/80 px-4 py-3">
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-zinc-900">Cliente da venda</p>
             <Button
               type="button"
-              variant="ghost"
-              className="rounded-2xl text-zinc-600 hover:text-zinc-900"
-              onClick={() => clearCart()}
+              variant="outline"
+              className="mt-2 rounded-2xl border-rose-200 bg-rose-50/70 text-rose-900 hover:bg-rose-100"
+              onClick={() => setIsCreatingCustomer((current) => !current)}
             >
-              Limpar carrinho
-            </Button>
-            <Button
-              type="submit"
-              size="lg"
-              disabled={pending}
-              className="rounded-2xl bg-emerald-700 px-5 text-white hover:bg-emerald-600"
-            >
-              {pending ? "Registrando venda..." : "Finalizar venda"}
+              {isCreatingCustomer ? "Fechar cadastro" : "Cadastrar novo cliente"}
             </Button>
           </div>
         </div>
-      </form>
+
+        {isCreatingCustomer ? (
+          <CustomerQuickCreateForm
+            className="border-white/60 bg-white/82"
+            submitLabel="Salvar cliente"
+            title="Novo cliente"
+            onSuccess={({ customerId, customerName }) => {
+              if (customerId && customerName) {
+                setSelectedCustomerId(customerId);
+                setNewCustomerOption({
+                  id: customerId,
+                  name: customerName,
+                });
+              }
+
+              setIsCreatingCustomer(false);
+            }}
+          />
+        ) : null}
+
+        <form
+          action={formAction}
+          className="grid gap-4"
+        >
+          <input
+            type="hidden"
+            name="cartPayload"
+            value={JSON.stringify(
+              items.map((item) => ({
+                productId: item.productId,
+                quantity: item.quantity,
+              })),
+            )}
+          />
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <label className="grid gap-2 text-sm text-zinc-700">
+              <span className="font-medium">Cliente cadastrado</span>
+              <select
+                name="customerId"
+                value={selectedCustomerId}
+                onChange={(event) => setSelectedCustomerId(event.target.value)}
+                className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+              >
+                <option value="">Sem cliente cadastrado</option>
+                {customerOptions.map((customer) => (
+                  <option key={customer.id} value={customer.id}>
+                    {customer.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="grid gap-2 text-sm text-zinc-700">
+              <span className="font-medium">Nome do cliente no recibo</span>
+              <input
+                name="customerName"
+                type="text"
+                disabled={selectedCustomerId.length > 0}
+                placeholder={
+                  selectedCustomerId.length > 0
+                    ? "Usando o cliente selecionado acima"
+                    : "Opcional para consumidor final"
+                }
+                className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100 disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-500"
+              />
+            </label>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_150px]">
+            <label className="grid gap-2 text-sm text-zinc-700">
+              <span className="font-medium">Desconto da venda</span>
+              <input
+                name="discount"
+                type="number"
+                min="0"
+                step="0.01"
+                defaultValue="0"
+                className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+              />
+            </label>
+
+            <div className="rounded-2xl border border-white/60 bg-rose-50/75 p-4">
+              <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Subtotal atual</p>
+              <p className="mt-2 text-2xl font-semibold text-zinc-950">
+                {formatCurrency(subtotal)}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div aria-live="polite" className="min-h-6 text-sm">
+              {state.message ? (
+                <p
+                  className={state.status === "success" ? "text-emerald-700" : "text-rose-600"}
+                >
+                  {state.message}
+                </p>
+              ) : null}
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Button
+                type="button"
+                variant="ghost"
+                className="rounded-2xl text-zinc-600 hover:text-zinc-900"
+                onClick={() => clearCart()}
+              >
+                Limpar carrinho
+              </Button>
+              <Button
+                type="submit"
+                size="lg"
+                disabled={pending}
+                className="rounded-2xl bg-emerald-700 px-5 text-white hover:bg-emerald-600"
+              >
+                {pending ? "Registrando venda..." : "Finalizar venda"}
+              </Button>
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
@@ -259,7 +308,7 @@ export function CartPanel({ customers }: CartPanelProps) {
         <div className="rounded-[1.75rem] border border-dashed border-rose-200 bg-rose-50/65 px-5 py-10 text-center">
           <p className="text-base font-medium text-zinc-800">Nenhum item no carrinho.</p>
           <p className="mt-2 text-sm text-zinc-600">
-            Use os botoes do catalogo para montar a venda.
+            Use os botões do catálogo para montar a venda.
           </p>
         </div>
       ) : (

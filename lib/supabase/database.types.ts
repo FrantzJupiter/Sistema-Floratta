@@ -62,6 +62,48 @@ export interface Database {
           },
         ];
       };
+      inventory_movements: {
+        Row: {
+          created_at: string;
+          id: string;
+          movement_type: string;
+          product_id: string;
+          quantity_delta: number;
+          transaction_id: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          movement_type: string;
+          product_id: string;
+          quantity_delta: number;
+          transaction_id?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          movement_type?: string;
+          product_id?: string;
+          quantity_delta?: number;
+          transaction_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "inventory_movements_product_id_fkey";
+            columns: ["product_id"];
+            isOneToOne: false;
+            referencedRelation: "products";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "inventory_movements_transaction_id_fkey";
+            columns: ["transaction_id"];
+            isOneToOne: false;
+            referencedRelation: "transactions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       products: {
         Row: {
           base_price: number;

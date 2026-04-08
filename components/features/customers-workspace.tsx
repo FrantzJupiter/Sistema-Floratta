@@ -95,7 +95,7 @@ function CustomerCard({ customer }: { customer: RegisteredCustomer }) {
               className="rounded-2xl border-zinc-200 bg-white/80"
               onClick={() => setIsEditing((current) => !current)}
             >
-              {isEditing ? "Fechar edicao" : "Editar cliente"}
+              {isEditing ? "Fechar edição" : "Editar cliente"}
             </Button>
 
             <form action={deleteFormAction}>
@@ -108,7 +108,7 @@ function CustomerCard({ customer }: { customer: RegisteredCustomer }) {
                 onClick={(event) => {
                   if (
                     !window.confirm(
-                      `Excluir ${customer.name}? O nome impresso nas vendas antigas sera preservado, mas o cadastro sera removido.`,
+                      `Excluir ${customer.name}? O nome impresso nas vendas antigas será preservado, mas o cadastro será removido.`,
                     )
                   ) {
                     event.preventDefault();
@@ -161,7 +161,7 @@ function CustomerCard({ customer }: { customer: RegisteredCustomer }) {
             </div>
 
             <label className="grid gap-2 text-sm text-zinc-700">
-              <span className="font-medium">Endereco</span>
+              <span className="font-medium">Endereço</span>
               <input
                 name="address"
                 defaultValue={customer.address ?? ""}
@@ -244,7 +244,7 @@ export function CustomersWorkspace({
                   className="h-7 max-w-20 rounded-lg border border-white/45 bg-white/80 px-2 text-[10px] font-medium text-zinc-700 shadow-sm outline-none transition focus:border-rose-300 focus:ring-3 focus:ring-rose-100"
                 >
                   <option value="7d">7 dias</option>
-                  <option value="30d">mes</option>
+                  <option value="30d">mês</option>
                 </select>
               </div>
               <p className="mt-2 text-2xl font-semibold text-zinc-950">{recentCustomers}</p>
@@ -258,7 +258,7 @@ export function CustomersWorkspace({
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Procure por nome, CPF, telefone ou endereco"
+              placeholder="Procure por nome, CPF, telefone ou endereço"
               className="h-11 rounded-2xl border border-white/45 bg-white/80 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
             />
           </label>

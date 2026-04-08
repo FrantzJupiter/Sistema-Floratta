@@ -62,34 +62,6 @@ function FormField({
   );
 }
 
-function ProductIdPreview({
-  onRegenerate,
-  value,
-}: {
-  onRegenerate: () => void;
-  value: string;
-}) {
-  return (
-    <div className="grid gap-2 text-sm text-zinc-700">
-      <span className="font-medium">ID do produto</span>
-      <input
-        value={value}
-        readOnly
-        className="h-10 w-full rounded-xl border border-dashed border-rose-200 bg-rose-50/80 px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-rose-900 shadow-sm outline-none"
-      />
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        className="h-8 justify-start rounded-xl px-2 text-xs text-rose-900 hover:bg-rose-100"
-        onClick={onRegenerate}
-      >
-        Gerar outro
-      </Button>
-    </div>
-  );
-}
-
 type ProductCreateFormFieldsProps = {
   state: ProductActionState;
   formAction: (payload: FormData) => void;
@@ -129,46 +101,66 @@ function ProductCreateFormFields({
         </datalist>
       ) : null}
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_220px]">
-        <FormField
-          label="Nome do produto"
-          name="name"
-          placeholder="Ex.: Perfume Floratta Blue"
-          errors={state.fieldErrors?.name}
-        />
-        <ProductIdPreview
-          onRegenerate={() => setSkuPreview(createAutomaticSku(detailType))}
-          value={skuPreview}
-        />
-      </div>
+      <FormField
+        label="Nome do produto"
+        name="name"
+        placeholder="Ex.: Perfume Floratta Blue"
+        errors={state.fieldErrors?.name}
+      />
 
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_180px]">
-        <FormField
-          label="Preco base"
-          name="basePrice"
-          type="number"
-          min="0"
-          step="0.01"
-          placeholder="129.90"
-          errors={state.fieldErrors?.basePrice}
-        />
-        <FormField
-          label="Quantidade inicial"
-          name="quantity"
-          type="number"
-          min="0"
-          step="1"
-          placeholder="12"
-          defaultValue="0"
-          errors={state.fieldErrors?.quantity}
-        />
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-[140px_132px_minmax(0,170px)_auto] md:items-end">
+        <label className="grid gap-1.5 text-xs text-zinc-700">
+          <span className="font-medium">Preço base</span>
+          <input
+            name="basePrice"
+            type="number"
+            min="0"
+            step="0.01"
+            placeholder="129.90"
+            className="h-10 rounded-xl border border-white/45 bg-white/75 px-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+          />
+          <FieldError errors={state.fieldErrors?.basePrice} />
+        </label>
+
+        <label className="grid gap-1.5 text-xs text-zinc-700">
+          <span className="font-medium">Qtd. inicial</span>
+          <input
+            name="quantity"
+            type="number"
+            min="0"
+            step="1"
+            placeholder="12"
+            defaultValue="0"
+            className="h-10 rounded-xl border border-white/45 bg-white/75 px-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+          />
+          <FieldError errors={state.fieldErrors?.quantity} />
+        </label>
+
+        <label className="col-span-2 grid gap-1.5 text-xs text-zinc-700 md:col-span-1">
+          <span className="font-medium">ID do produto</span>
+          <input
+            value={skuPreview}
+            readOnly
+            className="h-10 w-full rounded-xl border border-dashed border-rose-200 bg-rose-50/80 px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-rose-900 shadow-sm outline-none"
+          />
+        </label>
+
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="col-span-2 h-10 rounded-xl px-3 text-xs text-rose-900 hover:bg-rose-100 md:col-span-1 md:self-end"
+          onClick={() => setSkuPreview(createAutomaticSku(detailType))}
+        >
+          Gerar outro
+        </Button>
       </div>
 
       <ProductImageFields
-        imageUrlErrors={state.fieldErrors?.imageUrl}
         imageFileErrors={state.fieldErrors?.imageFile}
         imageCameraErrors={state.fieldErrors?.imageCamera}
         onProcessingChange={setIsImageProcessing}
+        showImageUrlField={false}
       />
 
       <section className="grid gap-4 rounded-[1.5rem] border border-white/50 bg-white/50 p-4">

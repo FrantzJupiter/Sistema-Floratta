@@ -56,7 +56,7 @@ async function ensureProductImageBucket(supabase: AdminSupabaseClient) {
 
   if (bucketsError) {
     return {
-      error: `Nao foi possivel carregar os buckets de imagem: ${bucketsError.message}`,
+      error: `Não foi possível carregar os buckets de imagem: ${bucketsError.message}`,
     } as const;
   }
 
@@ -81,7 +81,7 @@ async function ensureProductImageBucket(supabase: AdminSupabaseClient) {
 
   if (createBucketError) {
     return {
-      error: `Nao foi possivel preparar o bucket de imagens: ${createBucketError.message}`,
+      error: `Não foi possível preparar o bucket de imagens: ${createBucketError.message}`,
     } as const;
   }
 
@@ -153,7 +153,7 @@ export async function uploadProductImage(params: {
 
   if (uploadError) {
     return {
-      error: `Nao foi possivel enviar a imagem do produto: ${uploadError.message}`,
+      error: `Não foi possível enviar a imagem do produto: ${uploadError.message}`,
       publicUrl: null,
       storagePath: null,
     } as const;

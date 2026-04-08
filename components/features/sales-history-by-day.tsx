@@ -35,7 +35,7 @@ type SalesHistoryByDayProps = {
 
 export function SalesHistoryByDay({
   sales,
-  title = "Historico por dia",
+  title = "Histórico por dia",
 }: SalesHistoryByDayProps) {
   const groupedSales = sales.reduce<Record<string, RecentSale[]>>((accumulator, sale) => {
     const key = getDayKey(sale.created_at);
@@ -62,7 +62,7 @@ export function SalesHistoryByDay({
               <p className="mt-2 text-2xl font-semibold text-zinc-950">{sales.length}</p>
             </div>
             <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-card-down">
-              <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Total do periodo</p>
+              <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Total do período</p>
               <p className="mt-2 text-2xl font-semibold text-zinc-950">
                 {formatCurrency(totalAmount)}
               </p>
@@ -79,7 +79,7 @@ export function SalesHistoryByDay({
             Nenhuma venda foi registrada ainda.
           </p>
           <p className="mt-2 text-sm text-zinc-600">
-            Assim que o checkout for concluido, o historico diario aparece aqui.
+            Assim que o checkout for concluído, o histórico diário aparece aqui.
           </p>
         </div>
       ) : (

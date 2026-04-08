@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -16,7 +17,7 @@ import { cn } from "@/lib/utils";
 const navigationItems = [
   {
     href: "/",
-    label: "Inicio",
+    label: "Início",
     icon: LayoutDashboard,
   },
   {
@@ -36,7 +37,7 @@ const navigationItems = [
   },
   {
     href: "/historico",
-    label: "Historico",
+    label: "Histórico",
     icon: ReceiptText,
   },
 ] as const;
@@ -52,8 +53,16 @@ export function TopNav() {
       <div className="mx-auto max-w-7xl rounded-[2rem] border border-white/50 bg-white/70 px-4 py-4 shadow-panel-down backdrop-blur-xl sm:px-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[linear-gradient(145deg,_rgba(122,31,75,0.92),_rgba(225,131,162,0.88))] text-sm font-semibold uppercase tracking-[0.22em] text-white shadow-lg shadow-rose-200/70">
-              FL
+            <div className="flex h-11 w-[5.5rem] items-center justify-center px-1">
+              <Image
+                src="/logo.svg"
+                alt="Floratta"
+                width={214}
+                height={113}
+                unoptimized
+                className="h-6 w-auto object-contain"
+                priority
+              />
             </div>
             <div className="space-y-1">
               <p className="text-sm font-semibold text-zinc-950">Sistema Floratta</p>

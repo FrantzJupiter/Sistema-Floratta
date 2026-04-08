@@ -37,7 +37,7 @@ export function RecentSales({ sales }: RecentSalesProps) {
             Nenhuma venda foi registrada ainda.
           </p>
           <p className="mt-2 text-sm text-zinc-600">
-            Assim que o checkout for concluido, o historico aparece aqui.
+            Assim que o checkout for concluído, o histórico aparece aqui.
           </p>
         </div>
       ) : (

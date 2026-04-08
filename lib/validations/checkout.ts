@@ -3,25 +3,25 @@ import { z } from "zod";
 import type { SaleReceipt } from "@/lib/receipts/types";
 
 export const checkoutCartItemSchema = z.object({
-  productId: z.uuid("Produto invalido no carrinho."),
+  productId: z.uuid("Produto inválido no carrinho."),
   quantity: z.coerce
     .number()
-    .int("Quantidade invalida no carrinho.")
+    .int("Quantidade inválida no carrinho.")
     .positive("A quantidade deve ser maior que zero.")
-    .max(999, "Quantidade acima do permitido para uma unica venda."),
+    .max(999, "Quantidade acima do permitido para uma única venda."),
 });
 
 export const checkoutSchema = z.object({
-  customerId: z.union([z.literal(""), z.uuid("Cliente invalido na venda.")]),
+  customerId: z.union([z.literal(""), z.uuid("Cliente inválido na venda.")]),
   customerName: z
     .string()
     .trim()
-    .max(120, "O nome do cliente deve ter no maximo 120 caracteres."),
+    .max(120, "O nome do cliente deve ter no máximo 120 caracteres."),
   discount: z.coerce
     .number()
-    .min(0, "O desconto nao pode ser negativo.")
+    .min(0, "O desconto não pode ser negativo.")
     .max(999999.99, "Desconto acima do limite permitido."),
-  items: z.array(checkoutCartItemSchema).min(1, "O carrinho esta vazio."),
+  items: z.array(checkoutCartItemSchema).min(1, "O carrinho está vazio."),
 });
 
 export type CheckoutActionState = {

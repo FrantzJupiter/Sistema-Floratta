@@ -17,7 +17,7 @@ function mapCustomerError(error: { code?: string; message: string }) {
     error.code === "42P01" ||
     (error.message.includes("relation") && error.message.includes("customers"))
   ) {
-    return "A estrutura de clientes ainda nao foi instalada no Supabase. Rode o arquivo docs/supabase-customers-receipt.sql no SQL Editor.";
+    return "A estrutura de clientes ainda não foi instalada no Supabase. Rode o arquivo docs/supabase-customers-receipt.sql no SQL Editor.";
   }
 
   if (
@@ -25,10 +25,10 @@ function mapCustomerError(error: { code?: string; message: string }) {
     error.message.includes("schema cache") ||
     error.message.includes("column")
   ) {
-    return "Os novos campos de cliente ainda nao foram instalados no Supabase. Rode o arquivo docs/supabase-customers-contact.sql no SQL Editor.";
+    return "Os novos campos de cliente ainda não foram instalados no Supabase. Rode o arquivo docs/supabase-customers-contact.sql no SQL Editor.";
   }
 
-  return error.message || "Nao foi possivel cadastrar o cliente.";
+  return error.message || "Não foi possível cadastrar o cliente.";
 }
 
 function getCustomerFormInput(formData: FormData) {
@@ -75,7 +75,7 @@ export async function createCustomerAction(
   if (error || !data) {
     return {
       status: "error",
-      message: error ? mapCustomerError(error) : "Nao foi possivel cadastrar o cliente.",
+      message: error ? mapCustomerError(error) : "Não foi possível cadastrar o cliente.",
     };
   }
 
@@ -85,6 +85,7 @@ export async function createCustomerAction(
     status: "success",
     message: `Cliente ${data.name} cadastrado com sucesso.`,
     customerId: data.id,
+    customerName: data.name,
   };
 }
 
@@ -122,7 +123,7 @@ export async function updateCustomerAction(
   if (error || !data) {
     return {
       status: "error",
-      message: error ? mapCustomerError(error) : "Cliente nao encontrado para atualizacao.",
+      message: error ? mapCustomerError(error) : "Cliente não encontrado para atualização.",
     };
   }
 
@@ -132,6 +133,7 @@ export async function updateCustomerAction(
     status: "success",
     message: `Cliente ${data.name} atualizado com sucesso.`,
     customerId: data.id,
+    customerName: data.name,
   };
 }
 
@@ -148,7 +150,7 @@ export async function deleteCustomerAction(
   if (!parsedCustomer.success) {
     return {
       status: "error",
-      message: parsedCustomer.error.issues[0]?.message ?? "Cliente invalido para exclusao.",
+      message: parsedCustomer.error.issues[0]?.message ?? "Cliente inválido para exclusão.",
     };
   }
 
@@ -162,7 +164,7 @@ export async function deleteCustomerAction(
   if (lookupError || !customer) {
     return {
       status: "error",
-      message: lookupError ? mapCustomerError(lookupError) : "Cliente nao encontrado.",
+      message: lookupError ? mapCustomerError(lookupError) : "Cliente não encontrado.",
     };
   }
 
@@ -174,7 +176,7 @@ export async function deleteCustomerAction(
   if (deleteError) {
     return {
       status: "error",
-      message: `Nao foi possivel excluir o cliente: ${mapCustomerError(deleteError)}`,
+      message: `Não foi possível excluir o cliente: ${mapCustomerError(deleteError)}`,
     };
   }
 

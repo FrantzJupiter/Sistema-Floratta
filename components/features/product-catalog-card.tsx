@@ -250,7 +250,7 @@ function ProductEditForm({
             ? "Otimizando imagem..."
             : pending
               ? "Salvando..."
-              : "Salvar alteracoes"}
+              : "Salvar alterações"}
         </Button>
       </div>
     </form>
@@ -360,7 +360,7 @@ export function ProductCatalogCard({
               className="h-8 rounded-xl border-zinc-200 bg-white/80 px-2.5 text-xs"
               onClick={() => setIsEditing((current) => !current)}
             >
-              {isEditing ? "Fechar edicao" : "Editar"}
+              {isEditing ? "Fechar edição" : "Editar"}
             </Button>
 
             <form action={deleteFormAction}>
@@ -372,7 +372,7 @@ export function ProductCatalogCard({
                 disabled={deletePending}
                 className="h-8 rounded-xl border-rose-200 bg-rose-50/70 px-2.5 text-xs text-rose-900 hover:bg-rose-100"
                 onClick={(event) => {
-                  if (!window.confirm(`Excluir ${product.name}? Esta acao nao pode ser desfeita.`)) {
+                  if (!window.confirm(`Excluir ${product.name}? Esta ação não pode ser desfeita.`)) {
                     event.preventDefault();
                   }
                 }}

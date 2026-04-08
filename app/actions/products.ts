@@ -15,9 +15,13 @@ import {
   productCreateSchema,
   productDeleteSchema,
   productUpdateSchema,
-  type ProductDeleteActionState,
   type ProductActionState,
+  type ProductDeleteActionState,
 } from "@/lib/validations/product";
+import {
+  getInventoryMovementWarning,
+  recordInventoryMovements,
+} from "@/services/inventory";
 
 function getProductFormInput(formData: FormData) {
   return {
@@ -54,7 +58,7 @@ async function upsertProductMetadata(
 
   if (metadataRowsError) {
     return {
-      error: `Nao foi possivel carregar os detalhes atuais: ${metadataRowsError.message}`,
+      error: `Não foi possível carregar os detalhes atuais: ${metadataRowsError.message}`,
     } as const;
   }
 
@@ -70,7 +74,7 @@ async function upsertProductMetadata(
 
       if (deleteError) {
         return {
-          error: `Nao foi possivel limpar os detalhes atuais: ${deleteError.message}`,
+          error: `Não foi possível limpar os detalhes atuais: ${deleteError.message}`,
         } as const;
       }
     }
@@ -86,7 +90,7 @@ async function upsertProductMetadata(
 
     if (insertError) {
       return {
-        error: `Nao foi possivel salvar os detalhes: ${insertError.message}`,
+        error: `Não foi possível salvar os detalhes: ${insertError.message}`,
       } as const;
     }
 
@@ -102,7 +106,7 @@ async function upsertProductMetadata(
 
   if (updateError) {
     return {
-      error: `Nao foi possivel atualizar os detalhes: ${updateError.message}`,
+      error: `Não foi possível atualizar os detalhes: ${updateError.message}`,
     } as const;
   }
 
@@ -192,7 +196,7 @@ export async function createProductAction(
   if (!createdProduct) {
     return {
       status: "error",
-      message: `Nao foi possivel criar o produto: ${productErrorMessage ?? "nao foi possivel gerar um ID unico para o produto."}`,
+      message: `Não foi possível criar o produto: ${productErrorMessage ?? "não foi possível gerar um ID único para o produto."}`,
     };
   }
 
@@ -212,7 +216,7 @@ export async function createProductAction(
 
     return {
       status: "error",
-      message: `O produto foi revertido porque o estoque nao pode ser criado: ${inventoryError.message}`,
+      message: `O produto foi revertido porque o estoque não pode ser criado: ${inventoryError.message}`,
     };
   }
 
@@ -227,7 +231,7 @@ export async function createProductAction(
 
       return {
         status: "error",
-        message: `O produto foi revertido porque os detalhes nao puderam ser salvos: ${metadataError.message}`,
+        message: `O produto foi revertido porque os detalhes não puderam ser salvos: ${metadataError.message}`,
       };
     }
   }
@@ -245,7 +249,7 @@ export async function createProductAction(
       await cleanupCreatedProduct();
 
       return getImageFieldErrorState(
-        uploadResult.error ?? "Nao foi possivel enviar a imagem do produto.",
+        uploadResult.error ?? "Não foi possível enviar a imagem do produto.",
       );
     }
 
@@ -261,16 +265,27 @@ export async function createProductAction(
       await cleanupCreatedProduct();
 
       return getImageFieldErrorState(
-        `A imagem foi enviada, mas nao pode ser vinculada ao produto: ${imageUpdateError.message}`,
+        `A imagem foi enviada, mas não pode ser vinculada ao produto: ${imageUpdateError.message}`,
       );
     }
   }
+
+  const movementWarning = getInventoryMovementWarning(
+    await recordInventoryMovements([
+      {
+        movement_type: "initial",
+        product_id: createdProduct.id,
+        quantity_delta: parsedInput.data.quantity,
+        transaction_id: null,
+      },
+    ]),
+  );
 
   revalidateProductSurfaces();
 
   return {
     status: "success",
-    message: `${createdProduct.name} foi cadastrado com sucesso com o ID ${createdProduct.sku}.`,
+    message: `${createdProduct.name} foi cadastrado com sucesso com o ID ${createdProduct.sku}.${movementWarning ? ` ${movementWarning}` : ""}`,
   };
 }
 
@@ -312,19 +327,37 @@ export async function updateProductAction(
 
   const supabase = createAdminClient();
 
-  const { data: product, error: productLookupError } = await supabase
-    .from("products")
-    .select("id, image_url, name, sku")
-    .eq("id", parsedInput.data.productId)
-    .maybeSingle();
+  const [
+    { data: product, error: productLookupError },
+    { data: inventoryRow, error: inventoryLookupError },
+  ] = await Promise.all([
+    supabase
+      .from("products")
+      .select("id, image_url, name, sku")
+      .eq("id", parsedInput.data.productId)
+      .maybeSingle(),
+    supabase
+      .from("inventory_levels")
+      .select("quantity")
+      .eq("product_id", parsedInput.data.productId)
+      .maybeSingle(),
+  ]);
 
   if (productLookupError || !product) {
     return {
       status: "error",
-      message: "O produto nao foi encontrado para atualizacao.",
+      message: "O produto não foi encontrado para atualização.",
     };
   }
 
+  if (inventoryLookupError) {
+    return {
+      status: "error",
+      message: `Não foi possível carregar o estoque atual: ${inventoryLookupError.message}`,
+    };
+  }
+
+  const previousQuantity = inventoryRow?.quantity ?? 0;
   let finalImageUrl = parsedInput.data.imageUrl || null;
   let uploadedImageUrl: string | null = null;
 
@@ -339,7 +372,7 @@ export async function updateProductAction(
 
     if (uploadResult.error || !uploadResult.publicUrl) {
       return getImageFieldErrorState(
-        uploadResult.error ?? "Nao foi possivel enviar a nova imagem do produto.",
+        uploadResult.error ?? "Não foi possível enviar a nova imagem do produto.",
       );
     }
 
@@ -363,21 +396,29 @@ export async function updateProductAction(
 
     return {
       status: "error",
-      message: `Nao foi possivel atualizar o produto: ${productUpdateError.message}`,
+      message: `Não foi possível atualizar o produto: ${productUpdateError.message}`,
     };
   }
 
-  const { error: inventoryUpdateError } = await supabase
-    .from("inventory_levels")
-    .update({
-      quantity: parsedInput.data.quantity,
-    })
-    .eq("product_id", parsedInput.data.productId);
+  const inventoryMutation =
+    inventoryRow === null
+      ? supabase.from("inventory_levels").insert({
+          product_id: parsedInput.data.productId,
+          quantity: parsedInput.data.quantity,
+        })
+      : supabase
+          .from("inventory_levels")
+          .update({
+            quantity: parsedInput.data.quantity,
+          })
+          .eq("product_id", parsedInput.data.productId);
+
+  const { error: inventoryUpdateError } = await inventoryMutation;
 
   if (inventoryUpdateError) {
     return {
       status: "error",
-      message: `O produto foi atualizado, mas o estoque nao pode ser salvo: ${inventoryUpdateError.message}`,
+      message: `O produto foi atualizado, mas o estoque não pode ser salvo: ${inventoryUpdateError.message}`,
     };
   }
 
@@ -397,11 +438,23 @@ export async function updateProductAction(
     await removeStoredProductImage(supabase, product.image_url);
   }
 
+  const quantityDelta = parsedInput.data.quantity - previousQuantity;
+  const movementWarning = getInventoryMovementWarning(
+    await recordInventoryMovements([
+      {
+        movement_type: "adjustment",
+        product_id: parsedInput.data.productId,
+        quantity_delta: quantityDelta,
+        transaction_id: null,
+      },
+    ]),
+  );
+
   revalidateProductSurfaces();
 
   return {
     status: "success",
-    message: `${parsedInput.data.name.trim()} foi atualizado com sucesso.`,
+    message: `${parsedInput.data.name.trim()} foi atualizado com sucesso.${movementWarning ? ` ${movementWarning}` : ""}`,
   };
 }
 
@@ -418,8 +471,7 @@ export async function deleteProductAction(
   if (!parsedInput.success) {
     return {
       status: "error",
-      message:
-        parsedInput.error.issues[0]?.message ?? "Produto invalido para exclusao.",
+      message: parsedInput.error.issues[0]?.message ?? "Produto inválido para exclusão.",
     };
   }
 
@@ -433,7 +485,7 @@ export async function deleteProductAction(
   if (productLookupError || !product) {
     return {
       status: "error",
-      message: "O produto nao foi encontrado para exclusao.",
+      message: "O produto não foi encontrado para exclusão.",
     };
   }
 
@@ -445,7 +497,7 @@ export async function deleteProductAction(
   if (transactionItemsError) {
     return {
       status: "error",
-      message: `Nao foi possivel verificar o historico do produto: ${transactionItemsError.message}`,
+      message: `Não foi possível verificar o histórico do produto: ${transactionItemsError.message}`,
     };
   }
 
@@ -453,7 +505,7 @@ export async function deleteProductAction(
     return {
       status: "error",
       message:
-        "Este produto ja foi usado em vendas registradas e nao pode ser excluido sem preservar o historico.",
+        "Este produto já foi usado em vendas registradas e não pode ser excluído sem preservar o histórico.",
     };
   }
 
@@ -465,12 +517,12 @@ export async function deleteProductAction(
   if (deleteError) {
     const fallbackMessage =
       deleteError.code === "23503"
-        ? "Este produto possui relacoes ativas e nao pode ser excluido agora."
+        ? "Este produto possui relações ativas e não pode ser excluído agora."
         : deleteError.message;
 
     return {
       status: "error",
-      message: `Nao foi possivel excluir o produto: ${fallbackMessage}`,
+      message: `Não foi possível excluir o produto: ${fallbackMessage}`,
     };
   }
 
@@ -480,6 +532,6 @@ export async function deleteProductAction(
 
   return {
     status: "success",
-    message: `${product.name} foi excluido com sucesso.`,
+    message: `${product.name} foi excluído com sucesso.`,
   };
 }

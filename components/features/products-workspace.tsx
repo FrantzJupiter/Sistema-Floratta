@@ -9,9 +9,12 @@ import {
   getProductDetailEntries,
   getRegisteredDetailTypes,
 } from "@/lib/products/catalog";
+import { cn } from "@/lib/utils";
+import type { InventoryBalanceSummary } from "@/services/inventory";
 import type { CatalogProduct } from "@/services/products";
 
 type ProductsWorkspaceProps = {
+  inventoryBalance: InventoryBalanceSummary;
   products: CatalogProduct[];
   title?: string;
   withCreateForm?: boolean;
@@ -24,6 +27,7 @@ function getMetadataSearchText(product: CatalogProduct) {
 }
 
 export function ProductsWorkspace({
+  inventoryBalance,
   products,
   title = "Produtos e estoque",
   withCreateForm = true,
@@ -31,11 +35,9 @@ export function ProductsWorkspace({
   const [query, setQuery] = useState("");
   const [productType, setProductType] = useState("todos");
   const [stockFilter, setStockFilter] = useState<"todos" | "baixo" | "zerado">("todos");
-  const [currentTime] = useState(() => Date.now());
   const deferredQuery = useDeferredValue(query);
   const normalizedQuery = deferredQuery.trim().toLowerCase();
   const typeOptions = getRegisteredDetailTypes(products);
-  const last24HoursThreshold = currentTime - 24 * 60 * 60 * 1000;
 
   const filteredProducts = products.filter((product) => {
     const detectedType = getDetailType(product.variantAttributes);
@@ -61,55 +63,61 @@ export function ProductsWorkspace({
     return matchesQuery && matchesType && matchesStock;
   });
 
-  const stockBalanceLast24Hours = products.filter((product) => {
-    const lastUpdated = product.inventory?.last_updated;
-
-    if (!lastUpdated) {
-      return false;
-    }
-
-    return new Date(lastUpdated).getTime() >= last24HoursThreshold;
-  }).length;
+  const stockBalanceLabel =
+    inventoryBalance.netChange > 0
+      ? `+${inventoryBalance.netChange}`
+      : String(inventoryBalance.netChange);
+  const stockBalanceTone =
+    inventoryBalance.netChange > 0
+      ? "text-emerald-700"
+      : inventoryBalance.netChange < 0
+        ? "text-rose-700"
+        : "text-zinc-950";
 
   return (
     <div className="flex flex-col gap-8">
-        {withCreateForm ? (
-          <aside className="min-w-0 w-full">
-            <div className="rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-panel-down backdrop-blur-xl">
-              <div className="mb-5 space-y-2">
-                <h3 className="text-xl font-semibold text-zinc-950">Cadastrar produto</h3>
-              </div>
-              <ProductCreateForm typeOptions={typeOptions} />
+      {withCreateForm ? (
+        <aside className="min-w-0 w-full">
+          <div className="rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-panel-down backdrop-blur-xl">
+            <div className="mb-5 space-y-2">
+              <h3 className="text-xl font-semibold text-zinc-950">Cadastrar produto</h3>
             </div>
-          </aside>
-        ) : null}
+            <ProductCreateForm typeOptions={typeOptions} />
+          </div>
+        </aside>
+      ) : null}
 
-        <section className="flex min-w-0 flex-col gap-6 rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-panel-down backdrop-blur-xl">
-          <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
-            <div className="space-y-1">
-              <h2 className="text-2xl font-semibold text-zinc-950">{title}</h2>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-card-down">
-                <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Cadastrados</p>
-                <p className="mt-2 text-2xl font-semibold text-zinc-950">{products.length}</p>
-              </div>
-              <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-card-down">
-                <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">
-                  Balanco ultimas 24h
-                </p>
-                <p className="mt-2 text-2xl font-semibold text-zinc-950">
-                  {stockBalanceLast24Hours}
-                </p>
-              </div>
-            </div>
+      <section className="flex min-w-0 flex-col gap-6 rounded-[2rem] border border-white/45 bg-white/60 p-4 sm:p-6 shadow-panel-down backdrop-blur-xl">
+        <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
+          <div className="space-y-1">
+            <h2 className="text-2xl font-semibold text-zinc-950">{title}</h2>
           </div>
 
-          <div className="grid gap-4">
-            <div className="grid gap-3 rounded-[1.75rem] border border-white/60 bg-white/80 p-4 shadow-card-down backdrop-blur-xl md:grid-cols-3 xl:grid-cols-[minmax(0,1.2fr)_180px_180px]">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-card-down">
+              <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Cadastrados</p>
+              <p className="mt-2 text-2xl font-semibold text-zinc-950">{products.length}</p>
+            </div>
+            <div className="rounded-[1.5rem] border border-white/55 bg-white/75 px-4 py-4 shadow-card-down">
+              <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">
+                Balanço últimas 24h
+              </p>
+              <p className={cn("mt-2 text-2xl font-semibold", stockBalanceTone)}>
+                {stockBalanceLabel}
+              </p>
+              <p className="mt-1 text-xs text-zinc-500">
+                {inventoryBalance.setupRequired
+                  ? "Ative o histórico"
+                  : `(+${inventoryBalance.positiveChange} / -${inventoryBalance.negativeChange})`}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-4">
+          <div className="grid gap-3 rounded-[1.75rem] border border-white/60 bg-white/80 p-4 shadow-card-down backdrop-blur-xl md:grid-cols-3 xl:grid-cols-[minmax(0,1.2fr)_180px_180px]">
             <label className="grid gap-2 text-sm text-zinc-700">
-              <span className="font-medium">Buscar no catalogo</span>
+              <span className="font-medium">Buscar no catálogo</span>
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
@@ -172,8 +180,8 @@ export function ProductsWorkspace({
               </div>
             </div>
           )}
-          </div>
-        </section>
+        </div>
+      </section>
     </div>
   );
 }

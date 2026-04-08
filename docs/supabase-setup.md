@@ -357,6 +357,29 @@ order by column_name;
 
 Se `cpf`, `phone` e `address` aparecerem, o cadastro expandido de clientes ja pode ser usado normalmente no app.
 
+### 11. Historico de balanco de estoque
+
+Para o contador de balanco exibir entradas e saidas reais com sinal, rode no `SQL Editor`:
+
+- `docs/supabase-inventory-movements.sql`
+
+Esse arquivo:
+
+- cria a tabela `inventory_movements`
+- registra a base para entradas iniciais, ajustes manuais e saidas por venda
+- permite calcular saldo liquido no periodo com `+X` e `-X`
+
+Depois valide com:
+
+```sql
+select table_name
+from information_schema.tables
+where table_schema = 'public'
+  and table_name = 'inventory_movements';
+```
+
+Se `inventory_movements` aparecer, o contador de balanco ja pode refletir as mudancas do estoque.
+
 ## Referencias
 
 - Supabase recomenda clientes separados para browser e server com `@supabase/ssr`: https://supabase.com/docs/guides/auth/server-side/nextjs

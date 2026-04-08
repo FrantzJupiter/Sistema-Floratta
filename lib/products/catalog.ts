@@ -3,7 +3,7 @@ type ProductDetailsRecord = Record<string, unknown>;
 const legacyProductTypeLabels: Record<string, string> = {
   perfumaria: "Perfumaria",
   semijoias: "Semijoias",
-  decoracao: "Decoracao",
+  decoracao: "Decoração",
   presentes: "Presentes",
   outros: "Outros",
 };

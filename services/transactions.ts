@@ -147,7 +147,7 @@ export async function getSaleReceipt(transactionId: string) {
   }
 
   if (!transaction) {
-    throw new Error("A venda concluida nao foi encontrada no banco.");
+    throw new Error("A venda concluída não foi encontrada no banco.");
   }
 
   const { data: transactionItems, error: transactionItemsError } = await supabase

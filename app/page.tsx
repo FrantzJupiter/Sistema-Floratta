@@ -5,16 +5,18 @@ import { ProductsWorkspace } from "@/components/features/products-workspace";
 import { RecentSales } from "@/components/features/recent-sales";
 import { SalesWorkspace } from "@/components/features/sales-workspace";
 import { listCustomers } from "@/services/customers";
+import { listInventoryBalanceSummary } from "@/services/inventory";
 import { listCatalogProducts } from "@/services/products";
 import { listRecentSales } from "@/services/transactions";
 
 export default async function Home() {
   await connection();
 
-  const [products, recentSales, customers] = await Promise.all([
+  const [products, recentSales, customers, inventoryBalance] = await Promise.all([
     listCatalogProducts(),
     listRecentSales(4),
     listCustomers(),
+    listInventoryBalanceSummary(),
   ]);
 
   return (
@@ -36,7 +38,7 @@ export default async function Home() {
             },
             {
               href: "/historico",
-              title: "Historico",
+              title: "Histórico",
             },
           ].map((shortcut) => (
             <Link
@@ -58,7 +60,11 @@ export default async function Home() {
         title="Adicionar produtos ao carrinho"
       />
 
-      <ProductsWorkspace products={products} title="Produtos e estoque" />
+      <ProductsWorkspace
+        inventoryBalance={inventoryBalance}
+        products={products}
+        title="Produtos e estoque"
+      />
 
       <RecentSales sales={recentSales} />
     </>

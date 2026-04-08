@@ -38,7 +38,7 @@ function loadImageFromFile(file: File) {
 
     image.onerror = () => {
       URL.revokeObjectURL(objectUrl);
-      reject(new Error("Nao foi possivel carregar a imagem selecionada."));
+      reject(new Error("Não foi possível carregar a imagem selecionada."));
     };
 
     image.src = objectUrl;
@@ -50,7 +50,7 @@ function canvasToBlob(canvas: HTMLCanvasElement, quality: number) {
     canvas.toBlob(
       (blob) => {
         if (!blob) {
-          reject(new Error("Nao foi possivel otimizar a imagem."));
+          reject(new Error("Não foi possível otimizar a imagem."));
           return;
         }
 
@@ -70,7 +70,7 @@ async function optimizeImageForUpload(file: File) {
   if (!context) {
     return {
       file: null,
-      error: "Nao foi possivel preparar a imagem para upload.",
+      error: "Não foi possível preparar a imagem para upload.",
     } as const;
   }
 
@@ -112,7 +112,7 @@ async function optimizeImageForUpload(file: File) {
       if (candidateBlob.size <= MAX_CLIENT_IMAGE_BYTES) {
         const optimizedFile = new File(
           [candidateBlob],
-          file.name.replace(/\.[^.]+$/, "") + ".jpg",
+          `${file.name.replace(/\.[^.]+$/, "")}.jpg`,
           {
             type: "image/jpeg",
             lastModified: Date.now(),
@@ -140,13 +140,13 @@ async function optimizeImageForUpload(file: File) {
   if (!bestBlob) {
     return {
       file: null,
-      error: "Nao foi possivel otimizar a imagem para upload.",
+      error: "Não foi possível otimizar a imagem para upload.",
     } as const;
   }
 
   return {
     file: null,
-    error: `Nao foi possivel reduzir a imagem para menos de ${formatFileSize(MAX_CLIENT_IMAGE_BYTES)}.`,
+    error: `Não foi possível reduzir a imagem para menos de ${formatFileSize(MAX_CLIENT_IMAGE_BYTES)}.`,
   } as const;
 }
 
@@ -156,6 +156,7 @@ type ProductImageFieldsProps = {
   imageFileErrors?: string[];
   imageCameraErrors?: string[];
   onProcessingChange?: (processing: boolean) => void;
+  showImageUrlField?: boolean;
 };
 
 export function ProductImageFields({
@@ -164,6 +165,7 @@ export function ProductImageFields({
   imageFileErrors,
   imageCameraErrors,
   onProcessingChange,
+  showImageUrlField = true,
 }: ProductImageFieldsProps) {
   const [imageUrl, setImageUrl] = useState(defaultImageUrl ?? "");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -220,7 +222,9 @@ export function ProductImageFields({
 
     setIsOptimizing(true);
     setClientImageError("");
-    setClientImageMessage("Recortando no centro e reduzindo a imagem para ficar abaixo de 1 MB...");
+    setClientImageMessage(
+      "Recortando no centro e reduzindo a imagem para ficar abaixo de 1 MB...",
+    );
 
     try {
       const optimizedResult = await optimizeImageForUpload(originalFile);
@@ -231,7 +235,7 @@ export function ProductImageFields({
         setFilePreviewUrl(null);
         setClientImageMessage("");
         setClientImageError(
-          optimizedResult.error ?? "Nao foi possivel otimizar a imagem selecionada.",
+          optimizedResult.error ?? "Não foi possível otimizar a imagem selecionada.",
         );
 
         if (event.target) {
@@ -263,7 +267,7 @@ export function ProductImageFields({
       setSelectedSource(null);
       setFilePreviewUrl(null);
       setClientImageMessage("");
-      setClientImageError("Nao foi possivel otimizar a imagem selecionada.");
+      setClientImageError("Não foi possível otimizar a imagem selecionada.");
 
       if (event.target) {
         event.target.value = "";
@@ -307,7 +311,7 @@ export function ProductImageFields({
           {activePreviewUrl ? (
             <img
               src={activePreviewUrl}
-              alt="Pre-visualizacao do produto"
+              alt="Pré-visualização do produto"
               className="h-full w-full object-cover"
             />
           ) : (
@@ -318,18 +322,22 @@ export function ProductImageFields({
         </div>
 
         <div className="grid gap-4">
-          <label className="grid gap-2 text-sm text-zinc-700">
-            <span className="font-medium">URL da imagem</span>
-            <input
-              name="imageUrl"
-              type="url"
-              value={imageUrl}
-              onChange={(event) => setImageUrl(event.target.value)}
-              placeholder="https://..."
-              className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
-            />
-            <FieldError errors={imageUrlErrors} />
-          </label>
+          {showImageUrlField ? (
+            <label className="grid gap-2 text-sm text-zinc-700">
+              <span className="font-medium">URL da imagem</span>
+              <input
+                name="imageUrl"
+                type="url"
+                value={imageUrl}
+                onChange={(event) => setImageUrl(event.target.value)}
+                placeholder="https://..."
+                className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+              />
+              <FieldError errors={imageUrlErrors} />
+            </label>
+          ) : (
+            <input name="imageUrl" type="hidden" value="" />
+          )}
 
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="grid gap-2 text-sm text-zinc-700">
@@ -347,7 +355,7 @@ export function ProductImageFields({
             </label>
 
             <label className="grid gap-2 text-sm text-zinc-700">
-              <span className="font-medium">Usar camera</span>
+              <span className="font-medium">Usar câmera</span>
               <input
                 ref={cameraInputRef}
                 id={cameraInputId}
@@ -365,10 +373,12 @@ export function ProductImageFields({
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs leading-5 text-zinc-500">
               {isOptimizing
-                ? "A imagem esta sendo recortada no centro e reduzida para manter o upload abaixo de 1 MB."
+                ? "A imagem está sendo recortada no centro e reduzida para manter o upload abaixo de 1 MB."
                 : selectedFile
-                ? `Imagem vinda de ${selectedSource === "camera" ? "camera" : "arquivo"} selecionada. Ela sera usada no lugar da URL.`
-                : "Voce pode usar uma URL, escolher um arquivo do dispositivo ou tirar uma foto no celular."}
+                  ? `Imagem vinda de ${selectedSource === "camera" ? "câmera" : "arquivo"} selecionada. Ela será usada no lugar da URL.`
+                  : showImageUrlField
+                    ? "Você pode usar uma URL, escolher um arquivo do dispositivo ou tirar uma foto no celular."
+                    : "Escolha um arquivo do dispositivo ou tire uma foto no celular."}
             </p>
 
             {selectedFile ? (
@@ -379,7 +389,7 @@ export function ProductImageFields({
                 className="h-8 rounded-xl px-2 text-xs text-rose-900 hover:bg-rose-100"
                 onClick={clearSelectedFile}
               >
-                Limpar selecao
+                Limpar seleção
               </Button>
             ) : null}
           </div>

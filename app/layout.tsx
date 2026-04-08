@@ -10,12 +10,12 @@ export const metadata: Metadata = {
     template: "%s | Sistema Floratta",
   },
   description:
-    "Sistema de varejo mobile-first para catalogo, estoque e vendas da Floratta.",
+    "Sistema de varejo mobile-first para catálogo, estoque e vendas da Floratta.",
   applicationName: "Sistema Floratta",
   icons: {
-    shortcut: "/favicon.ico",
+    shortcut: "/logo_pequeno.svg",
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
+      { url: "/logo_pequeno.svg", sizes: "any", type: "image/svg+xml" },
       { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
     ],
     apple: [
