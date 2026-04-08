@@ -17,6 +17,7 @@ type ProductsWorkspaceProps = {
   collapseCatalogByDefault?: boolean;
   collapseCreateFormByDefault?: boolean;
   inventoryBalance: InventoryBalanceSummary;
+  isAdmin?: boolean;
   products: CatalogProduct[];
   title?: string;
   withCreateForm?: boolean;
@@ -32,6 +33,7 @@ export function ProductsWorkspace({
   collapseCatalogByDefault = false,
   collapseCreateFormByDefault = false,
   inventoryBalance,
+  isAdmin = false,
   products,
   title = "Produtos e estoque",
   withCreateForm = true,
@@ -92,7 +94,7 @@ export function ProductsWorkspace({
 
   return (
     <div className="flex flex-col gap-8">
-      {withCreateForm ? (
+      {withCreateForm && isAdmin ? (
         <aside className="min-w-0 w-full">
           <div className="rounded-[2rem] border border-white/60 bg-gradient-to-br from-white/60 to-white/20 p-4 sm:p-6 shadow-[0_8px_32px_rgba(0,0,0,0.06)] backdrop-blur-2xl">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -251,6 +253,7 @@ export function ProductsWorkspace({
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                   {filteredProducts.map((product) => (
                     <ProductCatalogCard
+                      isAdmin={isAdmin}
                       key={product.id}
                       product={product}
                       typeOptions={typeOptions}

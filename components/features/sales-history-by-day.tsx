@@ -29,11 +29,13 @@ function formatDayLabel(dayKey: string) {
 }
 
 type SalesHistoryByDayProps = {
+  isAdmin?: boolean;
   sales: RecentSale[];
   title?: string;
 };
 
 export function SalesHistoryByDay({
+  isAdmin = false,
   sales,
   title = "Histórico por dia",
 }: SalesHistoryByDayProps) {
@@ -69,15 +71,13 @@ export function SalesHistoryByDay({
             </div>
           </div>
 
-          <ClearSalesHistoryButton salesCount={sales.length} />
+          <ClearSalesHistoryButton isAdmin={isAdmin} salesCount={sales.length} />
         </div>
       </div>
 
       {dayEntries.length === 0 ? (
         <div className="rounded-[1.75rem] border border-dashed border-emerald-200 bg-emerald-50/65 px-5 py-10 text-center">
-          <p className="text-base font-medium text-zinc-800">
-            Nenhuma venda foi registrada ainda.
-          </p>
+          <p className="text-base font-medium text-zinc-800">Nenhuma venda foi registrada ainda.</p>
           <p className="mt-2 text-sm text-zinc-600">
             Assim que o checkout for concluído, o histórico diário aparece aqui.
           </p>

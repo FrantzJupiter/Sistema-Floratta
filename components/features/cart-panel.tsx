@@ -24,6 +24,7 @@ function formatCurrency(value: number) {
 
 type CartPanelProps = {
   customers: RegisteredCustomer[];
+  isAdmin?: boolean;
 };
 
 function CartCheckoutContent({
@@ -279,7 +280,7 @@ function CartCheckoutContent({
   );
 }
 
-export function CartPanel({ customers }: CartPanelProps) {
+export function CartPanel({ customers, isAdmin = false }: CartPanelProps) {
   const items = useCartStore((state) => state.items);
   const incrementItem = useCartStore((state) => state.incrementItem);
   const decrementItem = useCartStore((state) => state.decrementItem);
@@ -366,7 +367,7 @@ export function CartPanel({ customers }: CartPanelProps) {
         <div className="grid gap-4">
           <SaleReceipt receipt={activeReceipt} />
 
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className={isAdmin ? "grid gap-3 sm:grid-cols-2" : "grid gap-3"}>
             <Button
               type="button"
               size="lg"
@@ -381,7 +382,7 @@ export function CartPanel({ customers }: CartPanelProps) {
               Nova venda
             </Button>
 
-            <form action={cancelFormAction}>
+            {isAdmin ? <form action={cancelFormAction}>
               <input type="hidden" name="transactionId" value={activeReceipt.id} />
               <Button
                 type="submit"
@@ -404,7 +405,7 @@ export function CartPanel({ customers }: CartPanelProps) {
               >
                 {cancelPending ? "Cancelando venda..." : "Cancelar última venda"}
               </Button>
-            </form>
+            </form> : null}
           </div>
 
           {cancelState.status === "error" ? (

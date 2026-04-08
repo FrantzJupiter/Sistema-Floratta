@@ -112,12 +112,14 @@ function extractQrCandidates(decodedText: string) {
 
 type SalesWorkspaceProps = {
   customers: RegisteredCustomer[];
+  isAdmin?: boolean;
   products: CatalogProduct[];
   title?: string;
 };
 
 export function SalesWorkspace({
   customers,
+  isAdmin = false,
   products,
   title = "Adicionar produtos ao carrinho",
 }: SalesWorkspaceProps) {
@@ -217,7 +219,7 @@ export function SalesWorkspace({
   return (
     <div className="flex flex-col gap-8">
       <aside className="min-w-0 w-full">
-        <CartPanel customers={customers} />
+        <CartPanel customers={customers} isAdmin={isAdmin} />
       </aside>
 
       <section className="flex min-w-0 flex-col gap-6 rounded-[2rem] border border-white/60 bg-gradient-to-br from-white/60 to-white/20 p-4 sm:p-6 shadow-[0_8px_32px_rgba(0,0,0,0.06)] backdrop-blur-2xl">

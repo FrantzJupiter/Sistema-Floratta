@@ -1,5 +1,7 @@
 "use server";
 
+import { isAdminEmail } from "@/lib/auth/roles";
+import { requireAuthenticatedUser } from "@/lib/auth/user";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidateCustomerSurfaces } from "@/lib/revalidate-routes";
 import {
@@ -50,6 +52,7 @@ export async function createCustomerAction(
   formData: FormData,
 ): Promise<CustomerCreateActionState> {
   void prevState;
+  await requireAuthenticatedUser();
 
   const parsedCustomer = customerSchema.safeParse(getCustomerFormInput(formData));
 
@@ -94,6 +97,7 @@ export async function updateCustomerAction(
   formData: FormData,
 ): Promise<CustomerCreateActionState> {
   void prevState;
+  await requireAuthenticatedUser();
 
   const parsedCustomer = customerUpdateSchema.safeParse({
     customerId: formData.get("customerId"),
@@ -142,6 +146,14 @@ export async function deleteCustomerAction(
   formData: FormData,
 ): Promise<CustomerDeleteActionState> {
   void prevState;
+  const user = await requireAuthenticatedUser();
+
+  if (!isAdminEmail(user.email)) {
+    return {
+      status: "error",
+      message: "Apenas administradores podem excluir clientes.",
+    };
+  }
 
   const parsedCustomer = customerDeleteSchema.safeParse({
     customerId: formData.get("customerId"),

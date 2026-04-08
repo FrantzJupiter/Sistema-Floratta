@@ -2,6 +2,8 @@
 
 import { z } from "zod";
 
+import { isAdminEmail } from "@/lib/auth/roles";
+import { requireAuthenticatedUser } from "@/lib/auth/user";
 import { revalidateSalesSurfaces } from "@/lib/revalidate-routes";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
@@ -43,6 +45,14 @@ export async function cancelSaleAction(
   formData: FormData,
 ): Promise<TransactionHistoryActionState> {
   void prevState;
+  const user = await requireAuthenticatedUser();
+
+  if (!isAdminEmail(user.email)) {
+    return {
+      status: "error",
+      message: "Apenas administradores podem cancelar vendas.",
+    };
+  }
 
   const parsedTransactionId = transactionIdSchema.safeParse(
     formData.get("transactionId"),
@@ -224,6 +234,14 @@ export async function clearSalesHistoryAction(
   prevState: TransactionHistoryActionState = initialTransactionHistoryActionState,
 ): Promise<TransactionHistoryActionState> {
   void prevState;
+  const user = await requireAuthenticatedUser();
+
+  if (!isAdminEmail(user.email)) {
+    return {
+      status: "error",
+      message: "Apenas administradores podem limpar o histórico.",
+    };
+  }
 
   const supabase = createAdminClient();
 

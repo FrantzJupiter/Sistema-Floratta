@@ -10,16 +10,22 @@ import {
 } from "@/lib/validations/transactions";
 
 type ClearSalesHistoryButtonProps = {
+  isAdmin?: boolean;
   salesCount: number;
 };
 
 export function ClearSalesHistoryButton({
+  isAdmin = false,
   salesCount,
 }: ClearSalesHistoryButtonProps) {
   const [state, formAction, pending] = useActionState<TransactionHistoryActionState, FormData>(
     clearSalesHistoryAction,
     initialTransactionHistoryActionState,
   );
+
+  if (!isAdmin) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col items-start gap-3 sm:items-end">

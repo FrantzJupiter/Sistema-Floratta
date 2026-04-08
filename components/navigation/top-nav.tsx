@@ -48,10 +48,14 @@ export function TopNav() {
     state.items.reduce((accumulator, item) => accumulator + item.quantity, 0),
   );
 
+  if (pathname === "/login") {
+    return null;
+  }
+
   return (
     <header className="sticky top-0 z-40 px-4 pt-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl rounded-[2rem] border border-white/50 bg-white/70 px-4 py-4 shadow-panel-down backdrop-blur-xl sm:px-5">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
           <Link href="/" className="flex items-center gap-3">
             <div className="flex h-11 w-[5.5rem] items-center justify-center px-1">
               <Image

@@ -1,5 +1,6 @@
 "use server";
 
+import { requireAuthenticatedUser } from "@/lib/auth/user";
 import { revalidateSalesSurfaces } from "@/lib/revalidate-routes";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
@@ -50,6 +51,7 @@ export async function checkoutAction(
   formData: FormData,
 ): Promise<CheckoutActionState> {
   void prevState;
+  const user = await requireAuthenticatedUser();
 
   const cartPayload = formData.get("cartPayload");
 
@@ -97,7 +99,7 @@ export async function checkoutAction(
     p_customer_id: parsedCheckout.data.customerId || null,
     p_customer_name: parsedCheckout.data.customerName || null,
     p_discount_amount: parsedCheckout.data.discount,
-    p_employee_id: null,
+    p_employee_id: user.id,
   });
 
   if (error) {

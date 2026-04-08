@@ -1,5 +1,7 @@
 "use server";
 
+import { isAdminEmail } from "@/lib/auth/roles";
+import { requireAuthenticatedUser } from "@/lib/auth/user";
 import { createAutomaticSku } from "@/lib/products/catalog";
 import {
   getProductImageFile,
@@ -127,6 +129,15 @@ export async function createProductAction(
   _prevState: ProductActionState,
   formData: FormData,
 ): Promise<ProductActionState> {
+  const user = await requireAuthenticatedUser();
+
+  if (!isAdminEmail(user.email)) {
+    return {
+      status: "error",
+      message: "Apenas administradores podem cadastrar produtos.",
+    };
+  }
+
   const parsedInput = productCreateSchema.safeParse(getProductFormInput(formData));
 
   if (!parsedInput.success) {
@@ -293,6 +304,15 @@ export async function updateProductAction(
   _prevState: ProductActionState,
   formData: FormData,
 ): Promise<ProductActionState> {
+  const user = await requireAuthenticatedUser();
+
+  if (!isAdminEmail(user.email)) {
+    return {
+      status: "error",
+      message: "Apenas administradores podem editar produtos.",
+    };
+  }
+
   const parsedInput = productUpdateSchema.safeParse({
     productId: formData.get("productId"),
     ...getProductFormInput(formData),
@@ -463,6 +483,14 @@ export async function deleteProductAction(
   formData: FormData,
 ): Promise<ProductDeleteActionState> {
   void prevState;
+  const user = await requireAuthenticatedUser();
+
+  if (!isAdminEmail(user.email)) {
+    return {
+      status: "error",
+      message: "Apenas administradores podem excluir produtos.",
+    };
+  }
 
   const parsedInput = productDeleteSchema.safeParse({
     productId: formData.get("productId"),
