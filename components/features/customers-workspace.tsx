@@ -238,14 +238,19 @@ export function CustomersWorkspace({
             <div className="rounded-[1.5rem] border border-white/60 bg-gradient-to-br from-white/70 to-white/30 px-4 py-4 shadow-[0_4px_24px_rgba(0,0,0,0.04)] backdrop-blur-md">
               <div className="flex items-start justify-between gap-2">
                 <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">Cadastros</p>
-                <select
-                  value={recentWindow}
-                  onChange={(event) => setRecentWindow(event.target.value as "7d" | "30d")}
-                  className="h-7 max-w-20 rounded-lg border border-white/50 bg-white/40 px-2 text-[10px] font-medium text-zinc-700 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)] backdrop-blur-md outline-none transition-all focus:bg-white/60 focus:border-rose-300 focus:ring-3 focus:ring-rose-200/50 hover:bg-white/50"
-                >
-                  <option value="7d">7 dias</option>
-                  <option value="30d">mês</option>
-                </select>
+                <div className="relative">
+                  <select
+                    value={recentWindow}
+                    onChange={(event) => setRecentWindow(event.target.value as "7d" | "30d")}
+                    className="h-7 w-full appearance-none rounded-xl border border-white/70 bg-gradient-to-b from-white/80 to-white/30 pl-2.5 pr-7 text-[10px] font-medium text-zinc-800 shadow-[0_2px_8px_rgba(0,0,0,0.04),inset_0_1px_1px_rgba(255,255,255,0.8)] backdrop-blur-md outline-none transition-all hover:from-white/90 hover:to-white/50 focus:border-rose-300 focus:ring-3 focus:ring-rose-200/50"
+                  >
+                    <option value="7d">7 dias</option>
+                    <option value="30d">mês</option>
+                  </select>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="pointer-events-none absolute right-2 top-1/2 size-3 -translate-y-1/2 text-zinc-500">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="m19 9-7 7-7-7" />
+                  </svg>
+                </div>
               </div>
               <p className="mt-2 text-2xl font-semibold text-zinc-950">{recentCustomers}</p>
             </div>

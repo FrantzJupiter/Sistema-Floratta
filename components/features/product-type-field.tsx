@@ -71,7 +71,7 @@ export function ProductTypeField({
 
               onChange(nextValue);
             }}
-            className="h-11 w-full appearance-none rounded-2xl border border-white/45 bg-[linear-gradient(180deg,rgba(255,255,255,0.9),rgba(255,246,249,0.82))] px-4 pr-11 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+            className="h-11 w-full appearance-none rounded-2xl border border-white/70 bg-gradient-to-b from-white/80 to-white/30 px-4 pr-11 text-sm font-medium text-zinc-800 shadow-[0_4px_12px_rgba(0,0,0,0.04),inset_0_1px_1px_rgba(255,255,255,0.8)] backdrop-blur-md outline-none transition-all hover:from-white/90 hover:to-white/50 focus:border-rose-300 focus:ring-4 focus:ring-rose-200/50"
           >
             <option value={CUSTOM_OPTION_VALUE}>Selecionar ou criar tipo</option>
             {normalizedOptions.map((typeOption) => (

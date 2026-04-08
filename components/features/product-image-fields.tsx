@@ -1,7 +1,9 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
-import { useEffect, useId, useRef, useState, type ChangeEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
+
+import { ImagePlus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -69,8 +71,8 @@ async function optimizeImageForUpload(file: File) {
 
   if (!context) {
     return {
-      file: null,
       error: "Não foi possível preparar a imagem para upload.",
+      file: null,
     } as const;
   }
 
@@ -114,14 +116,14 @@ async function optimizeImageForUpload(file: File) {
           [candidateBlob],
           `${file.name.replace(/\.[^.]+$/, "")}.jpg`,
           {
-            type: "image/jpeg",
             lastModified: Date.now(),
+            type: "image/jpeg",
           },
         );
 
         return {
-          file: optimizedFile,
           error: null,
+          file: optimizedFile,
         } as const;
       }
     }
@@ -139,14 +141,14 @@ async function optimizeImageForUpload(file: File) {
 
   if (!bestBlob) {
     return {
-      file: null,
       error: "Não foi possível otimizar a imagem para upload.",
+      file: null,
     } as const;
   }
 
   return {
-    file: null,
     error: `Não foi possível reduzir a imagem para menos de ${formatFileSize(MAX_CLIENT_IMAGE_BYTES)}.`,
+    file: null,
   } as const;
 }
 
@@ -169,16 +171,16 @@ export function ProductImageFields({
 }: ProductImageFieldsProps) {
   const [imageUrl, setImageUrl] = useState(defaultImageUrl ?? "");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [selectedSource, setSelectedSource] = useState<"arquivo" | "camera" | null>(null);
   const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [clientImageMessage, setClientImageMessage] = useState("");
   const [clientImageError, setClientImageError] = useState("");
-  const fileInputId = useId();
-  const cameraInputId = useId();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
   const previewUrlRef = useRef<string | null>(null);
+  const unifiedImageErrors =
+    imageFileErrors?.length || imageCameraErrors?.length
+      ? [...new Set([...(imageFileErrors ?? []), ...(imageCameraErrors ?? [])])]
+      : undefined;
 
   useEffect(() => {
     return () => {
@@ -192,10 +194,7 @@ export function ProductImageFields({
     onProcessingChange?.(isOptimizing);
   }, [isOptimizing, onProcessingChange]);
 
-  async function handleFileSelection(
-    event: ChangeEvent<HTMLInputElement>,
-    source: "arquivo" | "camera",
-  ) {
+  async function handleFileSelection(event: ChangeEvent<HTMLInputElement>) {
     const originalFile = event.target.files?.[0] ?? null;
 
     if (previewUrlRef.current) {
@@ -203,17 +202,8 @@ export function ProductImageFields({
       previewUrlRef.current = null;
     }
 
-    if (source === "arquivo" && cameraInputRef.current) {
-      cameraInputRef.current.value = "";
-    }
-
-    if (source === "camera" && fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-
     if (!originalFile) {
       setSelectedFile(null);
-      setSelectedSource(null);
       setFilePreviewUrl(null);
       setClientImageError("");
       setClientImageMessage("");
@@ -231,7 +221,6 @@ export function ProductImageFields({
 
       if (optimizedResult.error || !optimizedResult.file) {
         setSelectedFile(null);
-        setSelectedSource(null);
         setFilePreviewUrl(null);
         setClientImageMessage("");
         setClientImageError(
@@ -245,17 +234,13 @@ export function ProductImageFields({
         return;
       }
 
-      const targetInput =
-        source === "arquivo" ? fileInputRef.current : cameraInputRef.current;
-
-      if (targetInput) {
+      if (fileInputRef.current) {
         const transfer = new DataTransfer();
         transfer.items.add(optimizedResult.file);
-        targetInput.files = transfer.files;
+        fileInputRef.current.files = transfer.files;
       }
 
       setSelectedFile(optimizedResult.file);
-      setSelectedSource(source);
       previewUrlRef.current = URL.createObjectURL(optimizedResult.file);
       setFilePreviewUrl(previewUrlRef.current);
       setClientImageMessage(
@@ -264,7 +249,6 @@ export function ProductImageFields({
       setClientImageError("");
     } catch {
       setSelectedFile(null);
-      setSelectedSource(null);
       setFilePreviewUrl(null);
       setClientImageMessage("");
       setClientImageError("Não foi possível otimizar a imagem selecionada.");
@@ -279,7 +263,6 @@ export function ProductImageFields({
 
   function clearSelectedFile() {
     setSelectedFile(null);
-    setSelectedSource(null);
     setFilePreviewUrl(null);
     setClientImageMessage("");
     setClientImageError("");
@@ -291,10 +274,6 @@ export function ProductImageFields({
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
-    }
-
-    if (cameraInputRef.current) {
-      cameraInputRef.current.value = "";
     }
   }
 
@@ -339,35 +318,43 @@ export function ProductImageFields({
             <input name="imageUrl" type="hidden" value="" />
           )}
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="grid gap-2 text-sm text-zinc-700">
-              <span className="font-medium">Selecionar arquivo</span>
-              <input
-                ref={fileInputRef}
-                id={fileInputId}
-                name="imageFile"
-                type="file"
-                accept="image/*"
-                onChange={(event) => handleFileSelection(event, "arquivo")}
-                className="block h-11 w-full rounded-2xl border border-white/45 bg-white/75 px-3 py-2 text-sm text-zinc-900 file:mr-3 file:rounded-xl file:border-0 file:bg-rose-100 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-rose-900"
-              />
-              <FieldError errors={imageFileErrors} />
-            </label>
+          <div className="grid gap-2 text-sm text-zinc-700">
+            <span className="font-medium">Foto do produto</span>
 
-            <label className="grid gap-2 text-sm text-zinc-700">
-              <span className="font-medium">Usar câmera</span>
-              <input
-                ref={cameraInputRef}
-                id={cameraInputId}
-                name="imageCamera"
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={(event) => handleFileSelection(event, "camera")}
-                className="block h-11 w-full rounded-2xl border border-white/45 bg-white/75 px-3 py-2 text-sm text-zinc-900 file:mr-3 file:rounded-xl file:border-0 file:bg-rose-100 file:px-3 file:py-1.5 file:text-xs file:font-medium file:text-rose-900"
-              />
-              <FieldError errors={imageCameraErrors} />
-            </label>
+            <input
+              ref={fileInputRef}
+              name="imageFile"
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelection}
+              className="hidden"
+            />
+            <input name="imageCamera" type="hidden" value="" />
+
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="h-11 rounded-2xl border-rose-200 bg-rose-50/70 text-rose-900 hover:bg-rose-100"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <ImagePlus className="size-4" />
+                {selectedFile ? "Trocar foto" : "Escolher foto"}
+              </Button>
+
+              {selectedFile ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="h-11 rounded-2xl px-3 text-sm text-rose-900 hover:bg-rose-100"
+                  onClick={clearSelectedFile}
+                >
+                  Limpar seleção
+                </Button>
+              ) : null}
+            </div>
+
+            <FieldError errors={unifiedImageErrors} />
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -375,23 +362,11 @@ export function ProductImageFields({
               {isOptimizing
                 ? "A imagem está sendo recortada no centro e reduzida para manter o upload abaixo de 1 MB."
                 : selectedFile
-                  ? `Imagem vinda de ${selectedSource === "camera" ? "câmera" : "arquivo"} selecionada. Ela será usada no lugar da URL.`
+                  ? "Imagem selecionada. Ela será usada no lugar da URL."
                   : showImageUrlField
-                    ? "Você pode usar uma URL, escolher um arquivo do dispositivo ou tirar uma foto no celular."
-                    : "Escolha um arquivo do dispositivo ou tire uma foto no celular."}
+                    ? "Você pode usar uma URL ou escolher uma foto do dispositivo. No celular, o sistema pode oferecer câmera ou galeria."
+                    : "Escolha uma foto do dispositivo. No celular, o sistema pode oferecer câmera ou galeria."}
             </p>
-
-            {selectedFile ? (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-8 rounded-xl px-2 text-xs text-rose-900 hover:bg-rose-100"
-                onClick={clearSelectedFile}
-              >
-                Limpar seleção
-              </Button>
-            ) : null}
           </div>
 
           <div aria-live="polite" className="min-h-5 text-xs">
