@@ -100,7 +100,7 @@ function ProductCreateFormFields({
         <FormField
           label="Nome do produto"
           name="name"
-          placeholder="Ex.: Perfume Floratta Blue"
+          placeholder="Ex.: Essência de baunilha"
           errors={state.fieldErrors?.name}
         />
 

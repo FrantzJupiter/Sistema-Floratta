@@ -243,7 +243,7 @@ export function SalesWorkspace({
               <input
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
-                placeholder="Ex.: perfume, brinco, GIFT-2026..."
+                placeholder="Essência, brinco..."
                 className="h-11 rounded-2xl border border-white/50 bg-white/40 px-4 text-zinc-900 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)] backdrop-blur-md outline-none transition-all focus:bg-white/60 focus:border-rose-300 focus:ring-4 focus:ring-rose-200/50 hover:bg-white/50"
               />
             </label>
