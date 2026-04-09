@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 
+import { MobileSwipeNavigation } from "@/components/navigation/mobile-swipe-navigation";
 import { TopNav } from "@/components/navigation/top-nav";
 
 import "./globals.css";
@@ -46,6 +47,7 @@ export default async function RootLayout({
         <div className="relative min-h-screen overflow-x-clip">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-80 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.8),_transparent_72%)]" />
           <div className="relative flex min-h-screen flex-col">
+            <MobileSwipeNavigation />
             <TopNav />
             <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 pb-10 pt-4 sm:px-6 lg:px-8">
               {children}

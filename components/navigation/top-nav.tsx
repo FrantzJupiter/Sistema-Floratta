@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  type LucideIcon,
   LayoutDashboard,
   Package,
   ReceiptText,
@@ -11,36 +12,17 @@ import {
   Users,
 } from "lucide-react";
 
+import { mainNavigationItems, isMainNavigationActive } from "@/lib/navigation/main-navigation";
 import { useCartStore } from "@/lib/stores/cart-store";
 import { cn } from "@/lib/utils";
 
-const navigationItems = [
-  {
-    href: "/",
-    label: "Início",
-    icon: LayoutDashboard,
-  },
-  {
-    href: "/venda",
-    label: "Venda",
-    icon: ShoppingBag,
-  },
-  {
-    href: "/produtos",
-    label: "Produtos",
-    icon: Package,
-  },
-  {
-    href: "/clientes",
-    label: "Clientes",
-    icon: Users,
-  },
-  {
-    href: "/historico",
-    label: "Histórico",
-    icon: ReceiptText,
-  },
-] as const;
+const navigationIcons: Record<string, LucideIcon> = {
+  "/": LayoutDashboard,
+  "/clientes": Users,
+  "/historico": ReceiptText,
+  "/produtos": Package,
+  "/venda": ShoppingBag,
+};
 
 export function TopNav() {
   const pathname = usePathname();
@@ -53,45 +35,40 @@ export function TopNav() {
   }
 
   return (
-    <header className="sticky top-0 z-40 px-4 pt-4 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl rounded-[2rem] border border-white/50 bg-white/70 px-4 py-4 shadow-panel-down backdrop-blur-xl sm:px-5">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+    <header className="sticky top-0 z-40 px-4 pt-2.5 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl rounded-[2rem] border border-white/50 bg-white/70 px-4 py-2.5 shadow-panel-down backdrop-blur-xl sm:px-5">
+        <div className="flex flex-col gap-2.5 xl:flex-row xl:items-center xl:justify-between">
           <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-11 w-[5.5rem] items-center justify-center px-1">
+            <div className="flex h-9 w-[4.75rem] items-center justify-center px-1">
               <Image
                 src="/logo.svg"
                 alt="Floratta"
                 width={214}
                 height={113}
                 unoptimized
-                className="h-6 w-auto object-contain"
+                className="h-6.5 w-auto object-contain"
                 priority
               />
             </div>
-            <div className="space-y-1">
-              <p className="text-sm font-semibold text-zinc-950">Sistema Floratta</p>
-              <p className="text-xs uppercase tracking-[0.22em] text-rose-700">
-                Varejo, estoque e recibos
+            <div className="flex items-center">
+              <p className="text-lg font-semibold leading-none text-zinc-950 sm:text-xl">
+                Sistema Floratta
               </p>
             </div>
           </Link>
 
-          <nav className="-mx-1 overflow-x-auto pb-1">
+          <nav className="-mx-1 top-nav-scrollbar overflow-x-auto pb-1.5" data-swipe-nav-ignore>
             <div className="flex min-w-max gap-2 px-1">
-              {navigationItems.map((item) => {
-                const isActive =
-                  item.href === "/"
-                    ? pathname === item.href
-                    : pathname === item.href || pathname.startsWith(`${item.href}/`);
-
-                const Icon = item.icon;
+              {mainNavigationItems.map((item) => {
+                const isActive = isMainNavigationActive(pathname, item.href);
+                const Icon = navigationIcons[item.href];
 
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
                     className={cn(
-                      "inline-flex items-center gap-2 rounded-2xl border px-3 py-2 text-sm font-medium transition",
+                      "inline-flex items-center gap-2 rounded-2xl border px-3 py-[0.3125rem] text-sm font-medium transition",
                       isActive
                         ? "border-rose-200 bg-rose-100/85 text-rose-900 shadow-sm"
                         : "border-white/40 bg-white/65 text-zinc-600 hover:border-rose-100 hover:bg-white hover:text-zinc-950",

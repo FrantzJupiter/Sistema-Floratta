@@ -14,6 +14,8 @@ import { ProductImageFields } from "@/components/features/product-image-fields";
 import { ProductQrLabelDialog } from "@/components/features/product-qr-label-dialog";
 import { ProductTypeField } from "@/components/features/product-type-field";
 import { Button } from "@/components/ui/button";
+import { CurrencyInput } from "@/components/ui/currency-input";
+import { ImageLightbox } from "@/components/ui/image-lightbox";
 import {
   createAutomaticSku,
   getDetailType,
@@ -52,7 +54,7 @@ function ProductImagePreview({
   name: string;
   isEditing: boolean;
 }) {
-  return (
+  const previewContent = (
     <div
       className={cn(
         "overflow-hidden rounded-[1rem] border border-white/60 bg-gradient-to-br from-white/60 to-white/20 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)] backdrop-blur-sm transition-all duration-200",
@@ -67,6 +69,12 @@ function ProductImagePreview({
         </div>
       )}
     </div>
+  );
+
+  return (
+    <ImageLightbox alt={name} imageUrl={imageUrl} triggerClassName="shrink-0">
+      {previewContent}
+    </ImageLightbox>
   );
 }
 
@@ -153,11 +161,8 @@ function ProductEditForm({
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_180px]">
         <label className="grid gap-2 text-sm text-zinc-700">
           <span className="font-medium">Preço base</span>
-          <input
+          <CurrencyInput
             name="basePrice"
-            type="number"
-            min="0"
-            step="0.01"
             defaultValue={String(product.base_price)}
             className="h-11 rounded-2xl border border-white/50 bg-white/40 px-4 text-zinc-900 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)] backdrop-blur-md outline-none transition-all hover:bg-white/50 focus:border-rose-300 focus:bg-white/60 focus:ring-4 focus:ring-rose-200/50"
           />

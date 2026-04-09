@@ -6,6 +6,7 @@ import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { ImagePlus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { ImageLightbox } from "@/components/ui/image-lightbox";
 
 const MAX_CLIENT_IMAGE_BYTES = 900 * 1024;
 const INITIAL_MAX_IMAGE_DIMENSION = 1280;
@@ -40,7 +41,7 @@ function loadImageFromFile(file: File) {
 
     image.onerror = () => {
       URL.revokeObjectURL(objectUrl);
-      reject(new Error("Não foi possível carregar a imagem selecionada."));
+      reject(new Error("Nao foi possivel carregar a imagem selecionada."));
     };
 
     image.src = objectUrl;
@@ -52,7 +53,7 @@ function canvasToBlob(canvas: HTMLCanvasElement, quality: number) {
     canvas.toBlob(
       (blob) => {
         if (!blob) {
-          reject(new Error("Não foi possível otimizar a imagem."));
+          reject(new Error("Nao foi possivel otimizar a imagem."));
           return;
         }
 
@@ -71,7 +72,7 @@ async function optimizeImageForUpload(file: File) {
 
   if (!context) {
     return {
-      error: "Não foi possível preparar a imagem para upload.",
+      error: "Nao foi possivel preparar a imagem para upload.",
       file: null,
     } as const;
   }
@@ -141,13 +142,13 @@ async function optimizeImageForUpload(file: File) {
 
   if (!bestBlob) {
     return {
-      error: "Não foi possível otimizar a imagem para upload.",
+      error: "Nao foi possivel otimizar a imagem para upload.",
       file: null,
     } as const;
   }
 
   return {
-    error: `Não foi possível reduzir a imagem para menos de ${formatFileSize(MAX_CLIENT_IMAGE_BYTES)}.`,
+    error: `Nao foi possivel reduzir a imagem para menos de ${formatFileSize(MAX_CLIENT_IMAGE_BYTES)}.`,
     file: null,
   } as const;
 }
@@ -224,7 +225,7 @@ export function ProductImageFields({
         setFilePreviewUrl(null);
         setClientImageMessage("");
         setClientImageError(
-          optimizedResult.error ?? "Não foi possível otimizar a imagem selecionada.",
+          optimizedResult.error ?? "Nao foi possivel otimizar a imagem selecionada.",
         );
 
         if (event.target) {
@@ -251,7 +252,7 @@ export function ProductImageFields({
       setSelectedFile(null);
       setFilePreviewUrl(null);
       setClientImageMessage("");
-      setClientImageError("Não foi possível otimizar a imagem selecionada.");
+      setClientImageError("Nao foi possivel otimizar a imagem selecionada.");
 
       if (event.target) {
         event.target.value = "";
@@ -285,96 +286,92 @@ export function ProductImageFields({
         <h3 className="text-sm font-semibold text-zinc-900">Imagem do produto</h3>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[148px_minmax(0,1fr)]">
-        <div className="mx-auto aspect-square w-full max-w-36 overflow-hidden rounded-[1.35rem] border border-white/60 bg-white/80 shadow-card-down">
-          {activePreviewUrl ? (
-            <img
-              src={activePreviewUrl}
-              alt="Pré-visualização do produto"
-              className="h-full w-full object-cover"
-            />
-          ) : (
-            <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(160deg,_rgba(255,240,245,0.88),_rgba(247,235,255,0.92))] px-4 text-center text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500">
-              Sem imagem
-            </div>
-          )}
-        </div>
-
-        <div className="grid gap-4">
-          {showImageUrlField ? (
-            <label className="grid gap-2 text-sm text-zinc-700">
-              <span className="font-medium">URL da imagem</span>
-              <input
-                name="imageUrl"
-                type="url"
-                value={imageUrl}
-                onChange={(event) => setImageUrl(event.target.value)}
-                placeholder="https://..."
-                className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
-              />
-              <FieldError errors={imageUrlErrors} />
-            </label>
-          ) : (
-            <input name="imageUrl" type="hidden" value="" />
-          )}
-
-          <div className="grid gap-2 text-sm text-zinc-700">
-            <span className="font-medium">Foto do produto</span>
-
+      <div className="grid gap-4">
+        {showImageUrlField ? (
+          <label className="grid gap-2 text-sm text-zinc-700">
+            <span className="font-medium">URL da imagem</span>
             <input
-              ref={fileInputRef}
-              name="imageFile"
-              type="file"
-              accept="image/*"
-              onChange={handleFileSelection}
-              className="hidden"
+              name="imageUrl"
+              type="url"
+              value={imageUrl}
+              onChange={(event) => setImageUrl(event.target.value)}
+              placeholder="https://..."
+              className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
             />
-            <input name="imageCamera" type="hidden" value="" />
+            <FieldError errors={imageUrlErrors} />
+          </label>
+        ) : (
+          <input name="imageUrl" type="hidden" value="" />
+        )}
 
-            <div className="flex flex-wrap gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                className="h-11 rounded-2xl border-rose-200 bg-rose-50/70 text-rose-900 hover:bg-rose-100"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <ImagePlus className="size-4" />
-                {selectedFile ? "Trocar foto" : "Escolher foto"}
-              </Button>
+        <div className="grid gap-2 text-sm text-zinc-700">
+          <span className="font-medium">Foto do produto</span>
 
-              {selectedFile ? (
+          <input
+            ref={fileInputRef}
+            name="imageFile"
+            type="file"
+            accept="image/*"
+            onChange={handleFileSelection}
+            className="hidden"
+          />
+          <input name="imageCamera" type="hidden" value="" />
+
+          <div className="grid grid-cols-[112px_minmax(0,1fr)] items-start gap-3 sm:grid-cols-[148px_minmax(0,1fr)]">
+            <ImageLightbox
+              alt="Pre-visualizacao do produto"
+              imageUrl={activePreviewUrl || null}
+              triggerClassName="w-full"
+            >
+              <div className="aspect-square w-full overflow-hidden rounded-[1.35rem] border border-white/60 bg-white/80 shadow-card-down">
+                {activePreviewUrl ? (
+                  <img
+                    src={activePreviewUrl}
+                    alt="Pre-visualizacao do produto"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(160deg,_rgba(255,240,245,0.88),_rgba(247,235,255,0.92))] px-4 text-center text-[11px] font-medium uppercase tracking-[0.2em] text-zinc-500">
+                    Sem imagem
+                  </div>
+                )}
+              </div>
+            </ImageLightbox>
+
+            <div className="grid gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button
                   type="button"
-                  variant="ghost"
-                  className="h-11 rounded-2xl px-3 text-sm text-rose-900 hover:bg-rose-100"
-                  onClick={clearSelectedFile}
+                  variant="outline"
+                  className="h-11 rounded-2xl border-rose-200 bg-rose-50/70 text-rose-900 hover:bg-rose-100"
+                  onClick={() => fileInputRef.current?.click()}
                 >
-                  Limpar seleção
+                  <ImagePlus className="size-4" />
+                  {selectedFile ? "Trocar foto" : "Escolher foto"}
                 </Button>
-              ) : null}
+
+                {selectedFile ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="h-11 rounded-2xl px-3 text-sm text-rose-900 hover:bg-rose-100"
+                    onClick={clearSelectedFile}
+                  >
+                    Limpar selecao
+                  </Button>
+                ) : null}
+              </div>
+
+              <FieldError errors={unifiedImageErrors} />
+
+              <div aria-live="polite" className="min-h-5 text-xs">
+                {clientImageError ? (
+                  <p className="text-rose-600">{clientImageError}</p>
+                ) : clientImageMessage ? (
+                  <p className="text-zinc-600">{clientImageMessage}</p>
+                ) : null}
+              </div>
             </div>
-
-            <FieldError errors={unifiedImageErrors} />
-          </div>
-
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs leading-5 text-zinc-500">
-              {isOptimizing
-                ? "A imagem está sendo recortada no centro e reduzida para manter o upload abaixo de 1 MB."
-                : selectedFile
-                  ? "Imagem selecionada. Ela será usada no lugar da URL."
-                  : showImageUrlField
-                    ? "Você pode usar uma URL ou escolher uma foto do dispositivo. No celular, o sistema pode oferecer câmera ou galeria."
-                    : "Escolha uma foto do dispositivo. No celular, o sistema pode oferecer câmera ou galeria."}
-            </p>
-          </div>
-
-          <div aria-live="polite" className="min-h-5 text-xs">
-            {clientImageError ? (
-              <p className="text-rose-600">{clientImageError}</p>
-            ) : clientImageMessage ? (
-              <p className="text-zinc-600">{clientImageMessage}</p>
-            ) : null}
           </div>
         </div>
       </div>

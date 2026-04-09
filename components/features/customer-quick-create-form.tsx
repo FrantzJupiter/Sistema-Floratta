@@ -4,6 +4,8 @@ import { useActionState, useEffect } from "react";
 
 import { createCustomerAction } from "@/app/actions/customers";
 import { Button } from "@/components/ui/button";
+import { CpfInput } from "@/components/ui/cpf-input";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { cn } from "@/lib/utils";
 import {
   initialCustomerCreateActionState,
@@ -70,20 +72,18 @@ function CustomerQuickCreateFormFields({
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="grid gap-2 text-sm text-zinc-700">
           <span className="font-medium">CPF</span>
-          <input
+          <CpfInput
             name="cpf"
-            type="text"
-            placeholder="Opcional"
+            placeholder="000.000.000-00"
             className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
           />
         </label>
 
         <label className="grid gap-2 text-sm text-zinc-700">
           <span className="font-medium">Telefone</span>
-          <input
+          <PhoneInput
             name="phone"
-            type="text"
-            placeholder="Opcional"
+            placeholder="(00) 0 0000-0000"
             className="h-11 rounded-2xl border border-white/45 bg-white/75 px-4 text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
           />
         </label>

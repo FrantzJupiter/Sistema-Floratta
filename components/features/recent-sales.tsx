@@ -5,6 +5,7 @@ import { useState } from "react";
 import Link from "next/link";
 
 import { SaleSummaryCard } from "@/components/features/sale-summary-card";
+import { SectionToggleButton } from "@/components/ui/section-toggle-button";
 import type { RecentSale } from "@/services/transactions";
 
 type RecentSalesProps = {
@@ -19,22 +20,30 @@ export function RecentSales({
   const [isOpen, setIsOpen] = useState(!collapseByDefault);
 
   return (
-    <section className="rounded-[2rem] border border-white/45 bg-white/60 p-6 shadow-panel-down backdrop-blur-xl">
+    <section className="rounded-[2rem] border border-white/45 bg-white/60 p-4 shadow-panel-down backdrop-blur-xl sm:p-6">
       <div className="mb-5 flex flex-col gap-3">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <h2 className="text-2xl font-semibold text-zinc-950">Vendas recentes</h2>
-          </div>
-
+        <div className="flex items-center justify-between gap-3">
           {collapseByDefault ? (
-            <button
-              type="button"
-              className="inline-flex h-11 w-full items-center justify-center rounded-2xl border border-rose-200/80 bg-gradient-to-b from-rose-50/80 to-rose-100/30 px-5 text-sm font-medium text-rose-900 shadow-[0_4px_12px_rgba(225,29,72,0.06),inset_0_1px_1px_rgba(255,255,255,0.8)] transition-all hover:from-rose-100/90 hover:to-rose-100/50 lg:w-auto lg:min-w-[164px]"
-              onClick={() => setIsOpen((current) => !current)}
-            >
-              {isOpen ? "Fechar vendas" : "Abrir vendas"}
-            </button>
-          ) : null}
+            <>
+              <button
+                type="button"
+                aria-expanded={isOpen}
+                className="min-w-0 flex-1 cursor-pointer text-left"
+                onClick={() => setIsOpen((current) => !current)}
+              >
+                <h2 className="text-2xl font-semibold text-zinc-950">Vendas recentes</h2>
+              </button>
+              <SectionToggleButton
+                ariaLabel="Abrir vendas recentes"
+                isOpen={isOpen}
+                onClick={() => setIsOpen((current) => !current)}
+              />
+            </>
+          ) : (
+            <div>
+              <h2 className="text-2xl font-semibold text-zinc-950">Vendas recentes</h2>
+            </div>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-2">

@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+import { getCpfDigits } from "@/lib/formatters/cpf";
+import { getPhoneDigits } from "@/lib/formatters/phone";
+
 export const customerSchema = z.object({
   name: z
     .string()
@@ -10,10 +13,7 @@ export const customerSchema = z.object({
     .string()
     .trim()
     .max(18, "O CPF deve ter no máximo 18 caracteres.")
-    .refine(
-      (value) => !value || /^\d{3}\.?\d{3}\.?\d{3}-?\d{2}$/.test(value),
-      "Informe um CPF válido.",
-    )
+    .refine((value) => !value || getCpfDigits(value).length === 11, "Informe um CPF válido.")
     .optional()
     .default(""),
   address: z
@@ -26,6 +26,10 @@ export const customerSchema = z.object({
     .string()
     .trim()
     .max(30, "O telefone deve ter no máximo 30 caracteres.")
+    .refine(
+      (value) => !value || getPhoneDigits(value).length === 11,
+      "Informe um telefone válido.",
+    )
     .optional()
     .default(""),
 });

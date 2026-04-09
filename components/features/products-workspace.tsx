@@ -4,6 +4,7 @@ import { useDeferredValue, useState } from "react";
 
 import { ProductCatalogCard } from "@/components/features/product-catalog-card";
 import { ProductCreateForm } from "@/components/features/product-create-form";
+import { SectionToggleButton } from "@/components/ui/section-toggle-button";
 import {
   getDetailType,
   getProductDetailEntries,
@@ -16,6 +17,7 @@ import type { CatalogProduct } from "@/services/products";
 type ProductsWorkspaceProps = {
   collapseCatalogByDefault?: boolean;
   collapseCreateFormByDefault?: boolean;
+  initialProductSkuPreview: string;
   inventoryBalance: InventoryBalanceSummary;
   isAdmin?: boolean;
   products: CatalogProduct[];
@@ -32,6 +34,7 @@ function getMetadataSearchText(product: CatalogProduct) {
 export function ProductsWorkspace({
   collapseCatalogByDefault = false,
   collapseCreateFormByDefault = false,
+  initialProductSkuPreview,
   inventoryBalance,
   isAdmin = false,
   products,
@@ -97,25 +100,36 @@ export function ProductsWorkspace({
       {withCreateForm && isAdmin ? (
         <aside className="min-w-0 w-full">
           <div className="rounded-[2rem] border border-white/60 bg-gradient-to-br from-white/60 to-white/20 p-4 sm:p-6 shadow-[0_8px_32px_rgba(0,0,0,0.06)] backdrop-blur-2xl">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="space-y-1">
-                <h3 className="text-xl font-semibold text-zinc-950">Cadastrar produto</h3>
-              </div>
-
+            <div className="flex items-center justify-between gap-3">
               {collapseCreateFormByDefault ? (
-                <button
-                  type="button"
-                  className="inline-flex h-10 items-center justify-center rounded-2xl border border-rose-200/80 bg-gradient-to-b from-rose-50/80 to-rose-100/30 px-4 text-sm font-medium text-rose-900 shadow-[0_4px_12px_rgba(225,29,72,0.06),inset_0_1px_1px_rgba(255,255,255,0.8)] transition-all hover:from-rose-100/90 hover:to-rose-100/50"
-                  onClick={() => setIsCreateFormOpen((current) => !current)}
-                >
-                  {isCreateFormOpen ? "Fechar cadastro" : "Abrir cadastro"}
-                </button>
-              ) : null}
+                <>
+                  <button
+                    type="button"
+                    aria-expanded={isCreateFormOpen}
+                    className="min-w-0 flex-1 cursor-pointer text-left"
+                    onClick={() => setIsCreateFormOpen((current) => !current)}
+                  >
+                    <h3 className="text-xl font-semibold text-zinc-950">Cadastrar produto</h3>
+                  </button>
+                  <SectionToggleButton
+                    ariaLabel="Abrir cadastro de produto"
+                    isOpen={isCreateFormOpen}
+                    onClick={() => setIsCreateFormOpen((current) => !current)}
+                  />
+                </>
+              ) : (
+                <div className="space-y-1">
+                  <h3 className="text-xl font-semibold text-zinc-950">Cadastrar produto</h3>
+                </div>
+              )}
             </div>
 
             {isCreateFormOpen ? (
               <div className="mt-5">
-                <ProductCreateForm typeOptions={typeOptions} />
+                <ProductCreateForm
+                  initialSkuPreview={initialProductSkuPreview}
+                  typeOptions={typeOptions}
+                />
               </div>
             ) : null}
           </div>
@@ -123,20 +137,28 @@ export function ProductsWorkspace({
       ) : null}
 
       <section className="flex min-w-0 flex-col gap-6 rounded-[2rem] border border-white/60 bg-gradient-to-br from-white/60 to-white/20 p-4 sm:p-6 shadow-[0_8px_32px_rgba(0,0,0,0.06)] backdrop-blur-2xl">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1">
-            <h2 className="text-2xl font-semibold text-zinc-950">{title}</h2>
-          </div>
-
+        <div className="flex items-center justify-between gap-3">
           {collapseCatalogByDefault ? (
-            <button
-              type="button"
-              className="inline-flex h-10 items-center justify-center rounded-2xl border border-rose-200/80 bg-gradient-to-b from-rose-50/80 to-rose-100/30 px-4 text-sm font-medium text-rose-900 shadow-[0_4px_12px_rgba(225,29,72,0.06),inset_0_1px_1px_rgba(255,255,255,0.8)] transition-all hover:from-rose-100/90 hover:to-rose-100/50"
-              onClick={() => setIsCatalogOpen((current) => !current)}
-            >
-              {isCatalogOpen ? "Fechar catálogo" : "Abrir catálogo"}
-            </button>
-          ) : null}
+            <>
+              <button
+                type="button"
+                aria-expanded={isCatalogOpen}
+                className="min-w-0 flex-1 cursor-pointer text-left"
+                onClick={() => setIsCatalogOpen((current) => !current)}
+              >
+                <h2 className="text-2xl font-semibold text-zinc-950">{title}</h2>
+              </button>
+              <SectionToggleButton
+                ariaLabel="Abrir catálogo de produtos"
+                isOpen={isCatalogOpen}
+                onClick={() => setIsCatalogOpen((current) => !current)}
+              />
+            </>
+          ) : (
+            <div className="space-y-1">
+              <h2 className="text-2xl font-semibold text-zinc-950">{title}</h2>
+            </div>
+          )}
         </div>
 
         {isCatalogOpen ? (

@@ -6,6 +6,7 @@ import { createProductAction } from "@/app/actions/products";
 import { ProductImageFields } from "@/components/features/product-image-fields";
 import { ProductTypeField } from "@/components/features/product-type-field";
 import { Button } from "@/components/ui/button";
+import { CurrencyInput } from "@/components/ui/currency-input";
 import { createAutomaticSku } from "@/lib/products/catalog";
 import {
   initialProductActionState,
@@ -66,6 +67,7 @@ function FormField({
 type ProductCreateFormFieldsProps = {
   state: ProductActionState;
   formAction: (payload: FormData) => void;
+  initialSkuPreview: string;
   pending: boolean;
   typeOptions: string[];
 };
@@ -73,11 +75,12 @@ type ProductCreateFormFieldsProps = {
 function ProductCreateFormFields({
   state,
   formAction,
+  initialSkuPreview,
   pending,
   typeOptions,
 }: ProductCreateFormFieldsProps) {
   const [detailType, setDetailType] = useState("");
-  const [skuPreview, setSkuPreview] = useState(() => createAutomaticSku(""));
+  const [skuPreview, setSkuPreview] = useState(initialSkuPreview);
   const [isImageProcessing, setIsImageProcessing] = useState(false);
 
   function handleDetailTypeChange(nextType: string) {
@@ -93,23 +96,20 @@ function ProductCreateFormFields({
 
   return (
     <form action={formAction} className="grid gap-5" onSubmit={handleSubmit}>
-      <FormField
-        label="Nome do produto"
-        name="name"
-        placeholder="Ex.: Perfume Floratta Blue"
-        errors={state.fieldErrors?.name}
-      />
+      <section className="grid gap-4 rounded-[1.5rem] border border-white/50 bg-white/50 p-4">
+        <FormField
+          label="Nome do produto"
+          name="name"
+          placeholder="Ex.: Perfume Floratta Blue"
+          errors={state.fieldErrors?.name}
+        />
 
-      <div className="grid gap-3 md:grid-cols-[auto_minmax(0,1fr)] md:items-end md:gap-x-10">
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-[168px_88px] md:gap-x-5">
+        <div className="grid grid-cols-[minmax(0,1fr)_88px] gap-3 md:grid-cols-[168px_88px_148px] md:items-end md:gap-x-6">
           <label className="grid gap-1.5 text-xs text-zinc-700">
             <span className="font-medium">Preço base</span>
-            <input
+            <CurrencyInput
               name="basePrice"
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="129.90"
+              placeholder="R$ 0,00"
               className="h-10 rounded-xl border border-white/45 bg-white/75 px-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
             />
             <FieldError errors={state.fieldErrors?.basePrice} />
@@ -128,40 +128,17 @@ function ProductCreateFormFields({
             />
             <FieldError errors={state.fieldErrors?.quantity} />
           </label>
-        </div>
 
-        <div className="grid gap-2 md:justify-self-end md:grid-cols-[190px_auto] md:items-end">
-          <label className="grid gap-1.5 text-xs text-zinc-700">
+          <label className="col-span-2 grid min-w-0 gap-1.5 text-xs text-zinc-700 md:col-span-1">
             <span className="font-medium">ID do produto</span>
-            <input
-              value={skuPreview}
-              readOnly
-              className="h-10 w-full rounded-xl border border-dashed border-rose-200 bg-rose-50/80 px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-rose-900 shadow-sm outline-none"
-            />
+            <button
+              type="button"
+              className="h-10 w-full rounded-xl border border-dashed border-rose-200 bg-rose-50/80 px-2.5 text-left text-[10px] font-semibold uppercase tracking-[0.12em] text-rose-900 shadow-sm outline-none transition hover:border-rose-300 hover:bg-rose-100/80 focus-visible:border-rose-300 focus-visible:ring-4 focus-visible:ring-rose-100"
+              onClick={() => setSkuPreview(createAutomaticSku(detailType))}
+            >
+              {skuPreview}
+            </button>
           </label>
-
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className="h-10 rounded-xl px-3 text-xs text-rose-900 hover:bg-rose-100 md:self-end"
-            onClick={() => setSkuPreview(createAutomaticSku(detailType))}
-          >
-            Gerar outro
-          </Button>
-        </div>
-      </div>
-
-      <ProductImageFields
-        imageFileErrors={state.fieldErrors?.imageFile}
-        imageCameraErrors={state.fieldErrors?.imageCamera}
-        onProcessingChange={setIsImageProcessing}
-        showImageUrlField={false}
-      />
-
-      <section className="grid gap-4 rounded-[1.5rem] border border-white/50 bg-white/50 p-4">
-        <div className="space-y-1">
-          <h3 className="text-sm font-semibold text-zinc-900">Detalhes do produto</h3>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -180,6 +157,13 @@ function ProductCreateFormFields({
           />
         </div>
       </section>
+
+      <ProductImageFields
+        imageFileErrors={state.fieldErrors?.imageFile}
+        imageCameraErrors={state.fieldErrors?.imageCamera}
+        onProcessingChange={setIsImageProcessing}
+        showImageUrlField={false}
+      />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div aria-live="polite" className="min-h-6 text-sm">
@@ -213,10 +197,14 @@ function ProductCreateFormFields({
 }
 
 type ProductCreateFormProps = {
+  initialSkuPreview: string;
   typeOptions?: string[];
 };
 
-export function ProductCreateForm({ typeOptions = [] }: ProductCreateFormProps) {
+export function ProductCreateForm({
+  initialSkuPreview,
+  typeOptions = [],
+}: ProductCreateFormProps) {
   const [state, formAction, pending] = useActionState<ProductActionState, FormData>(
     createProductAction,
     initialProductActionState,
@@ -227,6 +215,7 @@ export function ProductCreateForm({ typeOptions = [] }: ProductCreateFormProps) 
       key={state.status === "success" ? state.message : "product-create-form"}
       state={state}
       formAction={formAction}
+      initialSkuPreview={initialSkuPreview}
       pending={pending}
       typeOptions={typeOptions}
     />

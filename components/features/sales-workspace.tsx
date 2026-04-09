@@ -6,6 +6,7 @@ import { useDeferredValue, useState } from "react";
 import { AddToCartButton } from "@/components/features/add-to-cart-button";
 import { CartPanel } from "@/components/features/cart-panel";
 import { QrCartScanner } from "@/components/features/qr-cart-scanner";
+import { ImageLightbox } from "@/components/ui/image-lightbox";
 import {
   getDetailType,
   getProductDetailEntries,
@@ -29,7 +30,7 @@ function ProductThumbnail({
   imageUrl: string | null;
   name: string;
 }) {
-  return (
+  const thumbnailContent = (
     <div className="overflow-hidden rounded-[1rem] border border-white/60 bg-gradient-to-br from-white/60 to-white/20 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)] backdrop-blur-sm">
       {imageUrl ? (
         <img src={imageUrl} alt={name} className="h-12 w-12 object-cover sm:h-14 sm:w-14" />
@@ -39,6 +40,12 @@ function ProductThumbnail({
         </div>
       )}
     </div>
+  );
+
+  return (
+    <ImageLightbox alt={name} imageUrl={imageUrl} triggerClassName="shrink-0">
+      {thumbnailContent}
+    </ImageLightbox>
   );
 }
 

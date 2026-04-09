@@ -152,6 +152,30 @@
       0 6px 18px -14px rgba(255, 255, 255, 0.32),
       0 -4px 14px -14px rgba(255, 255, 255, 0.72);
   }
+
+  .top-nav-scrollbar {
+    scrollbar-color: rgba(159, 18, 57, 0.45) rgba(255, 255, 255, 0.68);
+    scrollbar-width: auto;
+  }
+
+  .top-nav-scrollbar::-webkit-scrollbar {
+    height: 14px;
+  }
+
+  .top-nav-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.72);
+    border-radius: 999px;
+  }
+
+  .top-nav-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(90deg, rgba(190, 24, 93, 0.72), rgba(136, 19, 55, 0.78));
+    border: 3px solid rgba(255, 255, 255, 0.72);
+    border-radius: 999px;
+  }
+
+  .top-nav-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(90deg, rgba(190, 24, 93, 0.88), rgba(136, 19, 55, 0.9));
+  }
 }
 
 @media print {

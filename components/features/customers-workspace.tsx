@@ -8,6 +8,10 @@ import {
 } from "@/app/actions/customers";
 import { CustomerQuickCreateForm } from "@/components/features/customer-quick-create-form";
 import { Button } from "@/components/ui/button";
+import { CpfInput } from "@/components/ui/cpf-input";
+import { PhoneInput } from "@/components/ui/phone-input";
+import { buildCpfSearchText, formatCpf } from "@/lib/formatters/cpf";
+import { buildPhoneSearchText, formatPhone } from "@/lib/formatters/phone";
 import {
   initialCustomerCreateActionState,
   initialCustomerDeleteActionState,
@@ -32,7 +36,12 @@ function getCustomerInitials(name: string) {
 }
 
 function getCustomerSearchText(customer: RegisteredCustomer) {
-  return [customer.name, customer.cpf ?? "", customer.phone ?? "", customer.address ?? ""]
+  return [
+    customer.name,
+    buildCpfSearchText(customer.cpf),
+    buildPhoneSearchText(customer.phone),
+    customer.address ?? "",
+  ]
     .join(" ")
     .toLowerCase();
 }
@@ -70,12 +79,12 @@ function CustomerCard({
             <div className="flex flex-wrap gap-2 pt-1">
               {customer.cpf ? (
                 <span className="rounded-full border border-white/60 bg-white/75 px-3 py-1 text-xs text-zinc-600">
-                  CPF: {customer.cpf}
+                  CPF: {formatCpf(customer.cpf)}
                 </span>
               ) : null}
               {customer.phone ? (
                 <span className="rounded-full border border-white/60 bg-white/75 px-3 py-1 text-xs text-zinc-600">
-                  Tel: {customer.phone}
+                  Tel: {formatPhone(customer.phone)}
                 </span>
               ) : null}
             </div>
@@ -150,20 +159,20 @@ function CustomerCard({
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="grid gap-2 text-sm text-zinc-700">
                 <span className="font-medium">CPF</span>
-                <input
+                <CpfInput
                   name="cpf"
                   defaultValue={customer.cpf ?? ""}
-                  placeholder="Opcional"
+                  placeholder="000.000.000-00"
                   className="h-11 rounded-2xl border border-white/50 bg-white/40 px-4 text-zinc-900 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)] backdrop-blur-md outline-none transition-all hover:bg-white/50 focus:border-rose-300 focus:bg-white/60 focus:ring-4 focus:ring-rose-200/50"
                 />
               </label>
 
               <label className="grid gap-2 text-sm text-zinc-700">
                 <span className="font-medium">Telefone</span>
-                <input
+                <PhoneInput
                   name="phone"
                   defaultValue={customer.phone ?? ""}
-                  placeholder="Opcional"
+                  placeholder="(00) 0 0000-0000"
                   className="h-11 rounded-2xl border border-white/50 bg-white/40 px-4 text-zinc-900 shadow-[inset_0_2px_8px_rgba(0,0,0,0.05)] backdrop-blur-md outline-none transition-all hover:bg-white/50 focus:border-rose-300 focus:bg-white/60 focus:ring-4 focus:ring-rose-200/50"
                 />
               </label>
