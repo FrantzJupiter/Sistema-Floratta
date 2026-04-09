@@ -132,6 +132,17 @@
 }
 
 @layer utilities {
+  .route-transition-shell {
+    min-height: 100%;
+    width: 100%;
+    overflow-x: clip;
+  }
+
+  .route-transition-content {
+    min-height: 100%;
+    width: 100%;
+  }
+
   .shadow-panel-down {
     box-shadow:
       0 20px 44px -18px rgba(118, 36, 76, 0.24),
@@ -175,6 +186,30 @@
 
   .top-nav-scrollbar::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(90deg, rgba(190, 24, 93, 0.88), rgba(136, 19, 55, 0.9));
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .route-transition-content {
+    animation-name: route-scroll-enter;
+    animation-duration: 380ms;
+    animation-fill-mode: both;
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform, filter;
+  }
+}
+
+@keyframes route-scroll-enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 28px, 0) scale(0.985);
+    filter: blur(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+    filter: blur(0);
   }
 }
 

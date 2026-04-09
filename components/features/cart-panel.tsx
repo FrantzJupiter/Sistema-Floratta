@@ -1,19 +1,33 @@
 "use client";
 
-import { useActionState, useEffect, useEffectEvent, useMemo, useState } from "react";
+import { useActionState, useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
+
+import { X } from "lucide-react";
 
 import { checkoutAction } from "@/app/actions/checkout";
 import { cancelSaleAction } from "@/app/actions/transactions";
 import { CustomerQuickCreateForm } from "@/components/features/customer-quick-create-form";
 import { SaleReceipt } from "@/components/features/sale-receipt";
 import { Button } from "@/components/ui/button";
+import { groupNamedItemsByAlphabet } from "@/lib/customers/alphabet";
 import { useCartStore } from "@/lib/stores/cart-store";
+import { useBodyScrollLock } from "@/lib/use-body-scroll-lock";
 import {
   initialCheckoutActionState,
   type CheckoutActionState,
 } from "@/lib/validations/checkout";
-import { initialTransactionHistoryActionState } from "@/lib/validations/transactions";
+import {
+  initialTransactionHistoryActionState,
+  type TransactionHistoryActionState,
+} from "@/lib/validations/transactions";
+import type { SaleReceipt as SaleReceiptData } from "@/lib/receipts/types";
 import type { RegisteredCustomer } from "@/services/customers";
+
+const modalViewportPaddingStyle = {
+  paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))",
+  paddingTop: "max(0.75rem, env(safe-area-inset-top))",
+};
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("pt-BR", {
@@ -26,6 +40,126 @@ type CartPanelProps = {
   customers: RegisteredCustomer[];
   isAdmin?: boolean;
 };
+
+type ReceiptModalProps = {
+  cancelFormAction: (payload: FormData) => void;
+  cancelPending: boolean;
+  cancelState: TransactionHistoryActionState;
+  isAdmin: boolean;
+  onClose: () => void;
+  onCancelIntent: (receiptId: string) => void;
+  receipt: SaleReceiptData | null;
+};
+
+function ReceiptModal({
+  cancelFormAction,
+  cancelPending,
+  cancelState,
+  isAdmin,
+  onClose,
+  onCancelIntent,
+  receipt,
+}: ReceiptModalProps) {
+  useBodyScrollLock(Boolean(receipt));
+
+  if (!receipt) {
+    return null;
+  }
+
+  const modalContent = (
+    <div className="fixed inset-0 z-[100] overflow-y-auto bg-zinc-950/72 backdrop-blur-sm">
+      <div
+        className="flex min-h-dvh items-stretch justify-center px-3 py-3 sm:items-center sm:p-4"
+        style={modalViewportPaddingStyle}
+      >
+        <div className="flex w-full max-w-4xl min-h-full max-h-full flex-col overflow-hidden rounded-[1.75rem] border border-white/10 bg-[rgba(28,18,22,0.94)] text-white shadow-2xl sm:min-h-0 sm:max-h-[90dvh] sm:rounded-[2rem]">
+          <div className="flex items-start justify-between gap-4 border-b border-white/10 bg-[rgba(28,18,22,0.98)] px-4 py-4 backdrop-blur-sm sm:px-5 sm:py-5">
+            <div className="space-y-1">
+              <h3 className="text-xl font-semibold">Comprovante da venda</h3>
+              <p className="text-sm text-white/70">
+                Confira, imprima ou feche o recibo antes de seguir para a próxima venda.
+              </p>
+            </div>
+
+            <Button
+              type="button"
+              aria-label="Fechar comprovante"
+              variant="ghost"
+              size="icon-sm"
+              className="shrink-0 rounded-xl text-white hover:bg-white/10 hover:text-white"
+              onClick={onClose}
+            >
+              <X className="size-4" />
+            </Button>
+          </div>
+
+          <div className="flex flex-1 flex-col overflow-y-auto px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-4">
+            <SaleReceipt
+              description="Visualize, revise e imprima o comprovante desta venda."
+              receipt={receipt}
+              title="Recibo da venda concluída"
+            />
+
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <Button
+                type="button"
+                size="lg"
+                className="rounded-2xl border border-emerald-700/80 bg-gradient-to-b from-emerald-600 to-emerald-800 text-white shadow-[0_4px_12px_rgba(4,120,87,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)] transition-all hover:from-emerald-500 hover:to-emerald-700 active:scale-[0.98] active:shadow-inner"
+                onClick={onClose}
+              >
+                Nova venda
+              </Button>
+
+              {isAdmin ? (
+                <form action={cancelFormAction}>
+                  <input type="hidden" name="transactionId" value={receipt.id} />
+                  <Button
+                    type="submit"
+                    size="lg"
+                    variant="outline"
+                    disabled={cancelPending}
+                    className="w-full rounded-2xl border border-rose-200/80 bg-gradient-to-b from-rose-50/80 to-rose-100/30 text-rose-900 shadow-[0_4px_12px_rgba(225,29,72,0.06),inset_0_1px_1px_rgba(255,255,255,0.8)] backdrop-blur-md transition-all hover:from-rose-100/90 hover:to-rose-100/50 active:scale-[0.98] active:shadow-inner"
+                    onClick={(event) => {
+                      if (
+                        !window.confirm(
+                          "Cancelar a última venda exibida? O estoque será devolvido e o lançamento será removido.",
+                        )
+                      ) {
+                        event.preventDefault();
+                        return;
+                      }
+
+                      onCancelIntent(receipt.id);
+                    }}
+                  >
+                    {cancelPending ? "Cancelando venda..." : "Cancelar última venda"}
+                  </Button>
+                </form>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="rounded-2xl border-white/15 bg-white/10 text-white hover:bg-white/15"
+                  onClick={onClose}
+                >
+                  Fechar comprovante
+                </Button>
+              )}
+            </div>
+
+            {cancelState.status === "error" ? (
+              <div aria-live="polite" className="mt-3 min-h-6 text-sm">
+                <p className="text-rose-300">{cancelState.message}</p>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  return typeof document !== "undefined" ? createPortal(modalContent, document.body) : null;
+}
 
 function CartCheckoutContent({
   customers,
@@ -68,6 +202,10 @@ function CartCheckoutContent({
 
     return customers;
   }, [customers, newCustomerOption]);
+  const groupedCustomerOptions = useMemo(
+    () => groupNamedItemsByAlphabet(customerOptions),
+    [customerOptions],
+  );
 
   return (
     <div className="grid gap-4">
@@ -196,10 +334,14 @@ function CartCheckoutContent({
                   className="h-11 w-full appearance-none rounded-2xl border border-white/70 bg-gradient-to-b from-white/80 to-white/30 px-4 pr-11 text-sm font-medium text-zinc-800 shadow-[0_4px_12px_rgba(0,0,0,0.04),inset_0_1px_1px_rgba(255,255,255,0.8)] backdrop-blur-md outline-none transition-all hover:from-white/90 hover:to-white/50 focus:border-rose-300 focus:ring-4 focus:ring-rose-200/50"
                 >
                   <option value="">Sem cliente cadastrado</option>
-                  {customerOptions.map((customer) => (
-                    <option key={customer.id} value={customer.id}>
-                      {customer.name}
-                    </option>
+                  {groupedCustomerOptions.map((group) => (
+                    <optgroup key={group.letter} label={group.letter}>
+                      {group.items.map((customer) => (
+                        <option key={customer.id} value={customer.id}>
+                          {customer.name}
+                        </option>
+                      ))}
+                    </optgroup>
                   ))}
                 </select>
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="pointer-events-none absolute right-4 top-1/2 size-4 -translate-y-1/2 text-zinc-500">
@@ -298,21 +440,12 @@ export function CartPanel({ customers, isAdmin = false }: CartPanelProps) {
     initialTransactionHistoryActionState,
   );
   const latestReceipt = state.receipt ?? null;
-  const dismissLatestReceipt = useEffectEvent((receiptId: string) => {
-    setDismissedReceiptId(receiptId);
-  });
 
   useEffect(() => {
     if (state.status === "success") {
       clearCart();
     }
   }, [clearCart, state.status]);
-
-  useEffect(() => {
-    if (items.length > 0 && latestReceipt && dismissedReceiptId !== latestReceipt.id) {
-      dismissLatestReceipt(latestReceipt.id);
-    }
-  }, [dismissedReceiptId, items.length, latestReceipt]);
 
   const activeReceipt =
     latestReceipt &&
@@ -322,99 +455,62 @@ export function CartPanel({ customers, isAdmin = false }: CartPanelProps) {
       : null;
 
   return (
-    <section className="grid gap-4 rounded-[2rem] border border-white/60 bg-gradient-to-br from-white/60 to-white/20 p-4 sm:p-6 shadow-[0_8px_32px_rgba(0,0,0,0.06)] backdrop-blur-2xl">
-      <div className="mb-1 flex items-start justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-semibold text-zinc-950">Carrinho e checkout</h2>
-        </div>
-        <span className="rounded-full bg-rose-100 px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-rose-700">
-          {items.length} item(ns)
-        </span>
-      </div>
-
-      {!activeReceipt && items.length === 0 ? (
-        <div className="rounded-[1.75rem] border border-dashed border-rose-300/50 bg-gradient-to-b from-rose-50/50 to-transparent backdrop-blur-sm shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)] px-5 py-10 text-center">
-          <p className="text-base font-medium text-zinc-800">Nenhum item no carrinho.</p>
-          <p className="mt-2 text-sm text-zinc-600">
-            Use os botões do catálogo para montar a venda.
-          </p>
-        </div>
-      ) : null}
-
-      {!activeReceipt && items.length > 0 ? (
-        <CartCheckoutContent
-          key={state.status === "success" ? state.transactionId ?? state.message : "active-cart"}
-          customers={customers}
-          decrementItem={decrementItem}
-          formAction={formAction}
-          incrementItem={incrementItem}
-          items={items}
-          pending={pending}
-          removeItem={removeItem}
-          state={state}
-        />
-      ) : null}
-
-      {!activeReceipt && cancelState.message ? (
-        <div aria-live="polite" className="min-h-6 text-sm">
-          <p className={cancelState.status === "success" ? "text-emerald-700" : "text-rose-600"}>
-            {cancelState.message}
-          </p>
-        </div>
-      ) : null}
-
-      {activeReceipt ? (
-        <div className="grid gap-4">
-          <SaleReceipt receipt={activeReceipt} />
-
-          <div className={isAdmin ? "grid gap-3 sm:grid-cols-2" : "grid gap-3"}>
-            <Button
-              type="button"
-              size="lg"
-              disabled={cancelPending}
-              className="rounded-2xl bg-gradient-to-b from-emerald-600 to-emerald-800 border border-emerald-700/80 text-white shadow-[0_4px_12px_rgba(4,120,87,0.3),inset_0_1px_1px_rgba(255,255,255,0.2)] hover:from-emerald-500 hover:to-emerald-700 active:scale-[0.98] active:shadow-inner transition-all"
-              onClick={() => {
-                if (activeReceipt) {
-                  setDismissedReceiptId(activeReceipt.id);
-                }
-              }}
-            >
-              Nova venda
-            </Button>
-
-            {isAdmin ? <form action={cancelFormAction}>
-              <input type="hidden" name="transactionId" value={activeReceipt.id} />
-              <Button
-                type="submit"
-                size="lg"
-                variant="outline"
-                disabled={cancelPending}
-                className="w-full rounded-2xl border border-rose-200/80 bg-gradient-to-b from-rose-50/80 to-rose-100/30 text-rose-900 shadow-[0_4px_12px_rgba(225,29,72,0.06),inset_0_1px_1px_rgba(255,255,255,0.8)] backdrop-blur-md hover:from-rose-100/90 hover:to-rose-100/50 active:scale-[0.98] active:shadow-inner transition-all"
-                onClick={(event) => {
-                  if (
-                    !window.confirm(
-                      "Cancelar a última venda exibida? O estoque será devolvido e o lançamento será removido.",
-                    )
-                  ) {
-                    event.preventDefault();
-                    return;
-                  }
-
-                  setCancelTargetReceiptId(activeReceipt.id);
-                }}
-              >
-                {cancelPending ? "Cancelando venda..." : "Cancelar última venda"}
-              </Button>
-            </form> : null}
+    <>
+      <section className="grid gap-4 rounded-[2rem] border border-white/60 bg-gradient-to-br from-white/60 to-white/20 p-4 sm:p-6 shadow-[0_8px_32px_rgba(0,0,0,0.06)] backdrop-blur-2xl">
+        <div className="mb-1 flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-semibold text-zinc-950">Carrinho e checkout</h2>
           </div>
-
-          {cancelState.status === "error" ? (
-            <div aria-live="polite" className="min-h-6 text-sm">
-              <p className="text-rose-600">{cancelState.message}</p>
-            </div>
-          ) : null}
+          <span className="rounded-full bg-rose-100 px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-rose-700">
+            {items.length} item(ns)
+          </span>
         </div>
-      ) : null}
-    </section>
+
+        {!activeReceipt && items.length === 0 ? (
+          <div className="rounded-[1.75rem] border border-dashed border-rose-300/50 bg-gradient-to-b from-rose-50/50 to-transparent backdrop-blur-sm shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)] px-5 py-10 text-center">
+            <p className="text-base font-medium text-zinc-800">Nenhum item no carrinho.</p>
+            <p className="mt-2 text-sm text-zinc-600">
+              Use os botões do catálogo para montar a venda.
+            </p>
+          </div>
+        ) : null}
+
+        {!activeReceipt && items.length > 0 ? (
+          <CartCheckoutContent
+            key={state.status === "success" ? state.transactionId ?? state.message : "active-cart"}
+            customers={customers}
+            decrementItem={decrementItem}
+            formAction={formAction}
+            incrementItem={incrementItem}
+            items={items}
+            pending={pending}
+            removeItem={removeItem}
+            state={state}
+          />
+        ) : null}
+
+        {!activeReceipt && cancelState.message ? (
+          <div aria-live="polite" className="min-h-6 text-sm">
+            <p className={cancelState.status === "success" ? "text-emerald-700" : "text-rose-600"}>
+              {cancelState.message}
+            </p>
+          </div>
+        ) : null}
+      </section>
+
+      <ReceiptModal
+        cancelFormAction={cancelFormAction}
+        cancelPending={cancelPending}
+        cancelState={cancelState}
+        isAdmin={isAdmin}
+        onCancelIntent={setCancelTargetReceiptId}
+        onClose={() => {
+          if (activeReceipt) {
+            setDismissedReceiptId(activeReceipt.id);
+          }
+        }}
+        receipt={activeReceipt}
+      />
+    </>
   );
 }

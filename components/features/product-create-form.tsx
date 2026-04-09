@@ -104,19 +104,19 @@ function ProductCreateFormFields({
           errors={state.fieldErrors?.name}
         />
 
-        <div className="grid grid-cols-[minmax(0,1fr)_88px] gap-3 md:grid-cols-[168px_88px_148px] md:items-end md:gap-x-6">
-          <label className="grid gap-1.5 text-xs text-zinc-700">
+        <div className="grid grid-cols-[minmax(0,3fr)_minmax(0,1fr)] gap-3 md:grid-cols-[168px_88px_148px] md:items-end md:gap-x-6">
+          <label className="grid min-w-0 gap-1.5 text-xs text-zinc-700">
             <span className="font-medium">Preço base</span>
             <CurrencyInput
               name="basePrice"
               placeholder="R$ 0,00"
-              className="h-10 rounded-xl border border-white/45 bg-white/75 px-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+              className="h-10 min-w-0 w-full rounded-xl border border-white/45 bg-white/75 px-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
             />
             <FieldError errors={state.fieldErrors?.basePrice} />
           </label>
 
-          <label className="grid gap-1.5 text-xs text-zinc-700">
-            <span className="font-medium">Qtd. inicial</span>
+          <label className="grid min-w-0 gap-1.5 text-xs text-zinc-700">
+            <span className="font-medium leading-tight">Qtd. inicial</span>
             <input
               name="quantity"
               type="number"
@@ -124,7 +124,7 @@ function ProductCreateFormFields({
               step="1"
               placeholder="12"
               defaultValue="0"
-              className="h-10 rounded-xl border border-white/45 bg-white/75 px-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
+              className="h-10 min-w-0 w-full rounded-xl border border-white/45 bg-white/75 px-3 text-sm text-zinc-900 shadow-sm outline-none transition focus:border-rose-300 focus:ring-4 focus:ring-rose-100"
             />
             <FieldError errors={state.fieldErrors?.quantity} />
           </label>
@@ -133,7 +133,7 @@ function ProductCreateFormFields({
             <span className="font-medium">ID do produto</span>
             <button
               type="button"
-              className="h-10 w-full rounded-xl border border-dashed border-rose-200 bg-rose-50/80 px-2.5 text-left text-[10px] font-semibold uppercase tracking-[0.12em] text-rose-900 shadow-sm outline-none transition hover:border-rose-300 hover:bg-rose-100/80 focus-visible:border-rose-300 focus-visible:ring-4 focus-visible:ring-rose-100"
+              className="h-10 min-w-0 w-full rounded-xl border border-dashed border-rose-200 bg-rose-50/80 px-2.5 text-left text-[10px] font-semibold uppercase tracking-[0.12em] text-rose-900 shadow-sm outline-none transition hover:border-rose-300 hover:bg-rose-100/80 focus-visible:border-rose-300 focus-visible:ring-4 focus-visible:ring-rose-100"
               onClick={() => setSkuPreview(createAutomaticSku(detailType))}
             >
               {skuPreview}

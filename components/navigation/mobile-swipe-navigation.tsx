@@ -9,12 +9,14 @@ import {
 } from "@/lib/navigation/main-navigation";
 
 const INTERACTIVE_SELECTOR =
-  "a, button, input, textarea, select, option, label, summary, [role='button'], [role='link'], [contenteditable='true'], [data-slot='button'], [data-swipe-nav-ignore]";
+  "input, textarea, select, option, [contenteditable='true'], iframe, video, [data-swipe-nav-ignore]";
 const MAX_DURATION_MS = 700;
-const MAX_VERTICAL_DELTA = 88;
-const MIN_HORIZONTAL_DELTA = 72;
+const MAX_VERTICAL_DELTA = 112;
+const MIN_HORIZONTAL_DELTA = 56;
 const MOBILE_MEDIA_QUERY = "(max-width: 1023px) and (pointer: coarse)";
-const MIN_HORIZONTAL_RATIO = 1.4;
+const MIN_HORIZONTAL_RATIO = 1.15;
+const VERTICAL_CANCEL_DELTA = 32;
+const VERTICAL_CANCEL_RATIO = 1.15;
 
 type SwipeState = {
   isTracking: boolean;
@@ -154,8 +156,8 @@ export function MobileSwipeNavigation() {
       const verticalDelta = touch.clientY - swipeState.startY;
 
       if (
-        Math.abs(verticalDelta) > 24 &&
-        Math.abs(verticalDelta) > Math.abs(horizontalDelta)
+        Math.abs(verticalDelta) > VERTICAL_CANCEL_DELTA &&
+        Math.abs(verticalDelta) > Math.abs(horizontalDelta) * VERTICAL_CANCEL_RATIO
       ) {
         resetSwipeState();
       }
@@ -188,14 +190,20 @@ export function MobileSwipeNavigation() {
       navigateToSiblingTab(horizontalDelta < 0 ? "next" : "previous");
     }
 
+    function handleTouchCancel() {
+      resetSwipeState();
+    }
+
     window.addEventListener("touchstart", handleTouchStart, { passive: true });
     window.addEventListener("touchmove", handleTouchMove, { passive: true });
     window.addEventListener("touchend", handleTouchEnd, { passive: true });
+    window.addEventListener("touchcancel", handleTouchCancel, { passive: true });
 
     return () => {
       window.removeEventListener("touchstart", handleTouchStart);
       window.removeEventListener("touchmove", handleTouchMove);
       window.removeEventListener("touchend", handleTouchEnd);
+      window.removeEventListener("touchcancel", handleTouchCancel);
     };
   }, [currentIndex]);
 

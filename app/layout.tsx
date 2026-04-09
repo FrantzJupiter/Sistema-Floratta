@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 
+import { PageTransition } from "@/components/navigation/page-transition";
 import { MobileSwipeNavigation } from "@/components/navigation/mobile-swipe-navigation";
 import { TopNav } from "@/components/navigation/top-nav";
 
@@ -50,7 +51,7 @@ export default async function RootLayout({
             <MobileSwipeNavigation />
             <TopNav />
             <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 px-4 pb-10 pt-4 sm:px-6 lg:px-8">
-              {children}
+              <PageTransition>{children}</PageTransition>
             </main>
           </div>
         </div>
