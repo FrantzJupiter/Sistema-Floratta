@@ -1,6 +1,9 @@
 import { getCurrentUser } from "@/lib/auth/user";
 
-const ADMIN_EMAILS = new Set(["luisfrantzjr@gmail.com"]);
+const ADMIN_EMAILS = new Set([
+  "luisfrantzjr@gmail.com",
+  "rayanemlest@gmail.com",
+]);
 
 export type AppRole = "admin" | "user";
 
